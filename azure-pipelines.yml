@@ -41,6 +41,7 @@ steps:
       print('##vso[task.setvariable variable=projectRoot]{}'.format(project_location))
 
 - script: |
+    apt-get install libpq-dev python-dev
     python -m pip install --upgrade pip setuptools wheel
     pip install -r requirements/default.txt
     python -m pip install django
