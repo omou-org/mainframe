@@ -58,3 +58,23 @@ steps:
     testResultsFiles: "**/TEST-*.xml"
     testRunTitle: 'Python $(PYTHON_VERSION)'
   condition: succeededOrFailed()
+
+# Package files
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(Build.SourcesDirectory)'
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+    replaceExistingArchive: true
+
+# Deploy to Azure
+- task: AzureWebApp@1
+  inputs:
+    azureSubscription: 'Pay-As-You-Go Dev/Test(d31a6f5e-a7f4-4e7a-8b66-af18b13dd77f)'
+    appType: 'webAppLinux'
+    appName: 'omou-api'
+    package: '$(Build.SourcesDirectory)'
+    runtimeStack: 'PYTHON|3.6'
+    startUpCommand: 'python manage.py runserver'
+    deploymentMethod: 'auto'
