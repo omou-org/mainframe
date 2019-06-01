@@ -10,13 +10,8 @@ pool:
   vmImage: 'ubuntu-latest'
 strategy:
   matrix:
-    Python35:
-      PYTHON_VERSION: '3.5'
     Python36:
       PYTHON_VERSION: '3.6'
-    Python37:
-      PYTHON_VERSION: '3.7'
-  maxParallel: 3
 
 steps:
 - task: UsePythonVersion@0
@@ -68,13 +63,9 @@ steps:
     archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
     replaceExistingArchive: true
 
-# Deploy to Azure
-- task: AzureWebApp@1
+# Publish
+- task: PublishBuildArtifacts@1
   inputs:
-    azureSubscription: 'Pay-As-You-Go Dev/Test(d31a6f5e-a7f4-4e7a-8b66-af18b13dd77f)'
-    appType: 'webAppLinux'
-    appName: 'omou-api'
-    package: '$(Build.SourcesDirectory)'
-    runtimeStack: 'PYTHON|3.6'
-    startUpCommand: 'python manage.py runserver'
-    deploymentMethod: 'auto'
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
