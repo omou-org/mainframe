@@ -15,6 +15,7 @@ import sys
 
 PROJECT_ROOT = os.path.dirname(__file__)
 sys.path.insert(0, os.path.join(PROJECT_ROOT, 'apps'))
+env = os.environ
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -24,24 +25,25 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '%wd5++=an&!tao#t)sc%cp@x3k6wmsbcrtsw7st*83908z255+'
+SECRET_KEY = env["SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [".omou-api.azurewebsites.net"]
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    'apps.account',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'account.apps.AccountConfig',
+    'course.apps.CourseConfig',
 ]
 
 MIDDLEWARE = [
@@ -81,11 +83,11 @@ WSGI_APPLICATION = 'mainframe.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'mainframe',
-        'USER': 'admin',
-        'PASSWORD': 'password',
-        'HOST': 'localhost',
-        'PORT': '',
+        'NAME': env["DATABASE_NAME"],
+        'USER': env["DATABASE_USER"],
+        'PASSWORD': env["DATABASE_PASSWORD"],
+        'HOST': env["DATABASE_HOST"],
+        'PORT': env["DATABASE_PORT"],
     }
 }
 
