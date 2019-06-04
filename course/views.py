@@ -4,7 +4,7 @@ from course.models import Course
 
 
 def get_catalog(request):
-	course_catalog = list(Course.objects.all())
+	courses = list(Course.objects.values())
 	return JsonResponse({
-		"data": course_catalog
+		"data": courses,
 	})

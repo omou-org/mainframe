@@ -15,7 +15,6 @@ import sys
 
 PROJECT_ROOT = os.path.dirname(__file__)
 sys.path.insert(0, os.path.join(PROJECT_ROOT, 'apps'))
-env = os.environ
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -25,12 +24,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env["SECRET_KEY"]
+SECRET_KEY = os.environ.get('SECRET_KEY', '')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.environ.get('DEBUG', True)
 
-ALLOWED_HOSTS = [".omou-api.azurewebsites.net"]
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -83,11 +82,11 @@ WSGI_APPLICATION = 'mainframe.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': env["DATABASE_NAME"],
-        'USER': env["DATABASE_USER"],
-        'PASSWORD': env["DATABASE_PASSWORD"],
-        'HOST': env["DATABASE_HOST"],
-        'PORT': env["DATABASE_PORT"],
+        'NAME': os.environ.get('DATABASE_NAME', 'mainframe'),
+        'USER': os.environ.get('DATABASE_USER', 'admin'),
+        'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'password'),
+        'HOST': os.environ.get('DATABASE_HOST', 'localhost'),
+        'PORT':  os.environ.get('DATABASE_PORT', '5432'),
     }
 }
 
