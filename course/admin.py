@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Course, CourseCategory
+from course.models import Course, CourseCategory
 
 # Register your models here.
 

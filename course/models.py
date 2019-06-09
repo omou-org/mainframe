@@ -38,5 +38,5 @@ class Course(models.Model):
     max_capacity = models.IntegerField()
 
     # Many-to-one relationship with CourseCategory
-    coursecategory = models.ForeignKey(
+    course_category = models.ForeignKey(
         CourseCategory, on_delete=models.CASCADE, null=True)

@@ -11,8 +11,8 @@ def get_catalog(request):
     })
 
 
-def getCourseCategories(request):
-    courseCategories = list(CourseCategory.objects.values())
+def get_course_categories(request):
+    course_categories = list(CourseCategory.objects.values())
     return JsonResponse({
-        "data": courseCategories
+        "data": course_categories
     })
