@@ -1,4 +1,4 @@
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_list_or_404
 from django.http import JsonResponse
 
 from course.models import Course
@@ -19,8 +19,8 @@ def get_course_categories(request):
     })
 
 
-def get_category_courses(request, category_name):
-    course_list = get_list_or_404(Course, course_category=category_name)
+def get_category_courses(request, category_id):
+    course_list = get_list_or_404(Course, course_category=category_id)
     return JsonResponse({
         "data": course_list
     })
