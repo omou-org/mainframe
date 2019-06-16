@@ -1,26 +1,16 @@
 from django.http import JsonResponse
+from rest_framework.generics import ListAPIView
 
 from account.models import (
     Instructor,
     Parent,
     Student,
 )
+from account.serializers import (
+    StudentSerializer,
+)
 
 
-def get_students(request):
-    students = list(Student.objects.values())
-    return JsonResponse({
-        "data": students,
-    })
-
-def get_instructors(request):
-    instructors = list(Instructor.objects.values())
-    return JsonResponse({
-        "data": instructors,
-    })
-
-def get_parents(request):
-    parents = list(Parent.objects.values())
-    return JsonResponse({
-        "data": parents,
-    })
+class StudentListView(ListAPIView):
+    queryset = Student.objects.all()
+    serializer_class = StudentSerializer
