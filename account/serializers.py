@@ -1,11 +1,7 @@
 from rest_framework import serializers
 
-from django.contrib.auth.models import User
-from django.db import transaction
 
 from account.models import (
-	Instructor,
-	Parent,
 	Student,
 )
 
@@ -13,7 +9,11 @@ from account.models import (
 class StudentSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Student
-		fields = (
+		read_only_fields = (
+			'updated_at',
+			'created_at',
+		)
+		writable_fields = (
 			'user',
 			'gender',
 			'address',
@@ -21,4 +21,9 @@ class StudentSerializer(serializers.ModelSerializer):
 			'phone_number',
 			'state',
 			'zipcode',
+			'grade',
+			'age',
+			'school',
+			'parent',
 		)
+		fields = read_only_fields + writable_fields

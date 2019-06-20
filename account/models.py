@@ -56,7 +56,7 @@ class Student(UserInfo):
 	school = models.CharField(max_length=64)
 	parent = models.ForeignKey(
 		"Parent",
-		on_delete=models.CASCADE,
+		on_delete=models.PROTECT,
 		blank=True,
 		null=True,
 	)

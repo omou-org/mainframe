@@ -1,9 +1,6 @@
-from django.http import JsonResponse
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListCreateAPIView
 
 from account.models import (
-    Instructor,
-    Parent,
     Student,
 )
 from account.serializers import (
@@ -11,6 +8,6 @@ from account.serializers import (
 )
 
 
-class StudentListView(ListAPIView):
+class StudentListView(ListCreateAPIView):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
