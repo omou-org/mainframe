@@ -1,8 +1,8 @@
 from django.contrib import admin
 from account.models import (
-	Instructor,
-	Parent,
-	Student,
+    Instructor,
+    Parent,
+    Student,
 )
 
 # Register your models here.
