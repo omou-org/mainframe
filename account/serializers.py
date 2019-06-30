@@ -13,7 +13,7 @@ class StudentSerializer(serializers.ModelSerializer):
             'updated_at',
             'created_at',
         )
-        writable_fields = (
+        fields = (
             'user',
             'gender',
             'address',
@@ -24,9 +24,8 @@ class StudentSerializer(serializers.ModelSerializer):
             'grade',
             'age',
             'school',
-            'parent',
+            'parent'
         )
-        fields = read_only_fields + writable_fields
 
 
 class ParentSerializer(serializers.ModelSerializer):
@@ -36,7 +35,7 @@ class ParentSerializer(serializers.ModelSerializer):
             'updated_at',
             'created_at',
         )
-        writable_fields = (
+        fields = (
             'user',
             'gender',
             'address',
@@ -44,9 +43,8 @@ class ParentSerializer(serializers.ModelSerializer):
             'phone_number',
             'state',
             'zipcode',
-            'relationship',
+            'relationship'
         )
-        fields = read_only_fields + writable_fields
 
 
 class InstructorSerializer(serializers.ModelSerializer):
@@ -56,7 +54,7 @@ class InstructorSerializer(serializers.ModelSerializer):
             'updated_at',
             'created_at',
         )
-        writable_fields = (
+        fields = (
             'user',
             'gender',
             'address',
@@ -64,6 +62,5 @@ class InstructorSerializer(serializers.ModelSerializer):
             'phone_number',
             'state',
             'zipcode',
-            'age',
+            'age'
         )
-        fields = read_only_fields + writable_fields
