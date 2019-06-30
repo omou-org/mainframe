@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework.authtoken',
     'rest_framework',
     'account.apps.AccountConfig',
     'course.apps.CourseConfig',
@@ -110,6 +111,17 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+    ],
+    "TEST_REQUEST_DEFAULT_FORMAT": "json",
+    "UNAUTHENTICATED_USER": None,
+    # throttling
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "2000/day",
+    }
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
