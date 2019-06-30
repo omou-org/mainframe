@@ -10,7 +10,7 @@ from rest_framework import serializers
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
-        fields = ('username', 'password', 'email', 'first_name', 'last_name')
+        fields = ('id', 'email', 'first_name', 'last_name')
 
 
 class StudentSerializer(serializers.ModelSerializer):
@@ -20,10 +20,10 @@ class StudentSerializer(serializers.ModelSerializer):
         model = Student
         read_only_fields = (
             'updated_at',
-            'created_at',
-            'user'
+            'created_at'
         )
         fields = (
+            'user',
             'gender',
             'address',
             'city',
@@ -41,13 +41,17 @@ class StudentSerializer(serializers.ModelSerializer):
 
         user_data = validated_data.pop('user')
 
-        # new_user = User.objects.create(username=user_data.get('email'), password="asdf124124",
-        #                                email=user_data.get('email'), first_name=user_data.get('first_name'), last_name=user_data.get('last_name'))
+        new_user = User.objects.create(username=user_data['email'], password="omou12312",
+                                       email=user_data['email'], first_name=user_data['first_name'], last_name=user_data['last_name'])
 
-        # return new_user
+        student = Student.objects.create(user=new_user, **validated_data)
+
+        return student
 
 
 class ParentSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+
     class Meta:
         model = Parent
         read_only_fields = (
@@ -65,8 +69,22 @@ class ParentSerializer(serializers.ModelSerializer):
             'relationship'
         )
 
+    def create(self, validated_data):
+        User = get_user_model()
+
+        user_data = validated_data.pop('user')
+
+        new_user = User.objects.create(username=user_data['email'], password="omou12312",
+                                       email=user_data['email'], first_name=user_data['first_name'], last_name=user_data['last_name'])
+
+        parent = Parent.objects.create(user=new_user, **validated_data)
+
+        return parent
+
 
 class InstructorSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+
     class Meta:
         model = Instructor
         read_only_fields = (
@@ -83,3 +101,15 @@ class InstructorSerializer(serializers.ModelSerializer):
             'zipcode',
             'age'
         )
+
+    def create(self, validated_data):
+        User = get_user_model()
+
+        user_data = validated_data.pop('user')
+
+        new_user = User.objects.create(username=user_data['email'], password="omou12312",
+                                       email=user_data['email'], first_name=user_data['first_name'], last_name=user_data['last_name'])
+
+        parent = Parent.objects.create(user=new_user, **validated_data)
+
+        return parent
