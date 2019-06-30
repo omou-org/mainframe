@@ -41,8 +41,13 @@ class StudentSerializer(serializers.ModelSerializer):
 
         user_data = validated_data.pop('user')
 
-        new_user = User.objects.create(username=user_data['email'], password="omou12312",
-                                       email=user_data['email'], first_name=user_data['first_name'], last_name=user_data['last_name'])
+        new_user = User.objects.create(
+            username=user_data['email'],
+            password="omou12312",
+            email=user_data['email'],
+            first_name=user_data['first_name'],
+            last_name=user_data['last_name']
+        )
 
         student = Student.objects.create(user=new_user, **validated_data)
 
@@ -74,8 +79,13 @@ class ParentSerializer(serializers.ModelSerializer):
 
         user_data = validated_data.pop('user')
 
-        new_user = User.objects.create(username=user_data['email'], password="omou12312",
-                                       email=user_data['email'], first_name=user_data['first_name'], last_name=user_data['last_name'])
+        new_user = User.objects.create(
+            username=user_data['email'],
+            password="omou12312",
+            email=user_data['email'],
+            first_name=user_data['first_name'],
+            last_name=user_data['last_name']
+        )
 
         parent = Parent.objects.create(user=new_user, **validated_data)
 
