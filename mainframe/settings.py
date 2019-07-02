@@ -29,7 +29,14 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', True)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [ '127.0.0.1:3000' , '127.0.0.1', 'localhost', 'localhost:3000']
+
+CORS_ORIGIN_ALLOW_ALL = False
+
+CORS_ORIGIN_WHITELIST = (
+    'http://localhost:8000',
+    'http://localhost:3000'
+)
 
 
 # Application definition
@@ -45,6 +52,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'account.apps.AccountConfig',
     'course.apps.CourseConfig',
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
@@ -55,6 +63,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.BrokenLinkEmailsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'mainframe.urls'
