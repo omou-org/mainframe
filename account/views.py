@@ -1,12 +1,13 @@
 from account.models import (
+    Admin,
     Student,
     Parent,
     Instructor
 )
 from rest_framework import viewsets
-from rest_framework.response import Response
 
 from account.serializers import (
+    AdminSerializer,
     StudentSerializer,
     ParentSerializer,
     InstructorSerializer
@@ -35,3 +36,11 @@ class InstructorViewSet(viewsets.ModelViewSet):
     """
     queryset = Instructor.objects.all()
     serializer_class = InstructorSerializer
+
+
+class AdminViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows admins to be viewed
+    """
+    queryset = Admin.objects.all()
+    serializer_class = AdminSerializer
