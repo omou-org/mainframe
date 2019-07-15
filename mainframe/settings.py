@@ -29,7 +29,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', True)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['3.19.70.245', 'localhost']
 
 CORS_ORIGIN_ALLOW_ALL = False
 
