@@ -52,7 +52,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'account.apps.AccountConfig',
     'course.apps.CourseConfig',
-    'corsheaders'
+    'corsheaders',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
