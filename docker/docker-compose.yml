@@ -1,0 +1,12 @@
+version: "2"
+
+services:
+  db:
+    container_name: mainframe_db
+    environment:
+      POSTGRES_DB: mainframe
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+    image: postgres:9.6
+    ports:
+      - "5432:5432"

@@ -8,11 +8,12 @@
 About
 =====
 
-TBD
-
-.. _installation:
+This is main backend service for Omou Learning Platform
 
 Installation
 ============
 
-TBD
+First, install [Docker](https://docs.docker.com/v17.12/install/) for your appropriate operating system.
+Then run `make setup` from this repo to set up everything else!
+
+To start the server, run `python manage.py runserver` and navigate to `localhost:8000`.
