@@ -19,6 +19,7 @@ If you have Mac, run ``make virtualenv`` to set up virtualenv packages necessary
 ``make setup`` from this repo to set up everything else!
 
 Don't forget to ``workon mainframe`` before doing anything with the backend. ``deactivate`` will take you out of the virtualenv.
+
 To start the server, run ``python manage.py runserver`` and navigate to ``localhost:8000``.
 
 .. _Docker: https://docs.docker.com/v17.12/install/
