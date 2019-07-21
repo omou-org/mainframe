@@ -13,7 +13,7 @@ This is main backend service for Omou Learning Platform
 Installation
 ============
 
-After cloning this repo, install Docker_ for your appropriate operating system.
+After cloning this repo, install Docker_ for your appropriate operating system and start it up.
 
 If you have Mac, run ``make virtualenv`` to set up virtualenv packages necessary for development. Then run
 ``make setup`` from this repo to set up everything else!
