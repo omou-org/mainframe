@@ -12,7 +12,7 @@ router = routers.DefaultRouter()
 router.register(r'admin', AdminViewSet)
 router.register(r'students', StudentViewSet)
 router.register(r'parents', ParentViewSet)
-router.register(r'intructors', InstructorViewSet)
+router.register(r'instructors', InstructorViewSet)
 
 urlpatterns = [
     path('', include(router.urls))

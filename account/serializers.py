@@ -11,6 +11,7 @@ from account.models import (
     Instructor
 )
 
+
 class StudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
@@ -81,7 +82,6 @@ class UserSerializer(serializers.ModelSerializer):
             'last_name',
         )
         extra_kwargs = {'password': {'write_only': True}}
-
 
 
 class AdminSerializer(serializers.ModelSerializer):

@@ -15,11 +15,21 @@ setup: cleandb clean-venv requirements startdb
 	./manage.py migrate
 	echo "Now run 'workon $(PROJ)', and you're set!"
 
+.PHONY: virtualenv
+virtualenv:
+	pip3 install virtualenv
+	pip3 install virtualenvwrapper
+	mkdir ~/.virtualenvs
+	echo "export WORKON_HOME=$HOME/.virtualenvs" >> ~/.bash_profile
+	echo "export VIRTUALENVWRAPPER_SCRIPT=`which virtualenvwrapper.sh`" >> ~/.bash_profile
+	echo "export VIRTUALENVWRAPPER_PYTHON=`which $(PYTHON)`" >> ~/.bash_profile
+	echo "source $VIRTUALENVWRAPPER_SCRIPT" >> ~/.bash_profile
+	source ~/.bash_profile
+
 .PHONY: clean-venv
 clean-venv:
 	rm -rf $(VENV_PATH)
 	$(PYTHON) -m venv $(VENV_PATH) --clear
-	pip install --upgrade pip
 	echo "export DJANGO_ENV_MODULE=mainframe.settings.local" >> $(VENV_PATH)/bin/postactivate
 	echo "unset DJANGO_ENV_MODULE" >> $(VENV_PATH)/bin/postdeactivate
 
