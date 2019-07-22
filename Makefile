@@ -19,11 +19,11 @@ setup: cleandb clean-venv requirements startdb
 virtualenv:
 	pip3 install virtualenv
 	pip3 install virtualenvwrapper
-	mkdir ~/.virtualenvs
-	echo "export WORKON_HOME=$HOME/.virtualenvs" >> ~/.bash_profile
+	mkdir -p ~/.virtualenvs
+	echo "export WORKON_HOME=~/.virtualenvs" >> ~/.bash_profile
 	echo "export VIRTUALENVWRAPPER_SCRIPT=`which virtualenvwrapper.sh`" >> ~/.bash_profile
 	echo "export VIRTUALENVWRAPPER_PYTHON=`which $(PYTHON)`" >> ~/.bash_profile
-	echo "source $VIRTUALENVWRAPPER_SCRIPT" >> ~/.bash_profile
+	echo "source $$VIRTUALENVWRAPPER_SCRIPT" >> ~/.bash_profile
 	source ~/.bash_profile
 
 .PHONY: clean-venv
