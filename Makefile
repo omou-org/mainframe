@@ -23,7 +23,7 @@ virtualenv:
 	echo "export WORKON_HOME=$HOME/.virtualenvs" >> ~/.bash_profile
 	echo "export VIRTUALENVWRAPPER_SCRIPT=`which virtualenvwrapper.sh`" >> ~/.bash_profile
 	echo "export VIRTUALENVWRAPPER_PYTHON=`which $(PYTHON)`" >> ~/.bash_profile
-	echo "source $VIRTUALENVWRAPPER_SCRIPT" >> ~/.bash_profile
+	echo "source `which virtualenvwrapper.sh`" >> ~/.bash_profile
 	source ~/.bash_profile
 
 .PHONY: clean-venv
