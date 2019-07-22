@@ -90,7 +90,7 @@ class Admin(UserInfo):
     ASSISSTANT_TYPE = "ASSISSTANT"
 
     TYPE_CHOICES = (
-        (OWNER_TYPE, "Onwer"),
+        (OWNER_TYPE, "Owner"),
         (RECEPTIONIST_TYPE, "Receptionist"),
         (ASSISSTANT_TYPE, "Assisstant"),
     )
