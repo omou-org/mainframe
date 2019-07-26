@@ -36,7 +36,6 @@ clean-venv:
 
 .PHONY: requirements
 requirements:
-	brew install postgresql
 	source "$(VENV_PATH)/bin/activate"; \
 	for f in `ls requirements/` ; do pip install -r requirements/$$f ; done
 
