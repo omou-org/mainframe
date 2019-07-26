@@ -30,12 +30,13 @@ virtualenv:
 clean-venv:
 	rm -rf $(VENV_PATH)
 	$(PYTHON) -m venv $(VENV_PATH) --clear
+	export DJANGO_ENV_MODULE=mainframe.settings.local
 	echo "export DJANGO_ENV_MODULE=mainframe.settings.local" >> $(VENV_PATH)/bin/postactivate
 	echo "unset DJANGO_ENV_MODULE" >> $(VENV_PATH)/bin/postdeactivate
 
 .PHONY: requirements
 requirements:
-    brew install postgresql
+	brew install postgresql
 	source "$(VENV_PATH)/bin/activate"; \
 	for f in `ls requirements/` ; do pip install -r requirements/$$f ; done
 
