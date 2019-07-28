@@ -12,7 +12,46 @@ from account.models import (
 )
 
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        read_only_fields = (
+            'id',
+        )
+        fields = (
+            'id',
+            'email',
+            'password',
+            'first_name',
+            'last_name',
+        )
+        extra_kwargs = {'password': {'write_only': True}}
+
+
 class StudentSerializer(serializers.ModelSerializer):
+    token = serializers.SerializerMethodField()
+    user = UserSerializer()
+
+    def get_token(self, obj):
+        return obj.user.auth_token.key
+
+    def create(self, validated_data):
+        with transaction.atomic():
+            # create user and token
+            user_info = validated_data.pop('user')
+            user = User.objects.create_user(
+                email=user_info['email'],
+                username=user_info['email'],
+                password=user_info['password'],
+                first_name=user_info['first_name'],
+                last_name=user_info['last_name'],
+            )
+            Token.objects.get_or_create(user=user)
+
+            # create account
+            student = Student.objects.create(user=user, **validated_data)
+            return student
+
     class Meta:
         model = Student
         read_only_fields = (
@@ -21,6 +60,7 @@ class StudentSerializer(serializers.ModelSerializer):
         )
         fields = (
             'user',
+            'token',
             'gender',
             'address',
             'city',
@@ -30,11 +70,36 @@ class StudentSerializer(serializers.ModelSerializer):
             'grade',
             'age',
             'school',
-            'parent'
+            'parent',
+            'updated_at',
+            'created_at',
         )
 
 
 class ParentSerializer(serializers.ModelSerializer):
+    token = serializers.SerializerMethodField()
+    user = UserSerializer()
+
+    def get_token(self, obj):
+        return obj.user.auth_token.key
+
+    def create(self, validated_data):
+        with transaction.atomic():
+            # create user and token
+            user_info = validated_data.pop('user')
+            user = User.objects.create_user(
+                email=user_info['email'],
+                username=user_info['email'],
+                password=user_info['password'],
+                first_name=user_info['first_name'],
+                last_name=user_info['last_name'],
+            )
+            Token.objects.get_or_create(user=user)
+
+            # create account
+            parent = Parent.objects.create(user=user, **validated_data)
+            return parent
+
     class Meta:
         model = Parent
         read_only_fields = (
@@ -43,17 +108,43 @@ class ParentSerializer(serializers.ModelSerializer):
         )
         fields = (
             'user',
+            'token',
             'gender',
             'address',
             'city',
             'phone_number',
             'state',
             'zipcode',
-            'relationship'
+            'relationship',
+            'updated_at',
+            'created_at',
         )
 
 
 class InstructorSerializer(serializers.ModelSerializer):
+    token = serializers.SerializerMethodField()
+    user = UserSerializer()
+
+    def get_token(self, obj):
+        return obj.user.auth_token.key
+
+    def create(self, validated_data):
+        with transaction.atomic():
+            # create user and token
+            user_info = validated_data.pop('user')
+            user = User.objects.create_user(
+                email=user_info['email'],
+                username=user_info['email'],
+                password=user_info['password'],
+                first_name=user_info['first_name'],
+                last_name=user_info['last_name'],
+            )
+            Token.objects.get_or_create(user=user)
+
+            # create account
+            instructor = Instructor.objects.create(user=user, **validated_data)
+            return instructor
+
     class Meta:
         model = Instructor
         read_only_fields = (
@@ -62,26 +153,17 @@ class InstructorSerializer(serializers.ModelSerializer):
         )
         fields = (
             'user',
+            'token',
             'gender',
             'address',
             'city',
             'phone_number',
             'state',
             'zipcode',
-            'age'
+            'age',
+            'updated_at',
+            'created_at',
         )
-
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = (
-            'email',
-            'password',
-            'first_name',
-            'last_name',
-        )
-        extra_kwargs = {'password': {'write_only': True}}
 
 
 class AdminSerializer(serializers.ModelSerializer):
@@ -124,4 +206,6 @@ class AdminSerializer(serializers.ModelSerializer):
             'phone_number',
             'state',
             'zipcode',
+            'updated_at',
+            'created_at',
         )

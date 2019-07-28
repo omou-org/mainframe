@@ -47,13 +47,18 @@ class UserInfo(models.Model):
 
 
 class Student(UserInfo):
+    age = models.IntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0)]
+    )
     # 0 is preschool/kindergarten, 13 is graduated
     grade = models.IntegerField(
-        default=0,
         validators=[MinValueValidator(0), MaxValueValidator(13)],
     )
-    age = models.IntegerField()
+    phone_number = models.CharField(max_length=15, null=True, blank=True)
     school = models.CharField(max_length=64)
+
     parent = models.ForeignKey(
         "Parent",
         on_delete=models.PROTECT,

@@ -16,8 +16,7 @@ Installation
 After cloning this repo, install Docker_ for your appropriate operating system and start it up.
 
 If you have a Mac and don't have virtualenv properly configured on your local machine yet, run ``make virtualenv`` to set up virtualenv packages necessary for development. Then run
-``make setup`` from this repo to set up everything else!
-Open a new terminal window before next step.
+``make setup`` from this repo to set up everything else! Open a new terminal window before the next step.
 
 Don't forget to ``workon mainframe`` before doing anything with the backend. ``deactivate`` will take you out of the virtualenv.
 

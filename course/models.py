@@ -44,7 +44,7 @@ class Course(models.Model):
 
     # Many-to-one relationship with CourseCategory
     course_category = models.ForeignKey(
-        CourseCategory, on_delete=models.CASCADE, null=True)
+        CourseCategory, on_delete=models.PROTECT, null=True)
 
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)

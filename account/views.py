@@ -20,7 +20,6 @@ class StudentViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows students to be viewed or edited
     """
-    permission_classes = (IsAuthenticated,)
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
 
@@ -29,7 +28,6 @@ class ParentViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows parents to be viewed or edited
     """
-    permission_classes = (IsAuthenticated,)
     queryset = Parent.objects.all()
     serializer_class = ParentSerializer
 
@@ -38,7 +36,6 @@ class InstructorViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows instructors to be viewed or edited
     """
-    permission_classes = (IsAuthenticated,)
     queryset = Instructor.objects.all()
     serializer_class = InstructorSerializer
 
