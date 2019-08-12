@@ -13,7 +13,7 @@ This is main backend service for Omou Learning Platform
 Installation
 ============
 
-After cloning this repo, install Docker_ for your appropriate operating system and start it up.
+After cloning this repo, install Docker_ for your appropriate operating system and start it up. Also run ``brew install postgresql`` to install Postgres.
 
 If you have a Mac and don't have virtualenv properly configured on your local machine yet, run ``make virtualenv`` to set up virtualenv packages necessary for development. Then run
 ``make setup`` from this repo to set up everything else! Open a new terminal window before the next step.

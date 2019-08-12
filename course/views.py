@@ -1,9 +1,13 @@
-from course.models import Course, CourseCategory
+from course.models import Course, CourseCategory, Enrollment
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
-from course.serializers import CourseSerializer, CourseCategorySerializer
+from course.serializers import (
+    CourseSerializer,
+    CourseCategorySerializer,
+    EnrollmentSerializer,
+)
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -31,3 +35,11 @@ class CourseCategoryViewSet(viewsets.ModelViewSet):
             course_category=self.get_object())
         matching_courses_json = CourseSerializer(matching_courses, many=True)
         return Response(matching_courses_json.data)
+
+
+class EnrollmentViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows enrollments to be created ot edited
+    """
+    queryset = Enrollment.objects.all()
+    serializer_class = EnrollmentSerializer
