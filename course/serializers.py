@@ -27,7 +27,12 @@ class CourseCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = CourseCategory
 
-        fields = ('url', 'id', 'name', 'description')
+        fields = (
+            'url',
+            'id',
+            'name',
+            'description'
+        )
 
 
 class EnrollmentSerializer(serializers.ModelSerializer):
