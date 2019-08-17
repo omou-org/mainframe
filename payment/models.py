@@ -11,14 +11,16 @@ class Payment(models.Model):
     CASH = 'CASH'
     CARD = 'CARD'
     CHECK = 'CHECK'
+    ACCOUNT_CREDIT = 'ACCOUNT_CREDIT'
     PAYMENT_METHOD_CHOICES = (
         (CASH, 'Cash'),
         (CARD, 'Card'),
         (CHECK, 'Check'),
+        (ACCOUNT_CREDIT, 'Account Credit')
     )
 
     method = models.CharField(
-        max_length=5,
+        max_length=14,
         choices=PAYMENT_METHOD_CHOICES,
     )
     amount = models.DecimalField(max_digits=6, decimal_places=2, validators=[MinValueValidator(Decimal('0.00'))])
@@ -48,7 +50,7 @@ class SessionPayment(models.Model):
     date_time = models.DateTimeField(auto_now=True)
 
     # Many-to-one relationship with Student
-    student = models.ForeignKey(Student, on_delete=models.PROTECT)
+    payment = models.ForeignKey(Payment, on_delete=models.PROTECT)
 
     # Many-to-one relationship with Session
     session = models.ForeignKey(Session, on_delete=models.PROTECT)

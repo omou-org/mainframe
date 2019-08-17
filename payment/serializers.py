@@ -38,6 +38,6 @@ class SessionPaymentSerializer(serializers.ModelSerializer):
             'status',
             'amount',
             'date_time',
-            'student',
+            'payment',
             'session'
         )
