@@ -19,8 +19,8 @@ class Promo(models.Model):
         choices=DISCOUNT_TYPE_CHOICES,
     )
     discount = models.DecimalField(max_digits=6, decimal_places=2, validators=[MinValueValidator(Decimal(0.0))])
-    start_date_time = models.DateTimeField
-    end_date_time = models.DateTimeField
+    start_date_time = models.DateTimeField()
+    end_date_time = models.DateTimeField()
 
     # Many-to-many relationship with Session
     sessions = models.ManyToManyField(Session)

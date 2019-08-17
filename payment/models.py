@@ -23,7 +23,7 @@ class Payment(models.Model):
     )
     amount = models.DecimalField(max_digits=6, decimal_places=2, validators=[MinValueValidator(Decimal('0.00'))])
     description = models.CharField(max_length=1000)
-    date_time = models.DateTimeField
+    date_time = models.DateTimeField(auto_now=True)
 
     # Many-to-one relationship with Student
     student = models.ForeignKey(Student, on_delete=models.PROTECT)
@@ -45,7 +45,7 @@ class SessionPayment(models.Model):
         choices=STATUS_CHOICES
     )
     amount = models.DecimalField(max_digits=6, decimal_places=2, validators=[MinValueValidator(Decimal(0.0))])
-    date_time = models.DateTimeField
+    date_time = models.DateTimeField(auto_now=True)
 
     # Many-to-one relationship with Student
     student = models.ForeignKey(Student, on_delete=models.PROTECT)

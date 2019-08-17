@@ -64,8 +64,8 @@ class Enrollment(models.Model):
 
 
 class Session(models.Model):
-    start_date_time = models.DateTimeField
-    end_date_time = models.DateTimeField
+    start_date_time = models.DateTimeField()
+    end_date_time = models.DateTimeField()
     price = models.DecimalField(max_digits=6, decimal_places=2, validators=[MinValueValidator(Decimal('0.00'))])
 
     # Many-to-one relationship with Course
