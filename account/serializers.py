@@ -57,7 +57,6 @@ class StudentSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'updated_at',
             'created_at',
-            'token',
         )
         fields = (
             'user',
@@ -113,7 +112,6 @@ class ParentSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'updated_at',
             'created_at',
-            'token',
         )
         fields = (
             'user',
@@ -158,7 +156,6 @@ class InstructorSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'updated_at',
             'created_at',
-            'token',
         )
         fields = (
             'user',
@@ -203,7 +200,6 @@ class AdminSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'updated_at',
             'created_at',
-            'token',
         )
         fields = (
             'user',
