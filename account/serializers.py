@@ -34,6 +34,17 @@ class StudentSerializer(serializers.ModelSerializer):
     def get_token(self, obj):
         return obj.user.auth_token.key
 
+    def update(self, instance, validated_data):
+        with transaction.atomic():
+            user_info = validated_data.pop('user')
+            user_info['username'] = user_info['email']
+            User.objects.filter(email=instance.user.email).update(**user_info)
+
+            Student.objects.filter(user__email=user_info['email']).update(**validated_data)
+            instance.refresh_from_db()
+            instance.save()
+            return instance
+
     def create(self, validated_data):
         with transaction.atomic():
             # create user and token
@@ -85,10 +96,11 @@ class ParentSerializer(serializers.ModelSerializer):
         with transaction.atomic():
             user_info = validated_data.pop('user')
             user_info['username'] = user_info['email']
-            User.objects.filter(email=user_info['email']).update(**user_info)
+            User.objects.filter(email=instance.user.email).update(**user_info)
 
             Parent.objects.filter(user__email=user_info['email']).update(**validated_data)
             instance.refresh_from_db()
+            instance.save()
             return instance
 
     def create(self, validated_data):
@@ -135,6 +147,17 @@ class InstructorSerializer(serializers.ModelSerializer):
     def get_token(self, obj):
         return obj.user.auth_token.key
 
+    def update(self, instance, validated_data):
+        with transaction.atomic():
+            user_info = validated_data.pop('user')
+            user_info['username'] = user_info['email']
+            User.objects.filter(email=instance.user.email).update(**user_info)
+
+            Instructor.objects.filter(user__email=user_info['email']).update(**validated_data)
+            instance.refresh_from_db()
+            instance.save()
+            return instance
+
     def create(self, validated_data):
         with transaction.atomic():
             # create user and token
@@ -178,6 +201,17 @@ class AdminSerializer(serializers.ModelSerializer):
 
     def get_token(self, obj):
         return obj.user.auth_token.key
+
+    def update(self, instance, validated_data):
+        with transaction.atomic():
+            user_info = validated_data.pop('user')
+            user_info['username'] = user_info['email']
+            User.objects.filter(email=instance.user.email).update(**user_info)
+
+            Admin.objects.filter(user__email=user_info['email']).update(**validated_data)
+            instance.refresh_from_db()
+            instance.save()
+            return instance
 
     def create(self, validated_data):
         with transaction.atomic():
