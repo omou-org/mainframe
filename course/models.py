@@ -42,7 +42,7 @@ class Course(models.Model):
     end_date = models.DateField()
     max_capacity = models.IntegerField()
 
-    # Many-to-one relationship with CourseCategory
+    # One-to-many relationship with CourseCategory
     course_category = models.ForeignKey(
         CourseCategory, on_delete=models.PROTECT, null=True)
 

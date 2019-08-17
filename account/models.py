@@ -21,12 +21,12 @@ class UserInfo(models.Model):
         on_delete=models.PROTECT,
         primary_key=True,
     )
-
     gender = models.CharField(
         max_length=1,
         choices=GENDER_CHOICES,
         default=UNSPECIFIED_GENDER,
     )
+    birth_date = models.DateField()
 
     # Address
     address = models.CharField(max_length=64)

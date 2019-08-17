@@ -57,10 +57,10 @@ class StudentSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'updated_at',
             'created_at',
+            'token',
         )
         fields = (
             'user',
-            'token',
             'gender',
             'address',
             'city',
@@ -82,6 +82,14 @@ class ParentSerializer(serializers.ModelSerializer):
 
     def get_token(self, obj):
         return obj.user.auth_token.key
+
+    def update(self, instance, validated_data):
+        with transaction.atomic():
+            user_info = validated_data.pop('user')
+            instance.user.update(**user_info)
+            instance.update(**validated_data)
+            instance.save()
+            return instance
 
     def create(self, validated_data):
         with transaction.atomic():
@@ -105,10 +113,10 @@ class ParentSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'updated_at',
             'created_at',
+            'token',
         )
         fields = (
             'user',
-            'token',
             'gender',
             'address',
             'city',
@@ -150,10 +158,10 @@ class InstructorSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'updated_at',
             'created_at',
+            'token',
         )
         fields = (
             'user',
-            'token',
             'gender',
             'address',
             'city',
@@ -195,10 +203,10 @@ class AdminSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'updated_at',
             'created_at',
+            'token',
         )
         fields = (
             'user',
-            'token',
             'admin_type',
             'gender',
             'address',
