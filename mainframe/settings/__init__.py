@@ -52,6 +52,7 @@ API_APPS = (
     "account.apps.AccountConfig",
     "course.apps.CourseConfig",
     "payment.apps.PaymentConfig",
+    "promo.apps.PromoConfig",
 )
 COMMON_APPS = (
     "django.contrib.admin",
