@@ -29,7 +29,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class StudentSerializer(serializers.ModelSerializer):
-    token = serializers.SerializerMethodField()
     user = UserSerializer()
 
     def get_token(self, obj):
@@ -76,7 +75,6 @@ class StudentSerializer(serializers.ModelSerializer):
 
 
 class ParentSerializer(serializers.ModelSerializer):
-    token = serializers.SerializerMethodField()
     user = UserSerializer()
 
     def get_token(self, obj):
@@ -128,7 +126,6 @@ class ParentSerializer(serializers.ModelSerializer):
 
 
 class InstructorSerializer(serializers.ModelSerializer):
-    token = serializers.SerializerMethodField()
     user = UserSerializer()
 
     def get_token(self, obj):
@@ -172,7 +169,6 @@ class InstructorSerializer(serializers.ModelSerializer):
 
 
 class AdminSerializer(serializers.ModelSerializer):
-    token = serializers.SerializerMethodField()
     user = UserSerializer()
 
     def get_token(self, obj):
