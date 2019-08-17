@@ -1,6 +1,11 @@
-from course.models import Course, CourseCategory, Enrollment
 from rest_framework import serializers
 
+from course.models import (
+    Course,
+    CourseCategory,
+    Enrollment,
+    Session,
+)
 
 class CourseSerializer(serializers.ModelSerializer):
     class Meta:
@@ -19,7 +24,7 @@ class CourseSerializer(serializers.ModelSerializer):
             'start_date',
             'end_date',
             'max_capacity',
-            'course_category'
+            'course_category',
         )
 
 
@@ -31,7 +36,7 @@ class CourseCategorySerializer(serializers.ModelSerializer):
             'url',
             'id',
             'name',
-            'description'
+            'description',
         )
 
 
@@ -42,4 +47,17 @@ class EnrollmentSerializer(serializers.ModelSerializer):
         fields = (
             'student',
             'course',
+        )
+
+
+class SessionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Session
+
+        fields = (
+            'id',
+            'course',
+            'start_date_time',
+            'end_date_time',
+            'price',
         )

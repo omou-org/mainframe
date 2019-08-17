@@ -1,12 +1,19 @@
-from course.models import Course, CourseCategory, Enrollment
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
+
+from course.models import (
+    Course,
+    CourseCategory,
+    Enrollment,
+    Session,
+)
 
 from course.serializers import (
     CourseSerializer,
     CourseCategorySerializer,
     EnrollmentSerializer,
+    SessionSerializer,
 )
 
 
@@ -43,3 +50,11 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
     """
     queryset = Enrollment.objects.all()
     serializer_class = EnrollmentSerializer
+
+
+class SessionViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows enrollments to be created ot edited
+    """
+    queryset = Session.objects.all()
+    serializer_class = SessionSerializer
