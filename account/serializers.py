@@ -60,6 +60,7 @@ class StudentSerializer(serializers.ModelSerializer):
         fields = (
             'user',
             'gender',
+            'birth_date',
             'address',
             'city',
             'phone_number',
@@ -83,7 +84,10 @@ class ParentSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         with transaction.atomic():
             user_info = validated_data.pop('user')
-            instance.user.update(**user_info)
+            instance.user.first_name = user_info['first_name']
+            instance.user.last_name = user_info['last_name']
+            instance.user.save()
+
             instance.update(**validated_data)
             instance.save()
             return instance
@@ -114,6 +118,7 @@ class ParentSerializer(serializers.ModelSerializer):
         fields = (
             'user',
             'gender',
+            'birth_date',
             'address',
             'city',
             'phone_number',
@@ -157,6 +162,7 @@ class InstructorSerializer(serializers.ModelSerializer):
         fields = (
             'user',
             'gender',
+            'birth_date',
             'address',
             'city',
             'phone_number',
@@ -201,6 +207,7 @@ class AdminSerializer(serializers.ModelSerializer):
             'user',
             'admin_type',
             'gender',
+            'birth_date',
             'address',
             'city',
             'phone_number',
