@@ -84,12 +84,11 @@ class ParentSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         with transaction.atomic():
             user_info = validated_data.pop('user')
-            instance.user.first_name = user_info['first_name']
-            instance.user.last_name = user_info['last_name']
-            instance.user.save()
+            user_info['username'] = user_info['email']
+            User.objects.filter(email=user_info['email']).update(**user_info)
 
-            instance.update(**validated_data)
-            instance.save()
+            Parent.objects.filter(user__email=user_info['email']).update(**validated_data)
+            instance.refresh_from_db()
             return instance
 
     def create(self, validated_data):
