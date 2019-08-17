@@ -1,7 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 
-from course.models import Course
+from course.models import Course, Session
 from account.models import Student
 
 from decimal import *
@@ -30,3 +30,25 @@ class Payment(models.Model):
 
     # Many-to-one relationship with Course
     course = models.ForeignKey(Course, on_delete=models.PROTECT)
+
+
+class SessionPayment(models.Model):
+    PAID = 'PAID'
+    WAIVED = 'WAIVED'
+    STATUS_CHOICES = (
+        (PAID, 'Paid'),
+        (WAIVED, 'Waived'),
+    )
+
+    status = models.CharField(
+        max_length=6,
+        choices=STATUS_CHOICES
+    )
+    amount = models.DecimalField(max_digits=6, decimal_places=2, validators=[MinValueValidator(Decimal(0.0))])
+    date_time = models.DateTimeField
+
+    # Many-to-one relationship with Student
+    student = models.ForeignKey(Student, on_delete=models.PROTECT)
+
+    # Many-to-one relationship with Session
+    session = models.ForeignKey(Session, on_delete=models.PROTECT)

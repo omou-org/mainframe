@@ -7,6 +7,7 @@ from course.models import (
     Session,
 )
 
+
 class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course

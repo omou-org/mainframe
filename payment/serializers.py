@@ -1,5 +1,9 @@
-from payment.models import Payment
 from rest_framework import serializers
+
+from payment.models import (
+    Payment,
+    SessionPayment
+)
 
 
 class PaymentSerializer(serializers.ModelSerializer):
@@ -18,4 +22,22 @@ class PaymentSerializer(serializers.ModelSerializer):
             'date_time',
             'student',
             'course'
+        )
+
+
+class SessionPaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SessionPayment
+
+        read_only_fields = (
+            'id',
+            'date_time'
+        )
+        fields = (
+            'id',
+            'status',
+            'amount',
+            'date_time',
+            'student',
+            'session'
         )
