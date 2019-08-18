@@ -46,6 +46,40 @@ class UserInfo(models.Model):
         abstract = True
 
 
+class StudentNote(models.Model):
+    timestamp = models.DateTimeField(auto_now_add=True)    
+    title = models.TextField(blank=True)
+    body = models.TextField()
+    user = models.ForeignKey(
+        "Student",
+        on_delete=models.PROTECT,
+    )
+    important = models.BooleanField(default=False)
+    complete = models.BooleanField(default=False)
+
+class ParentNote(models.Model):
+    timestamp = models.DateTimeField(auto_now_add=True)    
+    title = models.TextField(blank=True)
+    body = models.TextField()
+    user = models.ForeignKey(
+        "Parent",
+        on_delete=models.PROTECT,
+    )
+    important = models.BooleanField(default=False)
+    complete = models.BooleanField(default=False)
+
+class InstructorNote(models.Model):
+    timestamp = models.DateTimeField(auto_now_add=True)    
+    title = models.TextField(blank=True)
+    body = models.TextField()
+    user = models.ForeignKey(
+        "Instructor",
+        on_delete=models.PROTECT,
+    )
+    important = models.BooleanField(default=False)
+    complete = models.BooleanField(default=False)
+
+
 class Student(UserInfo):
     age = models.IntegerField(
         null=True,

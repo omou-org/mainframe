@@ -5,11 +5,72 @@ from django.db import transaction
 from django.contrib.auth.models import User
 
 from account.models import (
+    StudentNote,
+    ParentNote,
+    InstructorNote,
     Admin,
     Student,
     Parent,
     Instructor
 )
+
+
+class StudentNoteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentNote
+        read_only_fields = (
+            'id',
+        )
+        write_only_fields = (
+            'user',
+        )
+        fields = (
+            'id',
+            'user',
+            'timestamp',
+            'title',
+            'body',
+            'important',
+            'complete',
+        )
+
+class ParentNoteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ParentNote
+        read_only_fields = (
+            'id',
+        )
+        write_only_fields = (
+            'user',
+        )
+        fields = (
+            'id',
+            'user',
+            'timestamp',
+            'title',
+            'body',
+            'important',
+            'complete',
+        )
+
+class InstructorNoteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InstructorNote
+        read_only_fields = (
+            'id',
+        )
+        write_only_fields = (
+            'user',
+        )
+        fields = (
+            'id',
+            'user',
+            'timestamp',
+            'title',
+            'body',
+            'important',
+            'complete',
+        )
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -31,6 +92,7 @@ class UserSerializer(serializers.ModelSerializer):
 class StudentSerializer(serializers.ModelSerializer):
     token = serializers.SerializerMethodField()
     user = UserSerializer()
+    notes = StudentNoteSerializer(source="studentnote_set", many=True)
 
     def get_token(self, obj):
         return obj.user.auth_token.key
@@ -57,6 +119,7 @@ class StudentSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'updated_at',
             'created_at',
+            'notes',
         )
         fields = (
             'user',
@@ -73,6 +136,7 @@ class StudentSerializer(serializers.ModelSerializer):
             'parent',
             'updated_at',
             'created_at',
+            'notes',
         )
 
 
