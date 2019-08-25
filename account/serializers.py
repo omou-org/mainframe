@@ -5,21 +5,21 @@ from django.db import transaction
 from django.contrib.auth.models import User
 
 from account.models import (
-    StudentNote,
-    ParentNote,
-    InstructorNote,
+    Note,
     Admin,
     Student,
     Parent,
     Instructor
 )
 
+class NoteSerializer(serializers.ModelSerializer):
+    #user_id = serializers.ReadOnlyField(source='user_id')
 
-class StudentNoteSerializer(serializers.ModelSerializer):
     class Meta:
-        model = StudentNote
+        model = Note
         read_only_fields = (
             'id',
+            'timestamp',
         )
         write_only_fields = (
             'user',
@@ -33,51 +33,13 @@ class StudentNoteSerializer(serializers.ModelSerializer):
             'important',
             'complete',
         )
-
-class ParentNoteSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ParentNote
-        read_only_fields = (
-            'id',
-        )
-        write_only_fields = (
-            'user',
-        )
-        fields = (
-            'id',
-            'user',
-            'timestamp',
-            'title',
-            'body',
-            'important',
-            'complete',
-        )
-
-class InstructorNoteSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = InstructorNote
-        read_only_fields = (
-            'id',
-        )
-        write_only_fields = (
-            'user',
-        )
-        fields = (
-            'id',
-            'user',
-            'timestamp',
-            'title',
-            'body',
-            'important',
-            'complete',
-        )
-
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         read_only_fields = (
             'id',
+            'timestamp',
         )
         fields = (
             'id',
@@ -92,7 +54,7 @@ class UserSerializer(serializers.ModelSerializer):
 class StudentSerializer(serializers.ModelSerializer):
     token = serializers.SerializerMethodField()
     user = UserSerializer()
-    notes = StudentNoteSerializer(source="studentnote_set", many=True)
+    # notes = StudentNoteSerializer(source="studentnote_set", many=True)
 
     def get_token(self, obj):
         return obj.user.auth_token.key
@@ -114,12 +76,12 @@ class StudentSerializer(serializers.ModelSerializer):
             student = Student.objects.create(user=user, **validated_data)
             return student
 
+
     class Meta:
         model = Student
         read_only_fields = (
             'updated_at',
             'created_at',
-            'notes',
         )
         fields = (
             'user',
@@ -136,7 +98,6 @@ class StudentSerializer(serializers.ModelSerializer):
             'parent',
             'updated_at',
             'created_at',
-            'notes',
         )
 
 

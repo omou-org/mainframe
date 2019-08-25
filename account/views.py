@@ -2,45 +2,26 @@ from rest_framework import viewsets, mixins
 from rest_framework.permissions import IsAuthenticated
 
 from account.models import (
-    StudentNote,
-    ParentNote,
-    InstructorNote,
+    Note,
     Admin,
     Student,
     Parent,
     Instructor
 )
 from account.serializers import (
-    StudentNoteSerializer,
-    ParentNoteSerializer,
-    InstructorNoteSerializer,
+    NoteSerializer,
     AdminSerializer,
     StudentSerializer,
     ParentSerializer,
     InstructorSerializer
 ) 
 
-class StudentNoteViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
-    """
-    API endpoint that allows notes to be created or edited or deleted
-    """
-    queryset = StudentNote.objects.all()
-    serializer_class = StudentNoteSerializer
+class NoteViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+    queryset = Note.objects.all()
+    serializer_class = NoteSerializer
 
-class ParentNoteViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
-    """
-    API endpoint that allows notes to be created or edited or deleted
-    """
-    queryset = ParentNote.objects.all()
-    serializer_class = ParentNoteSerializer
-
-class InstructorNoteViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
-    """
-    API endpoint that allows notes to be created or edited or deleted
-    """
-    queryset = InstructorNote.objects.all()
-    serializer_class = InstructorNoteSerializer
-
+    #def perform_create(self, serializer):
+    #    serializer.save(user_id=self.request.user)
 
 class StudentViewSet(viewsets.ModelViewSet):
     """
@@ -48,6 +29,7 @@ class StudentViewSet(viewsets.ModelViewSet):
     """
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
+
 
 class ParentViewSet(viewsets.ModelViewSet):
     """
