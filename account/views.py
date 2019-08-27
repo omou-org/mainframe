@@ -1,5 +1,7 @@
 from rest_framework import viewsets, mixins
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+import json
 
 from account.models import (
     Note,
@@ -20,9 +22,16 @@ class NoteViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.Creat
     queryset = Note.objects.all()
     serializer_class = NoteSerializer
 
-    #def perform_create(self, serializer):
-    #    serializer.save(user_id=self.request.user)
-
+    def list(self, request):
+        """
+        override list to return notes for specific user
+        """
+        data = json.loads(request.body)
+        user_id = data["user"]
+        queryset = self.get_queryset().filter(user__id = user_id)
+        serializer = NoteSerializer(queryset, many=True)
+        return Response(serializer.data)
+   
 class StudentViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows students to be viewed or edited
