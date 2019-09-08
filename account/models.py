@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django_localflavor_us.us_states import US_STATES
-
+from django.db.models import Q
 
 class UserInfo(models.Model):
     # Gender
@@ -46,6 +46,30 @@ class UserInfo(models.Model):
         abstract = True
 
 
+class StudentManager(models.Manager):
+    def search(self, query=None):
+        qs = self.get_queryset()
+        if query is not None:
+            or_lookup = (Q(user__first_name__icontains=query) |
+                        Q(user__last_name__icontains=query) |
+                        Q(user__email__icontains=query) |
+                        Q(gender__icontains=query) |
+                        Q(address__icontains=query) |
+                        Q(city__icontains=query) |
+                        Q(phone_number__icontains=query) |
+                        Q(state__icontains=query) |
+                        Q(zipcode__icontains=query) |
+                        Q(school__icontains=query) |
+                        Q(parent__user__first_name__icontains=query) |
+                        Q(parent__user__last_name__icontains=query))
+            try:
+                query = int(query)
+                or_lookup |= (Q(age=query) | Q(grade=query))
+            except ValueError:
+                pass
+            qs = qs.filter(or_lookup).distinct() # distinct() is often necessary with Q lookups
+        return qs
+
 class Student(UserInfo):
     age = models.IntegerField(
         null=True,
@@ -65,7 +89,25 @@ class Student(UserInfo):
         blank=True,
         null=True,
     )
+    objects = StudentManager()
 
+
+class ParentManager(models.Manager):
+    def search(self, query=None):
+        qs = self.get_queryset()
+        if query is not None:
+            or_lookup = (Q(user__first_name__icontains=query) |
+                        Q(user__last_name__icontains=query) |
+                        Q(user__email__icontains=query) |
+                        Q(gender__icontains=query) |
+                        Q(address__icontains=query) |
+                        Q(city__icontains=query) |
+                        Q(phone_number__icontains=query) |
+                        Q(state__icontains=query) |
+                        Q(zipcode__icontains=query) |
+                        Q(relationship__icontains=query))
+            qs = qs.filter(or_lookup).distinct()
+        return qs
 
 class Parent(UserInfo):
     MOTHER_REL = "MOTHER"
@@ -83,10 +125,32 @@ class Parent(UserInfo):
         max_length=10,
         choices=RELATIONSHIP_CHOICES,
     )
+    objects = ParentManager()
 
+class InstructorManager(models.Manager):
+    def search(self, query=None):
+        qs = self.get_queryset()
+        if query is not None:
+            or_lookup = (Q(user__first_name__icontains=query) |
+                        Q(user__last_name__icontains=query) |
+                        Q(user__email__icontains=query) |
+                        Q(gender__icontains=query) |
+                        Q(address__icontains=query) |
+                        Q(city__icontains=query) |
+                        Q(phone_number__icontains=query) |
+                        Q(state__icontains=query) |
+                        Q(zipcode__icontains=query))
+            try:
+                query = int(query)
+                or_lookup |= (Q(age=query))
+            except ValueError:
+                pass
+            qs = qs.filter(or_lookup).distinct()
+        return qs
 
 class Instructor(UserInfo):
     age = models.IntegerField()
+    objects = InstructorManager()
 
 
 class Admin(UserInfo):
