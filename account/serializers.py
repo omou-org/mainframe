@@ -13,7 +13,6 @@ from account.models import (
 )
 
 class NoteSerializer(serializers.ModelSerializer):
-    #user_id = serializers.ReadOnlyField(source='user_id')
 
     class Meta:
         model = Note
@@ -33,6 +32,7 @@ class NoteSerializer(serializers.ModelSerializer):
             'important',
             'complete',
         )
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -54,7 +54,6 @@ class UserSerializer(serializers.ModelSerializer):
 class StudentSerializer(serializers.ModelSerializer):
     token = serializers.SerializerMethodField()
     user = UserSerializer()
-    # notes = StudentNoteSerializer(source="studentnote_set", many=True)
 
     def get_token(self, obj):
         return obj.user.auth_token.key

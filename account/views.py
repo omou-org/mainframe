@@ -18,7 +18,7 @@ from account.serializers import (
     InstructorSerializer
 ) 
 
-class NoteViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class NoteViewSet(viewsets.ModelViewSet):
     queryset = Note.objects.all()
     serializer_class = NoteSerializer
 
@@ -26,12 +26,12 @@ class NoteViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.Creat
         """
         override list to return notes for specific user
         """
-        data = json.loads(request.body)
-        user_id = data["user"]
+        user_id = request.query_params.get("user_id", None)
         queryset = self.get_queryset().filter(user__id = user_id)
         serializer = NoteSerializer(queryset, many=True)
         return Response(serializer.data)
-   
+
+
 class StudentViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows students to be viewed or edited
@@ -47,12 +47,14 @@ class ParentViewSet(viewsets.ModelViewSet):
     queryset = Parent.objects.all()
     serializer_class = ParentSerializer
 
+
 class InstructorViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows instructors to be viewed or edited
     """
     queryset = Instructor.objects.all()
     serializer_class = InstructorSerializer
+
 
 class AdminViewSet(viewsets.ModelViewSet):
     """

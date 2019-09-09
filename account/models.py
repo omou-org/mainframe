@@ -45,6 +45,7 @@ class UserInfo(models.Model):
     class Meta:
         abstract = True
 
+
 class Note(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)    
     title = models.TextField(blank=True)
@@ -55,6 +56,7 @@ class Note(models.Model):
     )
     important = models.BooleanField(default=False)
     complete = models.BooleanField(default=False)
+
 
 class Student(UserInfo):
     age = models.IntegerField(
