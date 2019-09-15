@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django_localflavor_us.us_states import US_STATES
-
+from django.conf import settings
 
 class UserInfo(models.Model):
     # Gender
@@ -44,6 +44,18 @@ class UserInfo(models.Model):
 
     class Meta:
         abstract = True
+
+
+class Note(models.Model):
+    timestamp = models.DateTimeField(auto_now_add=True)    
+    title = models.TextField(blank=True)
+    body = models.TextField()
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+    )
+    important = models.BooleanField(default=False)
+    complete = models.BooleanField(default=False)
 
 
 class Student(UserInfo):
