@@ -51,8 +51,6 @@ if not DEBUG or hasattr(env, "ALLOWED_HOSTS"):
 API_APPS = (
     "account.apps.AccountConfig",
     "course.apps.CourseConfig",
-    "scheduler.apps.SchedulerConfig",
-    "search.apps.SearchConfig",
 )
 COMMON_APPS = (
     "django.contrib.admin",
