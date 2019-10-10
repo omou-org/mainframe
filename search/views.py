@@ -8,11 +8,13 @@ from account.models import (
     Parent,
     Instructor
 )
+
 from course.models import (
-	Course,
+    Course,
 )
+
 from scheduler.models import (
-	Session,
+    Session,
 )
 
 from search.serializers import SearchViewSerializer
@@ -22,13 +24,11 @@ class SearchView(generics.ListAPIView):
 
     def get_queryset(self):
         query = self.request.query_params.get('query', None)
-        print("\tQUERY: "+str(query))
         if query:
             queryset_chain = chain(
                 Student.objects.search(query),
                 Parent.objects.search(query),
                 Instructor.objects.search(query),
-                Course.objects.search(query),
-            )
+                Course.objects.search(query))
             return list(queryset_chain)
         return list(Student.objects.none())

@@ -18,15 +18,14 @@ class CourseManager(models.Manager):
         qs = self.get_queryset()
         if query is not None:
             or_lookup = (Q(type__icontains=query) |
-                        Q(subject__icontains=query) |
-                        Q(description__icontains=query) |
-                        Q(instructor__user__first_name__icontains=query) |
-                        Q(instructor__user__last_name__icontains=query) |
-                        Q(room__icontains=query) |
-                        Q(days__icontains=query) |
-                        Q(course_category__name__icontains=query) |
-                        Q(course_category__description__icontains=query)
-                        )
+                Q(subject__icontains=query) |
+                Q(description__icontains=query) |
+                Q(instructor__user__first_name__icontains=query) |
+                Q(instructor__user__last_name__icontains=query) |
+                Q(room__icontains=query) |
+                Q(days__icontains=query) |
+                Q(course_category__name__icontains=query) |
+                Q(course_category__description__icontains=query))
             try:
                 query = int(query)
                 or_lookup |= (Q(tuition=query))

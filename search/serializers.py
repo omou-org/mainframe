@@ -6,11 +6,13 @@ from account.models import (
     Parent,
     Instructor
 )
+
 from course.models import (
-	Course,
+    Course,
 )
+
 from scheduler.models import (
-	Session,
+    Session,
 )
 
 from account.serializers import (
@@ -18,23 +20,24 @@ from account.serializers import (
     ParentSerializer,
     InstructorSerializer
 )
+
 from course.serializers import (
-	CourseSerializer,
+    CourseSerializer,
 )
 
 from rest_framework.request import Request
 
 class SearchViewSerializer(serializers.Serializer):
-
-	def to_representation(self, value):
-		if isinstance(value, Student): 
-			serializer = StudentSerializer(value)
-		elif isinstance(value, Parent):
-			serializer = ParentSerializer(value)
-		elif isinstance(value, Instructor):
-			serializer = InstructorSerializer(value)
-		elif isinstance(value, Course):
-			serializer = CourseSerializer(value)
-		else:
-			raise Exception("Not recognized model instance!")
-		return serializer.data
+    
+    def to_representation(self, value):
+        if isinstance(value, Student): 
+            serializer = StudentSerializer(value)
+        elif isinstance(value, Parent):
+            serializer = ParentSerializer(value)
+        elif isinstance(value, Instructor):
+            serializer = InstructorSerializer(value)
+        elif isinstance(value, Course):
+            serializer = CourseSerializer(value)
+        else:
+            raise Exception("Not recognized model instance!")
+        return serializer.data
