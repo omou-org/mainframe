@@ -5,11 +5,33 @@ from django.db import transaction
 from django.contrib.auth.models import User
 
 from account.models import (
+    Note,
     Admin,
     Student,
     Parent,
     Instructor
 )
+
+class NoteSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Note
+        read_only_fields = (
+            'id',
+            'timestamp',
+        )
+        write_only_fields = (
+            'user',
+        )
+        fields = (
+            'id',
+            'user',
+            'timestamp',
+            'title',
+            'body',
+            'important',
+            'complete',
+        )
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -17,6 +39,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         read_only_fields = (
             'id',
+            'timestamp',
         )
         fields = (
             'id',
@@ -61,6 +84,7 @@ class StudentSerializer(serializers.ModelSerializer):
             # create account
             student = Student.objects.create(user=user, **validated_data)
             return student
+
 
     class Meta:
         model = Student

@@ -3,6 +3,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django_localflavor_us.us_states import US_STATES
 from django.db.models import Q
+from django.conf import settings
 
 class UserInfo(models.Model):
     # Gender
@@ -44,8 +45,7 @@ class UserInfo(models.Model):
 
     class Meta:
         abstract = True
-
-
+        
 class StudentManager(models.Manager):
     def search(self, query=None):
         qs = self.get_queryset()
@@ -69,6 +69,17 @@ class StudentManager(models.Manager):
             qs = qs.filter(or_lookup).distinct() # distinct() is often necessary with Q lookups
         return qs
 
+class Note(models.Model):
+    timestamp = models.DateTimeField(auto_now_add=True)    
+    title = models.TextField(blank=True)
+    body = models.TextField()
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+    )
+    important = models.BooleanField(default=False)
+    complete = models.BooleanField(default=False)
+
 class Student(UserInfo):
     age = models.IntegerField(
         null=True,
@@ -89,7 +100,6 @@ class Student(UserInfo):
         null=True,
     )
     objects = StudentManager()
-
 
 class ParentManager(models.Manager):
     def search(self, query=None):
@@ -147,7 +157,6 @@ class InstructorManager(models.Manager):
 class Instructor(UserInfo):
     age = models.IntegerField()
     objects = InstructorManager()
-
 
 class Admin(UserInfo):
     OWNER_TYPE = "OWNER"

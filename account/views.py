@@ -1,19 +1,35 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, mixins
 from rest_framework.permissions import IsAuthenticated
-
+from rest_framework.response import Response
+import json
 
 from account.models import (
+    Note,
     Admin,
     Student,
     Parent,
     Instructor
 )
 from account.serializers import (
+    NoteSerializer,
     AdminSerializer,
     StudentSerializer,
     ParentSerializer,
     InstructorSerializer
-)
+) 
+
+class NoteViewSet(viewsets.ModelViewSet):
+    queryset = Note.objects.all()
+    serializer_class = NoteSerializer
+
+    def list(self, request):
+        """
+        override list to return notes for specific user
+        """
+        user_id = request.query_params.get("user_id", None)
+        queryset = self.get_queryset().filter(user__id = user_id)
+        serializer = NoteSerializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class StudentViewSet(viewsets.ModelViewSet):
