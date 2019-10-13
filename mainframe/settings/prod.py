@@ -17,7 +17,7 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
         "NAME": "mainframe",
         "USER": "postgres",
-        "PASSWORD": "password",
+        "PASSWORD": DATABASE_PASSWORD,
         "HOST": "mainframe.crjrqgmavbsy.us-west-2.rds.amazonaws.com",
         "PORT": "5432",
     },
