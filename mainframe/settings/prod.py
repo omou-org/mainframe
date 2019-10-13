@@ -18,7 +18,7 @@ DATABASES = {
         "NAME": "mainframe",
         "USER": "postgres",
         "PASSWORD": "password",
-        "HOST": "mainframe-1.crjrqgmavbsy.us-west-2.rds.amazonaws.com",
+        "HOST": "mainframe.crjrqgmavbsy.us-west-2.rds.amazonaws.com",
         "PORT": "5432",
     },
 }
