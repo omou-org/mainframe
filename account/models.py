@@ -5,6 +5,7 @@ from django_localflavor_us.us_states import US_STATES
 from django.db.models import Q
 from django.conf import settings
 
+
 class UserInfo(models.Model):
     # Gender
     MALE_GENDER = 'M'
@@ -22,30 +23,32 @@ class UserInfo(models.Model):
         on_delete=models.PROTECT,
         primary_key=True,
     )
+    user_uuid = models.CharField(max_length=50, blank=True, null=True)
     gender = models.CharField(
         max_length=1,
         choices=GENDER_CHOICES,
         default=UNSPECIFIED_GENDER,
     )
-    birth_date = models.DateField()
+    birth_date = models.DateField(blank=True, null=True)
 
     # Address
-    address = models.CharField(max_length=64)
-    city = models.CharField(max_length=32)
-    phone_number = models.CharField(max_length=15)
-    state = models.CharField(max_length=16, choices=STATE_CHOICES)
-    zipcode = models.CharField(max_length=10)
+    address = models.CharField(max_length=64, blank=True, null=True)
+    city = models.CharField(max_length=32, blank=True, null=True)
+    phone_number = models.CharField(max_length=15, blank=True, null=True)
+    state = models.CharField(max_length=16, choices=STATE_CHOICES, blank=True, null=True)
+    zipcode = models.CharField(max_length=10, blank=True, null=True)
 
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.user.email
+        return self.user.first_name + ' ' + self.user.last_name
 
     class Meta:
         abstract = True
-        
+
+
 class StudentManager(models.Manager):
     def search(self, query=None):
         qs = self.get_queryset()
@@ -69,6 +72,7 @@ class StudentManager(models.Manager):
             qs = qs.filter(or_lookup).distinct() # distinct() is often necessary with Q lookups
         return qs
 
+
 class Note(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)    
     title = models.TextField(blank=True)
@@ -80,26 +84,35 @@ class Note(models.Model):
     important = models.BooleanField(default=False)
     complete = models.BooleanField(default=False)
 
+
 class Student(UserInfo):
-    age = models.IntegerField(
-        null=True,
-        blank=True,
-        validators=[MinValueValidator(0)]
-    )
     # 0 is preschool/kindergarten, 13 is graduated
     grade = models.IntegerField(
         validators=[MinValueValidator(0), MaxValueValidator(13)],
+        null=True,
+        blank=True,
     )
     phone_number = models.CharField(max_length=15, null=True, blank=True)
-    school = models.CharField(max_length=64)
+    school = models.CharField(max_length=64, null=True, blank=True)
 
-    parent = models.ForeignKey(
+    primary_parent = models.ForeignKey(
         "Parent",
         on_delete=models.PROTECT,
         blank=True,
         null=True,
+        related_name="student_primary_parent",
     )
+
+    secondary_parent = models.ForeignKey(
+        "Parent",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="student_secondary_parent",
+    )
+
     objects = StudentManager()
+
 
 class ParentManager(models.Manager):
     def search(self, query=None):
@@ -115,6 +128,7 @@ class ParentManager(models.Manager):
                 Q(zipcode__icontains=query))
             qs = qs.filter(or_lookup).distinct()
         return qs
+
 
 class Parent(UserInfo):
     MOTHER_REL = "MOTHER"
@@ -133,6 +147,7 @@ class Parent(UserInfo):
         choices=RELATIONSHIP_CHOICES,
     )
     objects = ParentManager()
+
 
 class InstructorManager(models.Manager):
     def search(self, query=None):
@@ -154,9 +169,11 @@ class InstructorManager(models.Manager):
             qs = qs.filter(or_lookup).distinct()
         return qs
 
+
 class Instructor(UserInfo):
     age = models.IntegerField()
     objects = InstructorManager()
+
 
 class Admin(UserInfo):
     OWNER_TYPE = "OWNER"

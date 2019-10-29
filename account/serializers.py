@@ -1,3 +1,5 @@
+import uuid
+
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 
@@ -11,6 +13,7 @@ from account.models import (
     Parent,
     Instructor
 )
+
 
 class NoteSerializer(serializers.ModelSerializer):
 
@@ -51,19 +54,32 @@ class UserSerializer(serializers.ModelSerializer):
         extra_kwargs = {'password': {'write_only': True}}
 
 
+class NonUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        read_only_fields = (
+            'id',
+            'timestamp',
+        )
+        fields = (
+            'id',
+            'first_name',
+            'last_name',
+        )
+
+
 class StudentSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+    user = NonUserSerializer()
 
     def get_token(self, obj):
         return obj.user.auth_token.key
 
     def update(self, instance, validated_data):
         with transaction.atomic():
-            user_info = validated_data.pop('user')
-            user_info['username'] = user_info['email']
-            User.objects.filter(email=instance.user.email).update(**user_info)
-
-            Student.objects.filter(user__email=user_info['email']).update(**validated_data)
+            if "user" in validated_data:
+                user_info = validated_data.pop('user')
+                User.objects.filter(id=instance.user.id).update(**user_info)
+            Student.objects.filter(user__id=instance.user.id).update(**validated_data)
             instance.refresh_from_db()
             instance.save()
             return instance
@@ -73,9 +89,8 @@ class StudentSerializer(serializers.ModelSerializer):
             # create user and token
             user_info = validated_data.pop('user')
             user = User.objects.create_user(
-                email=user_info['email'],
-                username=user_info['email'],
-                password=user_info['password'],
+                username=uuid.uuid4(),
+                password="password",
                 first_name=user_info['first_name'],
                 last_name=user_info['last_name'],
             )
@@ -85,7 +100,6 @@ class StudentSerializer(serializers.ModelSerializer):
             student = Student.objects.create(user=user, **validated_data)
             return student
 
-
     class Meta:
         model = Student
         read_only_fields = (
@@ -94,6 +108,7 @@ class StudentSerializer(serializers.ModelSerializer):
         )
         fields = (
             'user',
+            'user_uuid',
             'gender',
             'birth_date',
             'address',
@@ -102,27 +117,26 @@ class StudentSerializer(serializers.ModelSerializer):
             'state',
             'zipcode',
             'grade',
-            'age',
             'school',
-            'parent',
+            'primary_parent',
+            'secondary_parent',
             'updated_at',
             'created_at',
         )
 
 
 class ParentSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+    user = NonUserSerializer()
 
     def get_token(self, obj):
         return obj.user.auth_token.key
 
     def update(self, instance, validated_data):
         with transaction.atomic():
-            user_info = validated_data.pop('user')
-            user_info['username'] = user_info['email']
-            User.objects.filter(email=instance.user.email).update(**user_info)
-
-            Parent.objects.filter(user__email=user_info['email']).update(**validated_data)
+            if "user" in validated_data:
+                user_info = validated_data.pop('user')
+                User.objects.filter(id=instance.user.id).update(**user_info)
+            Parent.objects.filter(user__id=instance.user.id).update(**validated_data)
             instance.refresh_from_db()
             instance.save()
             return instance
@@ -132,9 +146,8 @@ class ParentSerializer(serializers.ModelSerializer):
             # create user and token
             user_info = validated_data.pop('user')
             user = User.objects.create_user(
-                email=user_info['email'],
-                username=user_info['email'],
-                password=user_info['password'],
+                username=uuid.uuid4(),
+                password="password",
                 first_name=user_info['first_name'],
                 last_name=user_info['last_name'],
             )
@@ -152,6 +165,7 @@ class ParentSerializer(serializers.ModelSerializer):
         )
         fields = (
             'user',
+            'user_uuid',
             'gender',
             'birth_date',
             'address',
@@ -166,18 +180,17 @@ class ParentSerializer(serializers.ModelSerializer):
 
 
 class InstructorSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+    user = NonUserSerializer()
 
     def get_token(self, obj):
         return obj.user.auth_token.key
 
     def update(self, instance, validated_data):
         with transaction.atomic():
-            user_info = validated_data.pop('user')
-            user_info['username'] = user_info['email']
-            User.objects.filter(email=instance.user.email).update(**user_info)
-
-            Instructor.objects.filter(user__email=user_info['email']).update(**validated_data)
+            if "user" in validated_data:
+                user_info = validated_data.pop('user')
+                User.objects.filter(id=instance.user.id).update(**user_info)
+            Instructor.objects.filter(user__id=instance.user.id).update(**validated_data)
             instance.refresh_from_db()
             instance.save()
             return instance
@@ -187,9 +200,8 @@ class InstructorSerializer(serializers.ModelSerializer):
             # create user and token
             user_info = validated_data.pop('user')
             user = User.objects.create_user(
-                email=user_info['email'],
-                username=user_info['email'],
-                password=user_info['password'],
+                username=uuid.uuid4(),
+                password="password",
                 first_name=user_info['first_name'],
                 last_name=user_info['last_name'],
             )
@@ -207,6 +219,7 @@ class InstructorSerializer(serializers.ModelSerializer):
         )
         fields = (
             'user',
+            'user_uuid',
             'gender',
             'birth_date',
             'address',
@@ -228,11 +241,10 @@ class AdminSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         with transaction.atomic():
-            user_info = validated_data.pop('user')
-            user_info['username'] = user_info['email']
-            User.objects.filter(email=instance.user.email).update(**user_info)
-
-            Admin.objects.filter(user__email=user_info['email']).update(**validated_data)
+            if "user" in validated_data:
+                user_info = validated_data.pop('user')
+                User.objects.filter(id=instance.user.id).update(**user_info)
+            Admin.objects.filter(user__id=instance.user.id).update(**validated_data)
             instance.refresh_from_db()
             instance.save()
             return instance
@@ -262,6 +274,7 @@ class AdminSerializer(serializers.ModelSerializer):
         )
         fields = (
             'user',
+            'user_uuid',
             'admin_type',
             'gender',
             'birth_date',
