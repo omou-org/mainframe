@@ -10,6 +10,7 @@ from account.models import (
 
 from course.models import (
     Course,
+    Enrollment
 )
 
 from search.serializers import SearchViewSerializer
@@ -78,7 +79,6 @@ class CoursesSearchView(generics.ListAPIView):
         query = self.request.query_params.get('query', None)
         if (query is None or not query.isalnum()):
             return list(searchResults) 
-
         searchResults = Course.objects.search(query)
 
         # course filter
@@ -91,9 +91,21 @@ class CoursesSearchView(generics.ListAPIView):
 
         # availability filter
         availabilityFilter = self.request.query_params.get('availability', None)
-        #if (availabilityFilter == )
+        if (availabilityFilter is not None and (availabilityFilter == "open" or availabilityFilter == "full")):
+            
+            # calculate availability
+            course_ids = []
+            for course in searchResults:
+                capacity = len(Enrollment.objects.filter(course = course.id))
 
+                if (availabilityFilter == "open" and capacity < course.max_capacity):
+                    course_ids.append(course.id)
 
+                if (availabilityFilter == "full" and capacity >= course.max_capacity):
+                    course_ids.append(course.id)
+
+            searchResults = Course.objects.filter(id__in = course_ids)        
+            
         # sort results
         sortFilter = self.request.query_params.get('sort', None)
         if (sortFilter is not None):
