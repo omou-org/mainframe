@@ -63,6 +63,7 @@ class NonUserSerializer(serializers.ModelSerializer):
         )
         fields = (
             'id',
+            'email',
             'first_name',
             'last_name',
         )
@@ -146,7 +147,8 @@ class ParentSerializer(serializers.ModelSerializer):
             # create user and token
             user_info = validated_data.pop('user')
             user = User.objects.create_user(
-                username=uuid.uuid4(),
+                username=user_info.get("email", uuid.uuid4()),
+                email=user_info.get("email", None),
                 password="password",
                 first_name=user_info['first_name'],
                 last_name=user_info['last_name'],
@@ -200,8 +202,8 @@ class InstructorSerializer(serializers.ModelSerializer):
             # create user and token
             user_info = validated_data.pop('user')
             user = User.objects.create_user(
-                username=uuid.uuid4(),
-                password="password",
+                username=user_info.get("email", uuid.uuid4()),
+                email=user_info.get("email", None),
                 first_name=user_info['first_name'],
                 last_name=user_info['last_name'],
             )

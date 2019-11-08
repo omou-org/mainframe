@@ -145,6 +145,8 @@ class Parent(UserInfo):
     relationship = models.CharField(
         max_length=10,
         choices=RELATIONSHIP_CHOICES,
+        blank=True,
+        null=True,
     )
     objects = ParentManager()
 
