@@ -176,6 +176,7 @@ class ParentSerializer(serializers.ModelSerializer):
             'state',
             'zipcode',
             'relationship',
+            'secondary_phone_number',
             'updated_at',
             'created_at',
         )
