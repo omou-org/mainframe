@@ -55,10 +55,11 @@ class Course(models.Model):
 
     # Logistical information
     room = models.CharField(max_length=50)
-    days = models.CharField(max_length=10)
-    schedule = models.TimeField()
+    days_of_week = models.CharField(max_length=10)
     start_date = models.DateField()
     end_date = models.DateField()
+    start_time = models.TimeField()
+    end_time = models.TimeField()
     max_capacity = models.IntegerField()
 
     # One-to-many relationship with CourseCategory
