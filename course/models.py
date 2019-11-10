@@ -2,6 +2,7 @@ from django.db import models
 from django.db.models import Q
 from account.models import Instructor, Student
 
+
 class CourseCategory(models.Model):
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=1000)
@@ -12,6 +13,7 @@ class CourseCategory(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class CourseManager(models.Manager):
     def search(self, query=None):
@@ -34,6 +36,7 @@ class CourseManager(models.Manager):
             qs = qs.filter(or_lookup).distinct()
         return qs
 
+
 class Course(models.Model):
     CLASS = 'C'
     TUTORING = 'T'
@@ -55,7 +58,7 @@ class Course(models.Model):
 
     # Logistical information
     room = models.CharField(max_length=50)
-    days_of_week = models.CharField(max_length=10)
+    day_of_week = models.CharField(max_length=10)
     start_date = models.DateField()
     end_date = models.DateField()
     start_time = models.TimeField()

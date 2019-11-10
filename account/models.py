@@ -92,7 +92,6 @@ class Student(UserInfo):
         null=True,
         blank=True,
     )
-    phone_number = models.CharField(max_length=15, null=True, blank=True)
     school = models.CharField(max_length=64, null=True, blank=True)
 
     primary_parent = models.ForeignKey(
@@ -148,6 +147,7 @@ class Parent(UserInfo):
         blank=True,
         null=True,
     )
+    secondary_phone_number = models.CharField(max_length=15, blank=True, null=True)
     objects = ParentManager()
 
 

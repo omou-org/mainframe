@@ -13,7 +13,7 @@ class CourseSerializer(serializers.ModelSerializer):
             'instructor',
             'tuition',
             'room',
-            'days',
+            'day_of_week',
             'schedule',
             'start_date',
             'end_date',
