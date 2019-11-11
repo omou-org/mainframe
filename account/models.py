@@ -55,15 +55,18 @@ class StudentManager(models.Manager):
         if query is not None:
             or_lookup = (Q(user__first_name__icontains=query) |
                 Q(user__last_name__icontains=query) |
-                Q(user__email__icontains=query) |
+                Q(user__email__iexact=query) |
+                Q(user_uuid__iexact=query) |
                 Q(address__icontains=query) |
                 Q(city__icontains=query) |
                 Q(phone_number__icontains=query) |
                 Q(state__icontains=query) |
                 Q(zipcode__icontains=query) |
                 Q(school__icontains=query) |
-                Q(parent__user__first_name__icontains=query) |
-                Q(parent__user__last_name__icontains=query))
+                Q(primary_parent__user__first_name__icontains=query) |
+                Q(primary_parent__user__last_name__icontains=query) |
+                Q(secondary_parent__user__first_name__icontains=query) |
+                Q(secondary_parent__user__last_name__icontains=query))
             try:
                 query = int(query)
                 or_lookup |= (Q(age=query) | Q(grade=query))
