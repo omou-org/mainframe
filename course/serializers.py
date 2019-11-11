@@ -14,9 +14,10 @@ class CourseSerializer(serializers.ModelSerializer):
             'tuition',
             'room',
             'day_of_week',
-            'schedule',
             'start_date',
             'end_date',
+            'start_time',
+            'end_time',
             'max_capacity',
             'course_category'
         )
