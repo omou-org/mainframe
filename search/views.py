@@ -66,28 +66,43 @@ class AccountsSearchView(generics.ListAPIView):
 
 class CoursesSearchView(generics.ListAPIView):
     serializer_class = SearchViewSerializer
-     
+
     def get_queryset(self):
         searchResults = Course.objects.none()
 
         # query input check
         query = self.request.query_params.get('query', None)
         if (query is None or not query.isalnum()):
-            return list(searchResults) 
-        searchResults = Course.objects.search(query)
+            return list(searchResults)
+
+        dateDic = {
+            "monday":"MON",
+            "tuesday":"TUE",
+            "wednesday":"WED",
+            "thursday":"THU",
+            "friday":"FRI",
+            "saturday":"SAT",
+            "sunday":"SUN"
+        }
+        # date check
+        if (dateDic.get(query)):
+            searchResults = Course.objects.search(dateDic[query])
+        else:
+            searchResults = Course.objects.search(query)
 
         # course filter
         courseFilter = self.request.query_params.get('courseTypeFilter', None)
         if (courseFilter is not None):
-            if (courseFilter == "Classes"):
-                searchResults = searchResults.filter(type="Class")
-            elif (courseFilter == "1x1"):
-                searchResults = searchResults.filter(type="Tutoring")
+            if (courseFilter == "tutoring"):
+                searchResults.filter(max_capacity == 1)
+            if (courseFilter == "group"):
+                searchResults.filter(max_capacity <= 5) 
+            if (courseFilter == "class"):
+                searchResults.filter(max_capacity > 5)
 
         # availability filter
         availabilityFilter = self.request.query_params.get('availability', None)
         if (availabilityFilter is not None and (availabilityFilter == "open" or availabilityFilter == "filled")):
-            
             # calculate availability
             course_ids = []
             for course in searchResults:
@@ -105,6 +120,10 @@ class CoursesSearchView(generics.ListAPIView):
                 searchResults = searchResults.order_by("start_date")
             if (sortFilter == "dateDesc"):
                 searchResults = searchResults.order_by("-start_date")
+            if (sortFilter == "timeAsc"):
+                searchResults = searchResults.order_by("start_time")
+            if (sortFilter == "timeDesc"):
+                searchResults = searchResults.order_by("-start_time")
         return list(searchResults)
 
 '''
