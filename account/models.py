@@ -150,6 +150,11 @@ class Parent(UserInfo):
     secondary_phone_number = models.CharField(max_length=15, blank=True, null=True)
     objects = ParentManager()
 
+    @property
+    def student_list(self):
+        return [student.user_uuid for student in self.student_primary_parent.all().union(
+            self.student_secondary_parent.all())]
+
 
 class InstructorManager(models.Manager):
     def search(self, query=None):
