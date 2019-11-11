@@ -128,6 +128,10 @@ class StudentSerializer(serializers.ModelSerializer):
 
 class ParentSerializer(serializers.ModelSerializer):
     user = NonUserSerializer()
+    student_list = serializers.SerializerMethodField()
+
+    def get_student_list(self, obj):
+        return obj.student_list
 
     def get_token(self, obj):
         return obj.user.auth_token.key
@@ -162,6 +166,7 @@ class ParentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Parent
         read_only_fields = (
+            'student_list',
             'updated_at',
             'created_at',
         )
@@ -177,6 +182,7 @@ class ParentSerializer(serializers.ModelSerializer):
             'zipcode',
             'relationship',
             'secondary_phone_number',
+            'student_list',
             'updated_at',
             'created_at',
         )

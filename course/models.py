@@ -75,6 +75,10 @@ class Course(models.Model):
 
     objects = CourseManager()
 
+    @property
+    def enrollment_list(self):
+        return [enrollment.student.user_uuid for enrollment in self.enrollment_set.all()]
+
 
 class Enrollment(models.Model):
     student = models.ForeignKey(Student, on_delete=models.PROTECT)

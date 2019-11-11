@@ -3,6 +3,11 @@ from rest_framework import serializers
 
 
 class CourseSerializer(serializers.ModelSerializer):
+    enrollment_list = serializers.SerializerMethodField()
+
+    def get_enrollment_list(self, obj):
+        return obj.enrollment_list
+
     class Meta:
         model = Course
 
@@ -19,7 +24,12 @@ class CourseSerializer(serializers.ModelSerializer):
             'start_time',
             'end_time',
             'max_capacity',
-            'course_category'
+            'course_category',
+            'enrollment_list',
+        )
+
+        read_only_fields = (
+            'enrollment_list',
         )
 
 
