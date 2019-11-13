@@ -77,7 +77,7 @@ class Course(models.Model):
 
     @property
     def enrollment_list(self):
-        return [enrollment.student.user_uuid for enrollment in self.enrollment_set.all()]
+        return [enrollment.student.user.id for enrollment in self.enrollment_set.all()]
 
 
 class Enrollment(models.Model):

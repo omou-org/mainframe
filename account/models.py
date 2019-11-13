@@ -152,7 +152,7 @@ class Parent(UserInfo):
 
     @property
     def student_list(self):
-        return [student.user_uuid for student in self.student_primary_parent.all().union(
+        return [student.user.id for student in self.student_primary_parent.all().union(
             self.student_secondary_parent.all())]
 
 
