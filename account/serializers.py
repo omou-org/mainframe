@@ -269,6 +269,9 @@ class AdminSerializer(serializers.ModelSerializer):
                 first_name=user_info['first_name'],
                 last_name=user_info['last_name'],
             )
+            if validated_data['admin_type'] == 'OWNER':
+                user.is_staff = True
+                user.save()
             Token.objects.get_or_create(user=user)
 
             # create account
