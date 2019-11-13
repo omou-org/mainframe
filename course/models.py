@@ -25,7 +25,7 @@ class CourseManager(models.Manager):
                 Q(instructor__user__first_name__icontains=query) |
                 Q(instructor__user__last_name__icontains=query) |
                 Q(room__icontains=query) |
-                Q(days__icontains=query) |
+                Q(day_of_week__icontains=query) |
                 Q(course_category__name__icontains=query) |
                 Q(course_category__description__icontains=query))
             try:
@@ -58,7 +58,7 @@ class Course(models.Model):
 
     # Logistical information
     room = models.CharField(max_length=50)
-    day_of_week = models.CharField(max_length=10)
+    day_of_week = models.CharField(max_length=27)
     start_date = models.DateField()
     end_date = models.DateField()
     start_time = models.TimeField()
