@@ -1,9 +1,10 @@
-from course.models import CourseNote, Course, CourseCategory, Enrollment
+from course.models import EnrollmentNote, CourseNote, Course, CourseCategory, Enrollment
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
 from course.serializers import (
+    EnrollmentNoteSerializer,
     CourseNoteSerializer,
     CourseSerializer,
     CourseCategorySerializer,
@@ -22,6 +23,7 @@ class CourseNoteViewSet(viewsets.ModelViewSet):
         queryset = self.get_queryset().filter(course__id = course_id)
         serializer = CourseNoteSerializer(queryset, many=True)
         return Response(serializer.data)
+
 
 class CourseViewSet(viewsets.ModelViewSet):
     """
@@ -48,6 +50,20 @@ class CourseCategoryViewSet(viewsets.ModelViewSet):
             course_category=self.get_object())
         matching_courses_json = CourseSerializer(matching_courses, many=True)
         return Response(matching_courses_json.data)
+
+
+class EnrollmentNoteViewSet(viewsets.ModelViewSet):
+    queryset = EnrollmentNote.objects.all()
+    serializer_class = EnrollmentNoteSerializer
+
+    def list(self, request):
+        """
+        override list to return notes for specific user
+        """
+        enrollment_id = request.query_params.get("enrollment_id", None)
+        queryset = self.get_queryset().filter(enrollment_id = enrollment_id)
+        serializer = EnrollmentNoteSerializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class EnrollmentViewSet(viewsets.ModelViewSet):

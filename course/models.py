@@ -90,7 +90,7 @@ class CourseNote(models.Model):
     )
     important = models.BooleanField(default=False)
     complete = models.BooleanField(default=False)
-    
+
 
 class Enrollment(models.Model):
     student = models.ForeignKey(Student, on_delete=models.PROTECT)
@@ -99,3 +99,15 @@ class Enrollment(models.Model):
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class EnrollmentNote(models.Model):
+    timestamp = models.DateTimeField(auto_now_add=True)    
+    title = models.TextField(blank=True)
+    body = models.TextField()
+    enrollment = models.ForeignKey(
+        Enrollment,
+        on_delete=models.PROTECT
+    )
+    important = models.BooleanField(default=False)
+    complete = models.BooleanField(default=False)

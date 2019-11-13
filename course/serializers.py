@@ -1,5 +1,27 @@
-from course.models import CourseNote, Course, CourseCategory, Enrollment
+from course.models import EnrollmentNote, CourseNote, Course, CourseCategory, Enrollment
 from rest_framework import serializers
+
+class EnrollmentNoteSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = EnrollmentNote
+        read_only_fields = (
+            'id',
+            'timestamp',
+        )
+        write_only_fields = (
+            'enrollment',
+        )
+        fields = (
+            'id',
+            'enrollment',
+            'timestamp',
+            'title',
+            'body',
+            'important',
+            'complete',
+        )
+
 
 class CourseNoteSerializer(serializers.ModelSerializer):
 
