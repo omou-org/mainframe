@@ -80,6 +80,18 @@ class Course(models.Model):
         return [enrollment.student.user_uuid for enrollment in self.enrollment_set.all()]
 
 
+class CourseNote(models.Model):
+    timestamp = models.DateTimeField(auto_now_add=True)    
+    title = models.TextField(blank=True)
+    body = models.TextField()
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.PROTECT
+    )
+    important = models.BooleanField(default=False)
+    complete = models.BooleanField(default=False)
+    
+
 class Enrollment(models.Model):
     student = models.ForeignKey(Student, on_delete=models.PROTECT)
     course = models.ForeignKey(Course, on_delete=models.PROTECT)
