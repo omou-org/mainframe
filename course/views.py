@@ -17,7 +17,7 @@ class CourseNoteViewSet(viewsets.ModelViewSet):
 
     def list(self, request):
         """
-        override list to return notes for specific user
+        override list to return notes for specific course
         """
         course_id = request.query_params.get("course_id", None)
         queryset = self.get_queryset().filter(course__id = course_id)
@@ -58,7 +58,7 @@ class EnrollmentNoteViewSet(viewsets.ModelViewSet):
 
     def list(self, request):
         """
-        override list to return notes for specific user
+        override list to return notes for specific enrollment
         """
         enrollment_id = request.query_params.get("enrollment_id", None)
         queryset = self.get_queryset().filter(enrollment_id = enrollment_id)
