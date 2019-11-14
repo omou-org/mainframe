@@ -1,7 +1,8 @@
 from rest_framework import viewsets, mixins
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
-import json
+
 
 from account.models import (
     Note,
@@ -16,7 +17,9 @@ from account.serializers import (
     StudentSerializer,
     ParentSerializer,
     InstructorSerializer
-) 
+)
+from mainframe.permissions import ReadOnly
+
 
 class NoteViewSet(viewsets.ModelViewSet):
     queryset = Note.objects.all()
@@ -52,6 +55,8 @@ class InstructorViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows instructors to be viewed or edited
     """
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser | ReadOnly]
     queryset = Instructor.objects.all()
     serializer_class = InstructorSerializer
 
@@ -60,5 +65,7 @@ class AdminViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows admins to be viewed or edited
     """
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser | ReadOnly]
     queryset = Admin.objects.all()
     serializer_class = AdminSerializer
