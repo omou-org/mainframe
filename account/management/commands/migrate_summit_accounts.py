@@ -82,19 +82,28 @@ class Command(BaseCommand):
             return words[0] + " " + words[1], words[2]
 
     def create_parent(self, row):
-        if not row[15]:
+        if math.isnan(row[15]):
             return None
 
         try:
             parent_first_name, parent_last_name = self.get_first_name_last_name_from_field(row[15])
 
-            parent_user = User.objects.create_user(
-                username=row[18] or uuid.uuid4(),
-                password="password",
-                first_name=parent_first_name,
-                last_name=parent_last_name,
-                email=row[18]
-            )
+            if math.isnan(row[18]):
+                parent_user = User.objects.create_user(
+                    username=uuid.uuid4(),
+                    password="password",
+                    first_name=parent_first_name,
+                    last_name=parent_last_name,
+                    email=row[18]
+                )
+            else:
+                parent_user = User.objects.create_user(
+                    username=row[18],
+                    password="password",
+                    first_name=parent_first_name,
+                    last_name=parent_last_name,
+                    email=row[18]
+                )
 
             parent = Parent.objects.create(user=parent_user, user_uuid=parent_user.username, address=row[22],
                                            city=row[23], phone_number=row[16], state=row[24], zipcode=row[25],
