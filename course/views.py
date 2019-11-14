@@ -1,7 +1,9 @@
 from course.models import EnrollmentNote, CourseNote, Course, CourseCategory, Enrollment
 from rest_framework import viewsets
-from rest_framework.response import Response
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.response import Response
 
 from course.serializers import (
     EnrollmentNoteSerializer,
@@ -10,6 +12,9 @@ from course.serializers import (
     CourseCategorySerializer,
     EnrollmentSerializer,
 )
+
+from mainframe.permissions import ReadOnly
+
 
 class CourseNoteViewSet(viewsets.ModelViewSet):
     queryset = CourseNote.objects.all()
@@ -25,10 +30,13 @@ class CourseNoteViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
+
 class CourseViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows courses to be viewed or edited
     """
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAdminUser | (IsAuthenticated & ReadOnly)]
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
 
@@ -37,6 +45,8 @@ class CourseCategoryViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows course categories to be viewed or edited
     """
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAdminUser | (IsAuthenticated & ReadOnly)]
     queryset = CourseCategory.objects.all()
     serializer_class = CourseCategorySerializer
 
