@@ -2,7 +2,7 @@ from rest_framework import viewsets, mixins
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
-
+from rest_framework.views import APIView
 
 from account.models import (
     Note,
@@ -16,7 +16,8 @@ from account.serializers import (
     AdminSerializer,
     StudentSerializer,
     ParentSerializer,
-    InstructorSerializer
+    InstructorSerializer,
+    UserSerializer,
 )
 from mainframe.permissions import ReadOnly
 
@@ -69,3 +70,12 @@ class AdminViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsAdminUser | ReadOnly]
     queryset = Admin.objects.all()
     serializer_class = AdminSerializer
+
+
+class CurrentUserView(APIView):
+    """
+    Returns current user information
+    """
+    def get(self, request):
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)

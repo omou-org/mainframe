@@ -30,7 +30,6 @@ class CourseNoteViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-
 class CourseViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows courses to be viewed or edited

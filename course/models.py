@@ -111,4 +111,3 @@ class EnrollmentNote(models.Model):
     )
     important = models.BooleanField(default=False)
     complete = models.BooleanField(default=False)
-    

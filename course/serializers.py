@@ -1,6 +1,7 @@
 from course.models import EnrollmentNote, CourseNote, Course, CourseCategory, Enrollment
 from rest_framework import serializers
 
+
 class EnrollmentNoteSerializer(serializers.ModelSerializer):
 
     class Meta:
