@@ -14,6 +14,9 @@ from rest_framework.authtoken.models import Token
 class Command(BaseCommand):
     help = 'Closes the specified poll for voting'
 
+    bad_rows = []
+    rowNum = 8
+
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS('Successfully called'))
         dataframe = self.read_data_from_file("/Users/briancho/workplace/mainframe/scripts/summit_data.csv")
@@ -21,6 +24,7 @@ class Command(BaseCommand):
         dataframe = dataframe.iloc[6:]
 
         self.insert_accounts(dataframe)
+        print(str(self.bad_rows))
 
     def read_data_from_file(self, file_name):
         return pd.read_csv(file_name)
@@ -45,16 +49,16 @@ class Command(BaseCommand):
 
         # TODO: check objects created in database
 
-        rowNum = 8
+
 
         for row in dataframe.itertuples():
-            print(str(rowNum))
+            print(str(self.rowNum))
 
             parent = self.create_parent(row)
             student_user = self.create_student(row, parent)
             self.create_note(row, student_user)
 
-            rowNum += 1
+            self.rowNum += 1
 
     def translate_gender(self, gender):
         if str(gender) == "Female":
@@ -78,6 +82,9 @@ class Command(BaseCommand):
             return words[0] + " " + words[1], words[2]
 
     def create_parent(self, row):
+        if not row[15]:
+            return None
+
         try:
             parent_first_name, parent_last_name = self.get_first_name_last_name_from_field(row[15])
 
@@ -98,6 +105,7 @@ class Command(BaseCommand):
             return parent
         except:
             print("ERROR: creating parent obj", row)
+            self.bad_rows.append(str(self.rowNum) + " parent")
             return None
 
     def create_student(self, row, parent):
@@ -127,6 +135,7 @@ class Command(BaseCommand):
             return student_user
         except:
             print("ERROR: creating student obj", row)
+            self.bad_rows.append(str(self.rowNum) + " student")
             return None
 
     def create_note(self, row, student_user):
@@ -136,7 +145,7 @@ class Command(BaseCommand):
             note.save()
         except:
             print("ERROR: creating note obj", row)
-
+            self.bad_rows.append(str(self.rowNum) + " note")
         return None
 
 # Index to column name mapping:
