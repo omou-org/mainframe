@@ -55,16 +55,16 @@ class Course(models.Model):
     subject = models.CharField(max_length=100)
     description = models.CharField(max_length=1000, null=True, blank=True)
     instructor = models.ForeignKey(Instructor, on_delete=models.PROTECT, null=True, blank=True)
-    tuition = models.DecimalField(max_digits=6, decimal_places=2)
+    tuition = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
 
     # Logistical information
     room = models.CharField(max_length=50, null=True, blank=True)
     day_of_week = models.CharField(max_length=27)
-    start_date = models.DateField()
-    end_date = models.DateField()
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
     start_time = models.TimeField()
     end_time = models.TimeField()
-    max_capacity = models.IntegerField()
+    max_capacity = models.IntegerField(null=True, blank=True)
 
     # One-to-many relationship with CourseCategory
     course_category = models.ForeignKey(

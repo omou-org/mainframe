@@ -2,7 +2,6 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 import pandas as pd
 import uuid
-import arrow
 
 from account.models import Instructor
 from course.models import Course
@@ -20,7 +19,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS('Successfully called'))
-        dataframe = self.read_data_from_file("/Users/jerry/Desktop/omou/summit_classes.csv")
+        dataframe = self.read_data_from_file("/Users/jerry/Desktop/omou/summit_tutoring.csv")
 
         self.insert_courses(dataframe)
         print(str(self.bad_rows))
@@ -30,7 +29,7 @@ class Command(BaseCommand):
 
     def insert_courses(self, dataframe):
         for row in dataframe.itertuples():
-            print(str(self.rowNum), row)
+            print(str(self.rowNum))
 
             instructor = self.create_instructor(row)
             self.create_course(row, instructor)
@@ -41,12 +40,15 @@ class Command(BaseCommand):
             return None
         try:
             tokens = row[3].split(' ')
-            first_name = tokens[1]
+            first_name = tokens[0]
             last_name = ""
-            if len(tokens) > 2:
-                last_name = tokens[2]
+            if len(tokens) > 1:
+                last_name = tokens[1]
 
-            queryset = Instructor.objects.filter(user__first_name=first_name)
+            queryset = Instructor.objects.filter(
+                user__first_name=first_name,
+                user__last_name=last_name
+            )
             if queryset.count() > 0:
                 return queryset[0]
 
@@ -69,16 +71,11 @@ class Command(BaseCommand):
     def create_course(self, row, instructor):
         try:
             name = row[1]
-            course_id = row[2]
+            course_id = int(row[2]) + 55
             category = row[4]
-            tuition = float(row[5])
-            room = row[6]
-            start_date = arrow.get(row[7], "MM/DD/YYYY").format("YYYY-MM-DD")
-            end_date = arrow.get(row[8], "MM/DD/YYYY").format("YYYY-MM-DD")
             day_of_week = row[9]
             start_time = row[10]
             end_time = row[11]
-            max_capacity = row[12]
             note = row[13]
 
             with transaction.atomic():
@@ -93,15 +90,10 @@ class Command(BaseCommand):
                     course_id=course_id,
                     subject=name,
                     instructor=instructor,
-                    tuition=tuition,
-                    room=room,
                     day_of_week=day_of_week,
-                    start_date=start_date,
-                    end_date=end_date,
                     start_time=start_time,
                     end_time=end_time,
-                    max_capacity=max_capacity,
-                    type='C',
+                    type='T',
                     course_category=course_category
                 )
                 course.save()

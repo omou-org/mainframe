@@ -58,6 +58,7 @@ class CourseSerializer(serializers.ModelSerializer):
         fields = (
             'course_id',
             'subject',
+            'type',
             'description',
             'instructor',
             'tuition',
@@ -89,6 +90,7 @@ class EnrollmentSerializer(serializers.ModelSerializer):
         model = Enrollment
 
         fields = (
+            'id',
             'student',
             'course',
             'payment',
