@@ -104,13 +104,18 @@ class StudentSerializer(serializers.ModelSerializer):
             Token.objects.get_or_create(user=user)
 
             # create account
-            student = Student.objects.create(user=user, **validated_data)
+            student = Student.objects.create(
+                user=user,
+                account_type='STUDENT',
+                **validated_data
+            )
             return student
 
     class Meta:
         model = Student
         read_only_fields = (
             'enrollment_id_list',
+            'account_type',
             'updated_at',
             'created_at',
         )
@@ -129,6 +134,7 @@ class StudentSerializer(serializers.ModelSerializer):
             'primary_parent',
             'secondary_parent',
             'enrollment_id_list',
+            'account_type',
             'updated_at',
             'created_at',
         )
@@ -168,13 +174,18 @@ class ParentSerializer(serializers.ModelSerializer):
             Token.objects.get_or_create(user=user)
 
             # create account
-            parent = Parent.objects.create(user=user, **validated_data)
+            parent = Parent.objects.create(
+                user=user,
+                account_type='PARENT',
+                **validated_data
+            )
             return parent
 
     class Meta:
         model = Parent
         read_only_fields = (
             'student_list',
+            'account_type',
             'updated_at',
             'created_at',
         )
@@ -191,6 +202,7 @@ class ParentSerializer(serializers.ModelSerializer):
             'relationship',
             'secondary_phone_number',
             'student_list',
+            'account_type',
             'updated_at',
             'created_at',
         )
@@ -225,12 +237,17 @@ class InstructorSerializer(serializers.ModelSerializer):
             Token.objects.get_or_create(user=user)
 
             # create account
-            instructor = Instructor.objects.create(user=user, **validated_data)
+            instructor = Instructor.objects.create(
+                user=user,
+                account_type='INSTRUCTOR',
+                **validated_data,
+            )
             return instructor
 
     class Meta:
         model = Instructor
         read_only_fields = (
+            'account_type',
             'updated_at',
             'created_at',
         )
@@ -244,6 +261,7 @@ class InstructorSerializer(serializers.ModelSerializer):
             'phone_number',
             'state',
             'zipcode',
+            'account_type',
             'updated_at',
             'created_at',
         )
@@ -282,12 +300,17 @@ class AdminSerializer(serializers.ModelSerializer):
             Token.objects.get_or_create(user=user)
 
             # create account
-            admin = Admin.objects.create(user=user, **validated_data)
+            admin = Admin.objects.create(
+                user=user,
+                account_type='ADMIN',
+                **validated_data
+            )
             return admin
 
     class Meta:
         model = Admin
         read_only_fields = (
+            'account_type',
             'updated_at',
             'created_at',
         )
@@ -302,6 +325,7 @@ class AdminSerializer(serializers.ModelSerializer):
             'phone_number',
             'state',
             'zipcode',
+            'account_type',
             'updated_at',
             'created_at',
         )

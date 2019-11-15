@@ -7,6 +7,18 @@ from django.conf import settings
 
 
 class UserInfo(models.Model):
+    # Account type
+    STUDENT_TYPE = 'STUDENT'
+    PARENT_TYPE = 'PARENT'
+    INSTRUCTOR_TYPE = 'INSTRUCTOR'
+    ADMIN_TYPE = 'ADMIN'
+    ACCOUNT_TYPE_CHOICES = (
+        (STUDENT_TYPE, 'Student'),
+        (PARENT_TYPE, 'Parent'),
+        (INSTRUCTOR_TYPE, 'Instructor'),
+        (ADMIN_TYPE, 'Admin'),
+    )
+
     # Gender
     MALE_GENDER = 'M'
     FEMALE_GENDER = 'F'
@@ -23,6 +35,7 @@ class UserInfo(models.Model):
         on_delete=models.PROTECT,
         primary_key=True,
     )
+    account_type = models.CharField(max_length=20, choices=ACCOUNT_TYPE_CHOICES)
     user_uuid = models.CharField(max_length=50, blank=True, null=True)
     gender = models.CharField(
         max_length=1,

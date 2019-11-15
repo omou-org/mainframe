@@ -16,7 +16,7 @@ class Command(BaseCommand):
     help = 'Closes the specified poll for voting'
 
     bad_rows = []
-    rowNum = 8
+    rowNum = 2321
 
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS('Successfully called'))
@@ -49,8 +49,6 @@ class Command(BaseCommand):
         # add try/catch and print error lines to console
 
         # TODO: check objects created in database
-
-
 
         for row in dataframe.itertuples():
             print(str(self.rowNum))
@@ -107,7 +105,7 @@ class Command(BaseCommand):
 
                 parent = Parent.objects.create(user=parent_user, user_uuid=parent_user.username, address=row[22],
                                                city=row[23], phone_number=row[16], state=row[24], zipcode=row[25],
-                                               secondary_phone_number=row[17])
+                                               secondary_phone_number=row[17], account_type="PARENT")
 
                 parent.save()
 
@@ -132,13 +130,21 @@ class Command(BaseCommand):
             grade = row[10]
 
             if math.isnan(float(grade)):
-                student = Student.objects.create(user=student_user, gender=self.translate_gender(row[9]), user_uuid=row[2],
-                                             address=row[22], city=row[23], state=row[24],
-                                             zipcode=row[25], school=row[11], primary_parent=parent)
+                student = Student.objects.create(
+                    user=student_user,
+                    gender=self.translate_gender(row[9]),
+                    user_uuid=row[2],
+                    address=row[22], city=row[23], state=row[24],
+                    zipcode=row[25], school=row[11], primary_parent=parent,
+                    account_type="STUDENT"
+                )
             else:
-                student = Student.objects.create(user=student_user, gender=self.translate_gender(row[9]), user_uuid=row[2],
-                                             address=row[22], city=row[23], state=row[24],
-                                             zipcode=row[25], school=row[11], primary_parent=parent, grade=row[10])
+                student = Student.objects.create(
+                    user=student_user, gender=self.translate_gender(row[9]), user_uuid=row[2],
+                    address=row[22], city=row[23], state=row[24],
+                    zipcode=row[25], school=row[11], primary_parent=parent,
+                    grade=row[10], account_type="STUDENT"
+                )
 
             student.save()
 
