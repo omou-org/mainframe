@@ -14,7 +14,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS('Successfully called'))
-        dataframe = self.read_data_from_file("/Users/jerry/Desktop/omou/summit_enrollment.csv")
+        dataframe = self.read_data_from_file("/Users/jerry/Desktop/omou/summit_tutoring_enrollment.csv")
 
         self.insert_accounts(dataframe)
         print(str(self.bad_rows))
@@ -41,12 +41,10 @@ class Command(BaseCommand):
                 return None
 
             course = Course.objects.get(course_id=course_id)
-            student = Student.objects.get(user_uuid=student_id)
+            student = Student.objects.get(user_uuid=int(student_id) + 55)
 
             # payment
-            payment = ""
-            if isinstance(payment, str):
-                payment = row[5]
+            payment = row[5]
 
             # notes
             notes = row[6]

@@ -40,8 +40,13 @@ class StudentViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows students to be viewed or edited
     """
-    queryset = Student.objects.order_by("-updated_at")[:100]
+    queryset = Student.objects.all()
     serializer_class = StudentSerializer
+
+    def list(self, request):
+        queryset = self.get_queryset()[:100]
+        serializer = self.get_serializer_class()(queryset, many=True)
+        return Response(serializer.data)
 
 
 class ParentViewSet(viewsets.ModelViewSet):
@@ -50,6 +55,11 @@ class ParentViewSet(viewsets.ModelViewSet):
     """
     queryset = Parent.objects.all()
     serializer_class = ParentSerializer
+
+    def list(self, request):
+        queryset = self.get_queryset()[:100]
+        serializer = self.get_serializer_class()(queryset, many=True)
+        return Response(serializer.data)
 
 
 class InstructorViewSet(viewsets.ModelViewSet):
