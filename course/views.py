@@ -34,8 +34,8 @@ class CourseViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows courses to be viewed or edited
     """
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAdminUser | (IsAuthenticated & ReadOnly)]
+    # authentication_classes = [TokenAuthentication]
+    # permission_classes = [IsAdminUser | (IsAuthenticated & ReadOnly)]
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
 

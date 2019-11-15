@@ -56,7 +56,7 @@ class CourseSerializer(serializers.ModelSerializer):
         model = Course
 
         fields = (
-            'id',
+            'course_id',
             'subject',
             'description',
             'instructor',
