@@ -8,6 +8,8 @@ DATABASE_PASSWORD = "a22jAxkqPfv6"
 DEBUG = False
 
 ALLOWED_HOSTS = [
+    "api.omoulearning.com",
+    "loadbalancer-fd2287fde68b401a.elb.us-west-2.amazonaws.com",
     "3.19.70.245",
     "localhost",
 ]
