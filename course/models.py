@@ -80,6 +80,10 @@ class Course(models.Model):
     def enrollment_list(self):
         return [enrollment.student.user.id for enrollment in self.enrollment_set.all()]
 
+    @property
+    def enrollment_id_list(self):
+        return [enrollment.id for enrollment in self.enrollment_set.all()]
+
 
 class CourseNote(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)    

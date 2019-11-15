@@ -40,7 +40,7 @@ class StudentViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows students to be viewed or edited
     """
-    queryset = Student.objects.all()
+    queryset = Student.objects.order_by("-updated_at")[:100]
     serializer_class = StudentSerializer
 
 

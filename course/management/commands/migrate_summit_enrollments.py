@@ -12,7 +12,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS('Successfully called'))
-        dataframe = self.read_data_from_file("/Users/jerry/Desktop/summit_enrollment_data.csv")
+        dataframe = self.read_data_from_file("/Users/jerry/Desktop/omou/summit_enrollment.csv")
 
         self.insert_accounts(dataframe)
         print(str(self.bad_rows))

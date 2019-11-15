@@ -115,6 +115,10 @@ class Student(UserInfo):
 
     objects = StudentManager()
 
+    @property
+    def enrollment_id_list(self):
+        return [enrollment.id for enrollment in self.enrollment_set.all()]
+
 
 class ParentManager(models.Manager):
     def search(self, query=None):
