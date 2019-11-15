@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
+from django.db import transaction
 import pandas as pd
 import uuid
 import math
@@ -19,7 +20,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS('Successfully called'))
-        dataframe = self.read_data_from_file("/Users/briancho/workplace/mainframe/scripts/summit_data.csv")
+        dataframe = self.read_data_from_file("/Users/jerry/Desktop/summit_data.csv")
         # skip first 6 rows
         dataframe = dataframe.iloc[6:]
 
@@ -71,49 +72,49 @@ class Command(BaseCommand):
     def get_first_name_last_name_from_field(self, name_field):
         words = name_field.split()
 
-        if len(words) == 0 or len(words) > 3:
+        if len(words) == 0:
             raise Exception('improper name field')
 
         if len(words) == 1:
             return words[0], ""
-        elif len(words) == 2:
-            return words[0], words[1]
-        elif len(words) == 3:
-            return words[0] + " " + words[1], words[2]
+        return " ".join(words[:-1]), words[-1]
 
     def create_parent(self, row):
-        if math.isnan(row[15]):
+        if isinstance(row[15], float):
             return None
 
         try:
             parent_first_name, parent_last_name = self.get_first_name_last_name_from_field(row[15])
 
-            if math.isnan(row[18]):
-                parent_user = User.objects.create_user(
-                    username=uuid.uuid4(),
-                    password="password",
-                    first_name=parent_first_name,
-                    last_name=parent_last_name,
-                    email=row[18]
-                )
+            username = row[18]
+            email = row[18]
+            if isinstance(row[18], float):
+                username = uuid.uuid4()
+                email = ""
             else:
+                queryset = Parent.objects.filter(user__email=email)
+                if queryset.count() > 0:
+                    return queryset[0]
+
+            with transaction.atomic():
                 parent_user = User.objects.create_user(
-                    username=row[18],
+                    username=username,
                     password="password",
                     first_name=parent_first_name,
                     last_name=parent_last_name,
-                    email=row[18]
+                    email=email
                 )
 
-            parent = Parent.objects.create(user=parent_user, user_uuid=parent_user.username, address=row[22],
-                                           city=row[23], phone_number=row[16], state=row[24], zipcode=row[25],
-                                           secondary_phone_number=row[17])
+                parent = Parent.objects.create(user=parent_user, user_uuid=parent_user.username, address=row[22],
+                                               city=row[23], phone_number=row[16], state=row[24], zipcode=row[25],
+                                               secondary_phone_number=row[17])
 
-            parent.save()
+                parent.save()
 
             return parent
-        except:
+        except Exception as e:
             print("ERROR: creating parent obj", row)
+            print(e)
             self.bad_rows.append(str(self.rowNum) + " parent")
             return None
 
@@ -142,8 +143,9 @@ class Command(BaseCommand):
             student.save()
 
             return student_user
-        except:
+        except Exception as e:
             print("ERROR: creating student obj", row)
+            print(e)
             self.bad_rows.append(str(self.rowNum) + " student")
             return None
 
@@ -152,8 +154,9 @@ class Command(BaseCommand):
             note = Note.objects.create(user=student_user, body=row[26])
 
             note.save()
-        except:
+        except Exception as e:
             print("ERROR: creating note obj", row)
+            print(e)
             self.bad_rows.append(str(self.rowNum) + " note")
         return None
 

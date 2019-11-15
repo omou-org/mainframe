@@ -34,7 +34,7 @@ class UserInfo(models.Model):
     # Address
     address = models.CharField(max_length=64, blank=True, null=True)
     city = models.CharField(max_length=32, blank=True, null=True)
-    phone_number = models.CharField(max_length=15, blank=True, null=True)
+    phone_number = models.CharField(max_length=50, blank=True, null=True)
     state = models.CharField(max_length=16, choices=STATE_CHOICES, blank=True, null=True)
     zipcode = models.CharField(max_length=10, blank=True, null=True)
 
@@ -150,7 +150,7 @@ class Parent(UserInfo):
         blank=True,
         null=True,
     )
-    secondary_phone_number = models.CharField(max_length=15, blank=True, null=True)
+    secondary_phone_number = models.CharField(max_length=50, blank=True, null=True)
     objects = ParentManager()
 
     @property
