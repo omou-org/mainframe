@@ -238,7 +238,6 @@ class InstructorSerializer(serializers.ModelSerializer):
             'phone_number',
             'state',
             'zipcode',
-            'age',
             'updated_at',
             'created_at',
         )

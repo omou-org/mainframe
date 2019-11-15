@@ -181,7 +181,6 @@ class InstructorManager(models.Manager):
 
 
 class Instructor(UserInfo):
-    age = models.IntegerField(null=True, blank=True)
     objects = InstructorManager()
 
 
