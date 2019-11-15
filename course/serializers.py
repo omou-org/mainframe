@@ -91,4 +91,5 @@ class EnrollmentSerializer(serializers.ModelSerializer):
         fields = (
             'student',
             'course',
+            'payment',
         )
