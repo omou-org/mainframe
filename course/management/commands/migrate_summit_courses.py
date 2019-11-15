@@ -57,7 +57,7 @@ class Command(BaseCommand):
                     first_name=first_name,
                     last_name=last_name,
                 )
-                instructor = Instructor.objects.create(user=instructor_user)
+                instructor = Instructor.objects.create(user=instructor_user, account_type="INSTRUCTOR")
                 instructor.save()
                 return instructor
         except Exception as e:
