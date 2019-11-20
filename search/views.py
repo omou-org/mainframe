@@ -94,11 +94,11 @@ class CoursesSearchView(generics.ListAPIView):
         courseFilter = self.request.query_params.get('courseTypeFilter', None)
         if courseFilter is not None:
             if courseFilter == "tutoring":
-                searchResults.filter(max_capacity == 1)
+                searchResults = searchResults.filter(max_capacity = 1)
             if courseFilter == "group":
-                searchResults.filter(max_capacity <= 5) 
+                searchResults = searchResults.filter(max_capacity__lt = 5) 
             if courseFilter == "class":
-                searchResults.filter(max_capacity > 5)
+                searchResults = searchResults.filter(max_capacity__gt = 5)
 
         # availability filter
         availabilityFilter = self.request.query_params.get('availability', None)
@@ -106,12 +106,12 @@ class CoursesSearchView(generics.ListAPIView):
             # calculate availability
             course_ids = []
             for course in searchResults:
-                capacity = len(Enrollment.objects.filter(course = course.id))
+                capacity = len(Enrollment.objects.filter(course = course.course_id))
                 if availabilityFilter == "open" and capacity < course.max_capacity:
-                    course_ids.append(course.id)
+                    course_ids.append(course.course_id)
                 if availabilityFilter == "filled" and capacity >= course.max_capacity:
-                    course_ids.append(course.id)
-            searchResults = Course.objects.filter(id__in = course_ids)        
+                    course_ids.append(course.course_id)
+            searchResults = Course.objects.filter(course_id__in = course_ids)        
             
         # sort results
         sortFilter = self.request.query_params.get('sort', None)
