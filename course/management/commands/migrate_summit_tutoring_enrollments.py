@@ -32,16 +32,15 @@ class Command(BaseCommand):
 
     def create_enrollments(self, row):
         try:
-            course_id = row[2]
-            student_id = row[4]
+            course_id = int(row[2])
+            student_id = int(row[4])
 
-            if not isinstance(student_id, str):
-                return None
-            if not isinstance(student_id, str):
+            if isinstance(student_id, float):
+                print("here")
                 return None
 
-            course = Course.objects.get(course_id=course_id)
-            student = Student.objects.get(user_uuid=int(student_id) + 55)
+            course = Course.objects.get(course_id=int(course_id) + 55)
+            student = Student.objects.get(user_uuid=int(student_id))
 
             # payment
             payment = row[5]

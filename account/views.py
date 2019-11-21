@@ -19,7 +19,7 @@ from account.serializers import (
     InstructorSerializer,
     UserSerializer,
 )
-from mainframe.permissions import ReadOnly
+from mainframe.permissions import ReadOnly, IsDev
 
 
 class NoteViewSet(viewsets.ModelViewSet):
@@ -77,7 +77,7 @@ class AdminViewSet(viewsets.ModelViewSet):
     API endpoint that allows admins to be viewed or edited
     """
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated, IsAdminUser | ReadOnly]
+    permission_classes = [IsDev | (IsAuthenticated & (IsAdminUser | ReadOnly))]
     queryset = Admin.objects.all()
     serializer_class = AdminSerializer
 
