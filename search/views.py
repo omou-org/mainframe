@@ -4,7 +4,6 @@ from rest_framework.response import Response
 
 from account.models import (
     Student,
-    Parent,
     Instructor
 )
 
@@ -14,6 +13,23 @@ from course.models import (
 )
 
 from search.serializers import SearchViewSerializer
+
+class AccountsSuggestionsView(generics.ListAPIView):
+    serializer_class = SearchViewSerializer
+
+    def get_queryset(self):
+        #Student.objects.all()
+        #Instructor.objects.all()
+        return Student.objects.none()
+        
+
+class CoursesSuggestionsView(generics.ListAPIView):
+    serializer_class = SearchViewSerializer
+    
+    def get_queryset(self):
+        #Course.objects.all()
+        return Course.objects.none()
+
 
 class AccountsSearchView(generics.ListAPIView): 
     serializer_class = SearchViewSerializer
@@ -62,7 +78,22 @@ class AccountsSearchView(generics.ListAPIView):
                 searchResults = sorted(searchResults, key=lambda obj:obj.user.id)
             elif sortFilter == "idDesc": 
                 searchResults = sorted(searchResults, key=lambda obj:obj.user.id, reverse=True)
-        return list(searchResults)
+        
+        searchResults = list(searchResults)
+        # extract page
+        pageFilter = self.request.query_params.get('pageNumber', None)
+        if pageFilter is not None:
+            try:
+                pageNumber = int(pageFilter)
+                pageSize = 8
+                resultLen = len(arr)
+                rangeEnd = pageSize*pageNumber
+                if pageNumber > 0 and rangeEnd-pageSize < resultLen:
+                    searchResults = arr[rangeEnd-pageSize : resultLen if resultLen <= rangeEnd else rangeEnd]
+            except ValueError:
+                pass
+
+        return searchResults
 
 class CoursesSearchView(generics.ListAPIView):
     serializer_class = SearchViewSerializer
