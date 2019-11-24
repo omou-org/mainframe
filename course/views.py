@@ -25,7 +25,7 @@ class CourseNoteViewSet(viewsets.ModelViewSet):
         override list to return notes for specific course
         """
         course_id = request.query_params.get("course_id", None)
-        queryset = self.get_queryset().filter(course__id = course_id)
+        queryset = self.get_queryset().filter(course__course_id=course_id)
         serializer = CourseNoteSerializer(queryset, many=True)
         return Response(serializer.data)
 
