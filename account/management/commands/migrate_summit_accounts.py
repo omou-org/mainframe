@@ -16,7 +16,7 @@ class Command(BaseCommand):
     help = 'Closes the specified poll for voting'
 
     bad_rows = []
-    rowNum = 2321
+    rowNum = 1
 
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS('Successfully called'))

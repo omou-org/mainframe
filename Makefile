@@ -55,3 +55,11 @@ cleandb:
 .PHONY: stopdb
 stopdb:
 	docker-compose -p $(PROJ) -f docker/docker-compose.yml stop
+
+.PHONY: loaddb
+loaddb:
+	python manage.py migrate_summit_accounts
+	python manage.py migrate_summit_courses
+	python manage.py migrate_summit_enrollments
+	python manage.py migrate_summit_tutoring
+	python manage.py migrate_summit_tutoring_enrollments
