@@ -15,6 +15,7 @@ class Session(models.Model):
     )
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
+    is_confirmed = models.BooleanField(default=False)
 
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)

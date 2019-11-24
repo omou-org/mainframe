@@ -16,11 +16,11 @@ class Command(BaseCommand):
     help = 'Closes the specified poll for voting'
 
     bad_rows = []
-    rowNum = 2321
+    rowNum = 1
 
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS('Successfully called'))
-        dataframe = self.read_data_from_file("/Users/jerry/Desktop/omou/summit_student.csv")
+        dataframe = self.read_data_from_file("data/summit_student.csv")
         # skip first 6 rows
         dataframe = dataframe.iloc[6:]
 
