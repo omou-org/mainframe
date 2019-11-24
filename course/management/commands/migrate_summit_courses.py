@@ -20,7 +20,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS('Successfully called'))
-        dataframe = self.read_data_from_file("/Users/jerry/Desktop/omou/summit_classes.csv")
+        dataframe = self.read_data_from_file("data/summit_classes.csv")
 
         self.insert_courses(dataframe)
         print(str(self.bad_rows))
