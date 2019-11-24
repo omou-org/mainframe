@@ -16,10 +16,11 @@ class CourseCategory(models.Model):
 
 
 class CourseManager(models.Manager):
-    def search(self, qs_before, query=None):
-        if qs_before is None:
+    def search(self, query=None, qs_initial=None):
+        if qs_initial is None or len(qs_initial) == 0:
             qs = self.get_queryset()
-        qs = qs_before
+        else:
+            qs = qs_initial
 
         if query is not None:
             or_lookup = (Q(type__icontains=query) |
