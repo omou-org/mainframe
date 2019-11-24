@@ -40,7 +40,9 @@ class AccountsSearchView(generics.ListAPIView):
         # query input check
         query = self.request.query_params.get('query', None)
         if query is None or False in [word.isalnum() for word in query.split()]:
-            return list(searchResults) 
+            return list(searchResults)
+
+        queryList = [word in query.split()]
 
         # query with profile filter
         profileFilter = self.request.query_params.get('profileFilter', None)
@@ -106,20 +108,18 @@ class CoursesSearchView(generics.ListAPIView):
         if query is None or False in [word.isalnum() for word in query.split()]:
             return list(searchResults) 
 
-        dateDic = {
-            "monday":"MON",
-            "tuesday":"TUE",
-            "wednesday":"WED",
-            "thursday":"THU",
-            "friday":"FRI",
-            "saturday":"SAT",
-            "sunday":"SUN"
-        }
-        # date check
-        if dateDic.get(query):
-            searchResults = Course.objects.search(dateDic[query])
-        else:
-            searchResults = Course.objects.search(query)
+        for word in query.split():
+            dateDic = {
+                "monday":"MON",
+                "tuesday":"TUE",
+                "wednesday":"WED",
+                "thursday":"THU",
+                "friday":"FRI",
+                "saturday":"SAT",
+                "sunday":"SUN"
+            }
+            # date check
+            searchResults = Course.objects.search(searchResults, dateDic[word] if dateDic.get(word) else word)
 
         # course filter
         courseFilter = self.request.query_params.get('courseTypeFilter', None)
