@@ -59,7 +59,6 @@ class AccountsSearchView(generics.ListAPIView):
             for query in queries.split():
                 if profileFilter == "Admin" and adminTypeDic.get(query.lower()):
                     query = adminTypeDic.get(query.lower())
-
                 
                 if filterToSearch.get(profileFilter):
                     searchResults = filterToSearch[profileFilter](filterToModel[profileFilter], query, searchResults)
@@ -86,7 +85,7 @@ class AccountsSearchView(generics.ListAPIView):
                 searchResults = sorted(searchResults, key=lambda obj:obj.user.id)
             elif sortFilter == "idDesc": 
                 searchResults = sorted(searchResults, key=lambda obj:obj.user.id, reverse=True)
-        
+
         searchResults = list(searchResults)
         # extract searches in page range. Out of bounds page returns nothing
         pageFilter = self.request.query_params.get('pageNumber', None)

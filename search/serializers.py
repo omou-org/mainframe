@@ -3,7 +3,7 @@ from django.db import models
 
 from account.models import (
     Student,
-    Parent,
+    Admin,
     Instructor
 )
 
@@ -17,7 +17,7 @@ from scheduler.models import (
 
 from account.serializers import (
     StudentSerializer,
-    ParentSerializer,
+    AdminSerializer,
     InstructorSerializer
 )
 
@@ -32,8 +32,8 @@ class SearchViewSerializer(serializers.Serializer):
     def to_representation(self, value):
         if isinstance(value, Student): 
             serializer = StudentSerializer(value)
-        elif isinstance(value, Parent):
-            serializer = ParentSerializer(value)
+        elif isinstance(value, Admin):
+            serializer = AdminSerializer(value)
         elif isinstance(value, Instructor):
             serializer = InstructorSerializer(value)
         elif isinstance(value, Course):
