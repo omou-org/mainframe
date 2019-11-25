@@ -18,23 +18,6 @@ from course.models import (
 
 from search.serializers import SearchViewSerializer
 
-class AccountsSuggestionsView(generics.ListAPIView):
-    serializer_class = SearchViewSerializer
-
-    def get_queryset(self):
-        #Student.objects.all()
-        #Instructor.objects.all()
-        return Student.objects.none()
-        
-
-class CoursesSuggestionsView(generics.ListAPIView):
-    serializer_class = SearchViewSerializer
-    
-    def get_queryset(self):
-        #Course.objects.all()
-        return Course.objects.none()
-
-
 class AccountsSearchView(generics.ListAPIView): 
     serializer_class = SearchViewSerializer
 
