@@ -31,7 +31,7 @@ class AccountsSearchView(generics.ListAPIView):
             return list(searchResults)
 
         # query with profile filter
-        profileFilter = self.request.query_params.get('profileFilter', None)
+        profileFilter = self.request.query_params.get('profile', None)
         if profileFilter is not None:
             filterToSearch = {
                 "Student" : getattr(StudentManager, "search"),
@@ -51,7 +51,7 @@ class AccountsSearchView(generics.ListAPIView):
 
             if profileFilter == "Student":
                 try:
-                    gradeFilter = int(self.request.query_params.get('gradeFilter', None))
+                    gradeFilter = int(self.request.query_params.get('grade', None))
                     if 1 <= gradeFilter and gradeFilter <= 12:
                         searchResults = Student.objects.filter(grade=gradeFilter)
                 except:
@@ -89,7 +89,7 @@ class AccountsSearchView(generics.ListAPIView):
 
         searchResults = list(searchResults)
         # extract searches in page range. Out of bounds page returns nothing
-        pageFilter = self.request.query_params.get('pageNumber', None)
+        pageFilter = self.request.query_params.get('page', None)
         if pageFilter is not None:
             try:
                 pageNumber = int(pageFilter)
@@ -132,7 +132,7 @@ class CoursesSearchView(generics.ListAPIView):
             searchResults = Course.objects.search(word, searchResults)
 
         # course filter
-        courseFilter = self.request.query_params.get('courseTypeFilter', None)
+        courseFilter = self.request.query_params.get('course', None)
         if courseFilter is not None:
             if courseFilter == "tutoring":
                 searchResults = searchResults.filter(max_capacity = 1)
@@ -168,7 +168,7 @@ class CoursesSearchView(generics.ListAPIView):
 
         searchResults = list(searchResults)
         # extract searches in page range
-        pageFilter = self.request.query_params.get('pageNumber', None)
+        pageFilter = self.request.query_params.get('page', None)
         if pageFilter is not None:
             try:
                 pageNumber = int(pageFilter)
