@@ -1,6 +1,7 @@
 from itertools import chain
 from rest_framework import generics
 from rest_framework.response import Response
+from operator import attrgetter
 
 from account.models import (
     Student,
@@ -78,9 +79,9 @@ class AccountsSearchView(generics.ListAPIView):
         sortFilter = self.request.query_params.get('sort', None)
         if sortFilter is not None:
             if sortFilter == "alphaAsc":
-                searchResults = sorted(searchResults, key=lambda obj:obj.user.first_name)
+                searchResults = sorted(searchResults, key=attrgetter('user.first_name','user.last_name'))
             elif sortFilter == "alphaDesc":
-                searchResults = sorted(searchResults, key=lambda obj:obj.user.first_name, reverse=True)
+                searchResults = sorted(searchResults, key=attrgetter('user.first_name','user.last_name'), reverse=True)
             elif sortFilter == "idAsc":
                 searchResults = sorted(searchResults, key=lambda obj:obj.user.id)
             elif sortFilter == "idDesc": 
