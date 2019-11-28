@@ -13,8 +13,8 @@ class Session(models.Model):
         blank=True,
         null=True,
     )
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
+    start_datetime = models.DateTimeField()
+    end_datetime = models.DateTimeField()
     is_confirmed = models.BooleanField(default=False)
 
     # Timestamps
