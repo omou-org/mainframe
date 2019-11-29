@@ -52,7 +52,7 @@ class AccountsSearchView(generics.ListAPIView):
             if profileFilter == "Student":
                 try:
                     gradeFilter = int(self.request.query_params.get('grade', None))
-                    if 1 <= gradeFilter and gradeFilter <= 12:
+                    if 1 <= gradeFilter and gradeFilter <= 13:
                         searchResults = Student.objects.filter(grade=gradeFilter)
                 except:
                     pass
@@ -137,7 +137,7 @@ class CoursesSearchView(generics.ListAPIView):
             if courseFilter == "tutoring":
                 searchResults = searchResults.filter(max_capacity = 1)
             if courseFilter == "group":
-                searchResults = searchResults.filter(max_capacity__lt = 5) 
+                searchResults = searchResults.filter(max_capacity__lte = 5) 
             if courseFilter == "class":
                 searchResults = searchResults.filter(max_capacity__gt = 5)
 
@@ -157,14 +157,14 @@ class CoursesSearchView(generics.ListAPIView):
         # sort results
         sortFilter = self.request.query_params.get('sort', None)
         if sortFilter is not None:
-            if sortFilter == "dateAsc":
-                searchResults = searchResults.order_by("start_date")
-            if sortFilter == "dateDesc":
-                searchResults = searchResults.order_by("-start_date")
-            if sortFilter == "timeAsc":
-                searchResults = searchResults.order_by("start_time")
-            if sortFilter == "timeDesc":
-                searchResults = searchResults.order_by("-start_time")
+            sortToParameter = {
+                "dateAsc":"start_date",
+                "dateDesc":"-start_date",
+                "timeAsc":"start_time",
+                "timeDesc":"-start_time"
+            }
+            if sortToParameter.get(sortFilter):
+                searchResults = searchResults.order_by(sortToParameter[sortFilter])
 
         searchResults = list(searchResults)
         # extract searches in page range
