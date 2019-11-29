@@ -1,11 +1,15 @@
 from itertools import chain
 from rest_framework import generics
 from rest_framework.response import Response
+from operator import attrgetter
 
 from account.models import (
     Student,
-    Parent,
-    Instructor
+    StudentManager,
+    Instructor,
+    InstructorManager,
+    Admin,
+    AdminManager
 )
 
 from course.models import (
@@ -22,47 +26,84 @@ class AccountsSearchView(generics.ListAPIView):
         searchResults = Student.objects.none()
 
         # query input check
-        query = self.request.query_params.get('query', None)
-        if query is None or False in [word.isalnum() for word in query.split()]:
-            return list(searchResults) 
+        queries = self.request.query_params.get('query', None)
+        if queries is None or False in [query.isalnum() for query in queries.split()]:
+            return list(searchResults)
 
         # query with profile filter
-        profileFilter = self.request.query_params.get('profileFilter', None)
+        profileFilter = self.request.query_params.get('profile', None)
         if profileFilter is not None:
-            if profileFilter == "Student":
-                searchResults = Student.objects.search(query);
+            filterToSearch = {
+                "Student" : getattr(StudentManager, "search"),
+                "Instructor" : getattr(InstructorManager, "search"),
+                "Admin" : getattr(AdminManager, "search"),
+            }
+            filterToModel = {
+                "Student" : Student.objects,
+                "Instructor" : Instructor.objects,
+                "Admin" : Admin.objects
+            }
+            adminTypeDic = {
+                "owner":"OWNER",
+                "receptionist":"RECEPTIONIST",
+                "assisstant":"ASSISSTANT"
+            }
 
-                gradeFilter = self.request.query_params.get('gradeFilter', None)
-                if gradeFilter is not None:
-                    try:
-                        gradeFilter = int(gradeFilter)
-                        if 1 <= gradeFilter and gradeFilter <= 12:
-                            searchResults = searchResults.filter(grade=gradeFilter)
-                    except ValueError:
-                        pass
-            elif profileFilter == "Instructor":
-                searchResults = Instructor.objects.search(query)
-            elif profileFilter == "Admin":
-                searchResults = Admin.objects.search(query)
+            if profileFilter == "Student":
+                try:
+                    gradeFilter = int(self.request.query_params.get('grade', None))
+                    if 1 <= gradeFilter and gradeFilter <= 13:
+                        searchResults = Student.objects.filter(grade=gradeFilter)
+                except:
+                    pass
+
+            for query in queries.split():
+                if profileFilter == "Admin" and adminTypeDic.get(query.lower()):
+                    query = adminTypeDic.get(query.lower())
+                
+                if filterToSearch.get(profileFilter):
+                    searchResults = filterToSearch[profileFilter](filterToModel[profileFilter], query, searchResults)
+
         # query on all models
         else:
-            searchResults = chain(
-                Student.objects.search(query),
-                Parent.objects.search(query),
-                Instructor.objects.search(query))
+            studentSearchResults = Student.objects.none()
+            instructorSearchResults = Instructor.objects.none()
+            adminSearchResults = Admin.objects.none()
+            for query in queries.split():
+                studentSearchResults = Student.objects.search(query, studentSearchResults)
+                instructorSearchResults = Instructor.objects.search(query, instructorSearchResults)
+                adminSearchResults = Admin.objects.search(query, adminSearchResults)
+            searchResults = chain(studentSearchResults, instructorSearchResults, adminSearchResults)
 
         # sort results
         sortFilter = self.request.query_params.get('sort', None)
         if sortFilter is not None:
             if sortFilter == "alphaAsc":
-                searchResults = sorted(searchResults, key=lambda obj:obj.user.first_name)
+                searchResults = sorted(searchResults, key=attrgetter('user.first_name','user.last_name'))
             elif sortFilter == "alphaDesc":
-                searchResults = sorted(searchResults, key=lambda obj:obj.user.first_name, reverse=True)
+                searchResults = sorted(searchResults, key=attrgetter('user.first_name','user.last_name'), reverse=True)
             elif sortFilter == "idAsc":
                 searchResults = sorted(searchResults, key=lambda obj:obj.user.id)
             elif sortFilter == "idDesc": 
                 searchResults = sorted(searchResults, key=lambda obj:obj.user.id, reverse=True)
-        return list(searchResults)
+
+        searchResults = list(searchResults)
+        # extract searches in page range. Out of bounds page returns nothing
+        pageFilter = self.request.query_params.get('page', None)
+        if pageFilter is not None:
+            try:
+                pageNumber = int(pageFilter)
+                pageSize = 8
+                resultLen = len(searchResults)
+                rangeEnd = pageSize*pageNumber
+                if pageNumber > 0 and rangeEnd-pageSize < resultLen:
+                    searchResults = searchResults[rangeEnd-pageSize : resultLen if resultLen <= rangeEnd else rangeEnd]
+                else:
+                    searchResults = Student.objects.none()
+            except ValueError:
+                pass
+
+        return searchResults
 
 class CoursesSearchView(generics.ListAPIView):
     serializer_class = SearchViewSerializer
@@ -75,28 +116,28 @@ class CoursesSearchView(generics.ListAPIView):
         if query is None or False in [word.isalnum() for word in query.split()]:
             return list(searchResults) 
 
-        dateDic = {
-            "monday":"MON",
-            "tuesday":"TUE",
-            "wednesday":"WED",
-            "thursday":"THU",
-            "friday":"FRI",
-            "saturday":"SAT",
-            "sunday":"SUN"
-        }
-        # date check
-        if dateDic.get(query):
-            searchResults = Course.objects.search(dateDic[query])
-        else:
-            searchResults = Course.objects.search(query)
+        for word in query.split():
+            dayOfWeekDic = {
+                "monday":"MON",
+                "tuesday":"TUE",
+                "wednesday":"WED",
+                "thursday":"THU",
+                "friday":"FRI",
+                "saturday":"SAT",
+                "sunday":"SUN"
+            }
+            # date check
+            if dayOfWeekDic.get(word.lower()):
+                word = dayOfWeekDic.get(word.lower())
+            searchResults = Course.objects.search(word, searchResults)
 
         # course filter
-        courseFilter = self.request.query_params.get('courseTypeFilter', None)
+        courseFilter = self.request.query_params.get('course', None)
         if courseFilter is not None:
             if courseFilter == "tutoring":
                 searchResults = searchResults.filter(max_capacity = 1)
             if courseFilter == "group":
-                searchResults = searchResults.filter(max_capacity__lt = 5) 
+                searchResults = searchResults.filter(max_capacity__lte = 5) 
             if courseFilter == "class":
                 searchResults = searchResults.filter(max_capacity__gt = 5)
 
@@ -116,12 +157,29 @@ class CoursesSearchView(generics.ListAPIView):
         # sort results
         sortFilter = self.request.query_params.get('sort', None)
         if sortFilter is not None:
-            if sortFilter == "dateAsc":
-                searchResults = searchResults.order_by("start_date")
-            if sortFilter == "dateDesc":
-                searchResults = searchResults.order_by("-start_date")
-            if sortFilter == "timeAsc":
-                searchResults = searchResults.order_by("start_time")
-            if sortFilter == "timeDesc":
-                searchResults = searchResults.order_by("-start_time")
-        return list(searchResults)
+            sortToParameter = {
+                "dateAsc":"start_date",
+                "dateDesc":"-start_date",
+                "timeAsc":"start_time",
+                "timeDesc":"-start_time"
+            }
+            if sortToParameter.get(sortFilter):
+                searchResults = searchResults.order_by(sortToParameter[sortFilter])
+
+        searchResults = list(searchResults)
+        # extract searches in page range
+        pageFilter = self.request.query_params.get('page', None)
+        if pageFilter is not None:
+            try:
+                pageNumber = int(pageFilter)
+                pageSize = 8
+                resultLen = len(searchResults)
+                rangeEnd = pageSize*pageNumber
+                if pageNumber > 0 and rangeEnd-pageSize < resultLen:
+                    searchResults = searchResults[rangeEnd-pageSize : resultLen if resultLen <= rangeEnd else rangeEnd]
+                else:
+                    searchResults = Course.objects.none()
+            except ValueError:
+                pass
+
+        return searchResults

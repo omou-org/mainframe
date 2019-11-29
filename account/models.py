@@ -63,8 +63,12 @@ class UserInfo(models.Model):
 
 
 class StudentManager(models.Manager):
-    def search(self, query=None):
-        qs = self.get_queryset()
+    def search(self, query=None, qs_initial=None):
+        if qs_initial is None or len(qs_initial) == 0:
+            qs = self.get_queryset()
+        else:
+            qs = qs_initial
+
         if query is not None:
             or_lookup = (Q(user__first_name__icontains=query) |
                 Q(user__last_name__icontains=query) |
@@ -82,7 +86,7 @@ class StudentManager(models.Manager):
                 Q(secondary_parent__user__last_name__icontains=query))
             try:
                 query = int(query)
-                or_lookup |= (Q(age=query) | Q(grade=query))
+                or_lookup |= Q(grade=query)
             except ValueError:
                 pass
             qs = qs.filter(or_lookup).distinct() # distinct() is often necessary with Q lookups
@@ -134,8 +138,12 @@ class Student(UserInfo):
 
 
 class ParentManager(models.Manager):
-    def search(self, query=None):
-        qs = self.get_queryset()
+    def search(self, query=None, qs_initial=None):
+        if qs_initial is None or len(qs_initial) == 0:
+            qs = self.get_queryset()
+        else:
+            qs = qs_initial
+
         if query is not None:
             or_lookup = (Q(user__first_name__icontains=query) |
                 Q(user__last_name__icontains=query) |
@@ -177,8 +185,12 @@ class Parent(UserInfo):
 
 
 class InstructorManager(models.Manager):
-    def search(self, query=None):
-        qs = self.get_queryset()
+    def search(self, query=None, qs_initial=None):
+        if qs_initial is None or len(qs_initial) == 0:
+            qs = self.get_queryset()
+        else:
+            qs = qs_initial
+
         if query is not None:
             or_lookup = (Q(user__first_name__icontains=query) |
                 Q(user__last_name__icontains=query) |
@@ -188,11 +200,6 @@ class InstructorManager(models.Manager):
                 Q(phone_number__icontains=query) |
                 Q(state__icontains=query) |
                 Q(zipcode__icontains=query))
-            try:
-                query = int(query)
-                or_lookup |= (Q(age=query))
-            except ValueError:
-                pass
             qs = qs.filter(or_lookup).distinct()
         return qs
 
@@ -200,6 +207,25 @@ class InstructorManager(models.Manager):
 class Instructor(UserInfo):
     objects = InstructorManager()
 
+class AdminManager(models.Manager):
+    def search(self, query=None, qs_initial=None):
+        if qs_initial is None or len(qs_initial) == 0:
+            qs = self.get_queryset()
+        else:
+            qs = qs_initial
+
+        if query is not None:
+            or_lookup = (Q(user__first_name__icontains=query) |
+                Q(user__last_name__icontains=query) |
+                Q(user__email__icontains=query) |
+                Q(address__icontains=query) |
+                Q(city__icontains=query) |
+                Q(phone_number__icontains=query) |
+                Q(state__icontains=query) |
+                Q(zipcode__icontains=query) |
+                Q(admin_type__icontains=query))
+            qs = qs.filter(or_lookup).distinct()
+        return qs
 
 class Admin(UserInfo):
     OWNER_TYPE = "OWNER"
@@ -215,3 +241,5 @@ class Admin(UserInfo):
         max_length=20,
         choices=TYPE_CHOICES
     )
+
+    objects = AdminManager()
