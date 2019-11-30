@@ -8,6 +8,8 @@ from account.models import (
     StudentManager,
     Instructor,
     InstructorManager,
+    Parent,
+    ParentManager,
     Admin,
     AdminManager
 )
@@ -34,14 +36,16 @@ class AccountsSearchView(generics.ListAPIView):
         profileFilter = self.request.query_params.get('profile', None)
         if profileFilter is not None:
             filterToSearch = {
-                "Student" : getattr(StudentManager, "search"),
-                "Instructor" : getattr(InstructorManager, "search"),
-                "Admin" : getattr(AdminManager, "search"),
+                "student" : getattr(StudentManager, "search"),
+                "instructor" : getattr(InstructorManager, "search"),
+                "parent" : getattr(ParentManager, "search"),
+                "admin" : getattr(AdminManager, "search"),
             }
             filterToModel = {
-                "Student" : Student.objects,
-                "Instructor" : Instructor.objects,
-                "Admin" : Admin.objects
+                "student" : Student.objects,
+                "instructor" : Instructor.objects,
+                "parent" : Parent.objects,
+                "admin" : Admin.objects
             }
             adminTypeDic = {
                 "owner":"OWNER",
@@ -49,7 +53,7 @@ class AccountsSearchView(generics.ListAPIView):
                 "assisstant":"ASSISSTANT"
             }
 
-            if profileFilter == "Student":
+            if profileFilter == "student":
                 try:
                     gradeFilter = int(self.request.query_params.get('grade', None))
                     if 1 <= gradeFilter and gradeFilter <= 13:
@@ -58,7 +62,7 @@ class AccountsSearchView(generics.ListAPIView):
                     pass
 
             for query in queries.split():
-                if profileFilter == "Admin" and adminTypeDic.get(query.lower()):
+                if profileFilter == "admin" and adminTypeDic.get(query.lower()):
                     query = adminTypeDic.get(query.lower())
                 
                 if filterToSearch.get(profileFilter):
