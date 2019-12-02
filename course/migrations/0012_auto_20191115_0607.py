@@ -10,14 +10,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='course',
-            name='id',
-        ),
         migrations.AddField(
             model_name='course',
             name='course_id',
-            field=models.CharField(default='0', max_length=50, primary_key=True, serialize=False),
+            field=models.CharField(default='0', max_length=50, serialize=False),
             preserve_default=False,
         ),
     ]

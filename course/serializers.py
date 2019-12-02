@@ -1,7 +1,9 @@
 from datetime import datetime
+import uuid
 
 import arrow
 from django.db import transaction
+from django.db.models import Max
 
 from course.models import EnrollmentNote, CourseNote, Course, CourseCategory, Enrollment
 from scheduler.models import Session
@@ -66,11 +68,12 @@ class CourseSerializer(serializers.ModelSerializer):
         with transaction.atomic():
             # create course
             course = Course.objects.create(**validated_data)
-            course.save()
+            num_sessions = 0
             if course.start_date and course.end_date:
                 current_date = arrow.get(course.start_date)
                 end_date = arrow.get(course.end_date)
                 while current_date <= end_date:
+                    print(current_date, end_date)
                     start_datetime = datetime.combine(
                         current_date.datetime,
                         course.start_time
@@ -86,15 +89,17 @@ class CourseSerializer(serializers.ModelSerializer):
                         is_confirmed=course.type == 'C'
                     )
                     session.save()
-                    current_date.shift(weeks=+1)
+                    num_sessions += 1
+                    current_date = current_date.shift(weeks=+1)
 
+            course.num_sessions = num_sessions
+            course.save()
             return course
 
     class Meta:
         model = Course
 
         fields = (
-            'course_id',
             'subject',
             'type',
             'description',
