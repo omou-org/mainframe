@@ -18,6 +18,6 @@ router.register(r'instructor', InstructorViewSet)
 router.register(r'note', NoteViewSet)
 
 urlpatterns = [
-    path(r'user', CurrentUserView.as_view()),
+    path(r'user/', CurrentUserView.as_view()),
     path(r'', include(router.urls))
 ]

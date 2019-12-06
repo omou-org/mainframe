@@ -55,7 +55,7 @@ class Course(models.Model):
         choices=TYPE_CHOICES,
         default=CLASS,
     )
-    course_id = models.CharField(max_length=50, primary_key=True)
+    course_id = models.CharField(max_length=50, blank=True)
     subject = models.CharField(max_length=100)
     description = models.CharField(max_length=1000, null=True, blank=True)
     instructor = models.ForeignKey(Instructor, on_delete=models.PROTECT, null=True, blank=True)
@@ -66,6 +66,7 @@ class Course(models.Model):
     day_of_week = models.CharField(max_length=27)
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
+    num_sessions = models.IntegerField(default=0)
     start_time = models.TimeField()
     end_time = models.TimeField()
     max_capacity = models.IntegerField(null=True, blank=True)

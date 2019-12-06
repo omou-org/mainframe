@@ -13,7 +13,7 @@ from course.serializers import (
     EnrollmentSerializer,
 )
 
-from mainframe.permissions import ReadOnly
+from mainframe.permissions import IsDev, ReadOnly
 
 
 class CourseNoteViewSet(viewsets.ModelViewSet):
@@ -34,8 +34,8 @@ class CourseViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows courses to be viewed or edited
     """
-    # authentication_classes = [TokenAuthentication]
-    # permission_classes = [IsAdminUser | (IsAuthenticated & ReadOnly)]
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsDev | (IsAuthenticated & (IsAdminUser | ReadOnly))]
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
 
@@ -45,7 +45,7 @@ class CourseCategoryViewSet(viewsets.ModelViewSet):
     API endpoint that allows course categories to be viewed or edited
     """
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAdminUser | (IsAuthenticated & ReadOnly)]
+    permission_classes = [IsDev | (IsAuthenticated & (IsAdminUser | ReadOnly))]
     queryset = CourseCategory.objects.all()
     serializer_class = CourseCategorySerializer
 
