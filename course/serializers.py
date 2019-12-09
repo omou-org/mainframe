@@ -1,9 +1,7 @@
 from datetime import datetime
-import uuid
 
 import arrow
 from django.db import transaction
-from django.db.models import Max
 
 from course.models import EnrollmentNote, CourseNote, Course, CourseCategory, Enrollment
 from scheduler.models import Session

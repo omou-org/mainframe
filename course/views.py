@@ -70,7 +70,7 @@ class EnrollmentNoteViewSet(viewsets.ModelViewSet):
         override list to return notes for specific enrollment
         """
         enrollment_id = request.query_params.get("enrollment_id", None)
-        queryset = self.get_queryset().filter(enrollment_id = enrollment_id)
+        queryset = self.get_queryset().filter(enrollment_id=enrollment_id)
         serializer = EnrollmentNoteSerializer(queryset, many=True)
         return Response(serializer.data)
 
@@ -81,3 +81,17 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
     """
     queryset = Enrollment.objects.all()
     serializer_class = EnrollmentSerializer
+
+    def list(self, request):
+        """
+        override list to return enrollments by student id or course id
+        """
+        student_id = request.query_params.get("student_id", None)
+        course_id = request.query_params.get("course_id", None)
+        queryset = self.get_queryset()
+        if student_id:
+            queryset = self.get_queryset().filter(student__user_uuid=student_id)
+        elif course_id:
+            queryset = self.get_queryset().filter(course=course_id)
+        serializer = self.get_serializer_class()(queryset, many=True)
+        return Response(serializer.data)
