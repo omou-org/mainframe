@@ -77,7 +77,7 @@ class EnrollmentNoteViewSet(viewsets.ModelViewSet):
 
 class EnrollmentViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows enrollments to be created ot edited
+    API endpoint that allows enrollments to be created or edited
     """
     queryset = Enrollment.objects.all()
     serializer_class = EnrollmentSerializer
@@ -90,8 +90,8 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
         course_id = request.query_params.get("course_id", None)
         queryset = self.get_queryset()
         if student_id:
-            queryset = self.get_queryset().filter(student__user_uuid=student_id)
+            queryset = queryset.filter(student__user_uuid=student_id)
         elif course_id:
-            queryset = self.get_queryset().filter(course=course_id)
+            queryset = queryset.filter(course=course_id)
         serializer = self.get_serializer_class()(queryset, many=True)
         return Response(serializer.data)
