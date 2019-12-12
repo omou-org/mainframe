@@ -23,6 +23,7 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
+    path('pricing/', include('pricing.urls')),
     path('search/', include('search.urls')),
     path('course/', include('course.urls')),
     path('account/', include('account.urls')),
