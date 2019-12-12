@@ -53,6 +53,7 @@ API_APPS = (
     "course.apps.CourseConfig",
     "scheduler.apps.SchedulerConfig",
     "search.apps.SearchConfig",
+    "pricing.apps.PricingConfig",
     "payment.apps.PaymentConfig",
 )
 COMMON_APPS = (
