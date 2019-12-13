@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from pricing.models import  PriceRule, StaticPrice
+from pricing.models import PriceRule
 
 
 class PriceRuleSerializer(serializers.ModelSerializer):
@@ -17,8 +17,7 @@ class PriceRuleSerializer(serializers.ModelSerializer):
             'hourly_tuition',
             'category',
             'academic_level',
-            'min_capacity',
-            'max_capacity',
+            'course_type',
             'updated_at',
             'created_at',
         )

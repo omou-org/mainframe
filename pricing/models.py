@@ -4,7 +4,7 @@ from course.models import CourseCategory
 # Create your models here.
 
 
-class Price(models.Model):
+class PriceRule(models.Model):
     # Basic price information
     name = models.CharField(
         max_length=1000,
@@ -13,7 +13,10 @@ class Price(models.Model):
     )
     hourly_tuition = models.DecimalField(max_digits=5, decimal_places=2)
     category = models.ForeignKey(
-        CourseCategory, on_delete=models.PROTECT, blank=True, null=True)
+        CourseCategory,
+        on_delete=models.PROTECT,
+        default=-1,
+    )
     ELEMENTARY_LVL = "elementary_lvl"
     MIDDLE_LVL = "middle_lvl"
     HIGH_LVL = "high_lvl"
@@ -28,11 +31,21 @@ class Price(models.Model):
     academic_level = models.CharField(
         max_length=20,
         choices=ACADEMIC_CHOICES,
-        blank=True,
-        null=True,
+        default=ELEMENTARY_LVL
     )
-    min_capacity = models.IntegerField(null=True, blank=True)
-    max_capacity = models.IntegerField(null=True, blank=True)
+    TUTORING = "tutoring"
+    SMALL_GROUP = "small_group"
+    CLASS = "class"
+    COURSE_CHOICES = (
+        (TUTORING, "Tutoring"),
+        (SMALL_GROUP, "Small group"),
+        (CLASS, "Class"),
+    )
+    course_type = models.CharField(
+        max_length=20,
+        choices=COURSE_CHOICES,
+        default=TUTORING
+    )
 
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)
