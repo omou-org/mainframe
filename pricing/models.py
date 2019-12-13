@@ -11,7 +11,7 @@ class PriceRule(models.Model):
         blank=True,
         null=True,
     )
-    hourly_tuition = models.DecimalField(max_digits=5, decimal_places=2)
+    hourly_tuition = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
     category = models.ForeignKey(
         CourseCategory,
         on_delete=models.PROTECT,
