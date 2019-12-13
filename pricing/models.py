@@ -9,12 +9,12 @@ class Price(models.Model):
         blank=True,
         null=True,
     )
+    hourly_tuition = models.DecimalField(max_digits=5, decimal_places=2)
 
-    # List of Applied Courses - Static Pricing
-    @property
-    def course_id_list(self):
-        return [course.id for course in self.course_set.all()]
+    class Meta:
+        abstract = True
 
+class PriceRule(Price):
     # Price Rule fields
     category = models.ForeignKey(
         CourseCategory, on_delete=models.PROTECT, null=True)
@@ -37,3 +37,9 @@ class Price(models.Model):
     )
     min_capacity = models.IntegerField(null=True, blank=True)
     max_capacity = models.IntegerField(null=True, blank=True)
+
+class StaticPrice(Price):
+    # List of associated courses with the tuition
+    @property
+    def course_list(self):
+        return [course_id for course_id in self.course_set.all()]
