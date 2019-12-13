@@ -2,6 +2,8 @@ from django.db import models
 from course.models import CourseCategory
 
 # Create your models here.
+
+
 class Price(models.Model):
     # Basic price information
     name = models.CharField(
@@ -13,6 +15,7 @@ class Price(models.Model):
 
     class Meta:
         abstract = True
+
 
 class PriceRule(Price):
     # Price Rule fields
@@ -37,6 +40,7 @@ class PriceRule(Price):
     )
     min_capacity = models.IntegerField(null=True, blank=True)
     max_capacity = models.IntegerField(null=True, blank=True)
+
 
 class StaticPrice(Price):
     # List of associated courses with the tuition
