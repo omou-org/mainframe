@@ -71,7 +71,6 @@ class CourseSerializer(serializers.ModelSerializer):
                 current_date = arrow.get(course.start_date)
                 end_date = arrow.get(course.end_date)
                 while current_date <= end_date:
-                    print(current_date, end_date)
                     start_datetime = datetime.combine(
                         current_date.datetime,
                         course.start_time

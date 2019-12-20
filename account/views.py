@@ -9,7 +9,8 @@ from account.models import (
     Admin,
     Student,
     Parent,
-    Instructor
+    Instructor,
+    InstructorAvailability,
 )
 from account.serializers import (
     NoteSerializer,
@@ -17,6 +18,7 @@ from account.serializers import (
     StudentSerializer,
     ParentSerializer,
     InstructorSerializer,
+    InstructorAvailablitySerializer,
     UserSerializer,
 )
 from mainframe.permissions import ReadOnly, IsDev
@@ -70,6 +72,16 @@ class InstructorViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsAdminUser | ReadOnly]
     queryset = Instructor.objects.all()
     serializer_class = InstructorSerializer
+
+
+class InstructorAvailabilityViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows instructors to be viewed or edited
+    """
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser | ReadOnly]
+    queryset = InstructorAvailability.objects.all()
+    serializer_class = InstructorAvailablitySerializer
 
 
 class AdminViewSet(viewsets.ModelViewSet):

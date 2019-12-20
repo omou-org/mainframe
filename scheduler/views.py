@@ -1,3 +1,4 @@
+from datetime import datetime
 
 from rest_framework import viewsets
 from rest_framework.authentication import TokenAuthentication
@@ -10,7 +11,6 @@ from scheduler.serializers import (
 )
 
 from course.models import Course
-from mainframe.permissions import IsDev, ReadOnly
 from scheduler.models import Session
 from scheduler.serializers import
 

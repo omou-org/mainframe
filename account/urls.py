@@ -7,6 +7,7 @@ from account.views import (
     StudentViewSet,
     ParentViewSet,
     InstructorViewSet,
+    InstructorAvailabilityViewSet,
     CurrentUserView,
 )
 
@@ -15,6 +16,7 @@ router.register(r'admin', AdminViewSet)
 router.register(r'student', StudentViewSet)
 router.register(r'parent', ParentViewSet)
 router.register(r'instructor', InstructorViewSet)
+router.register(r'instructor-availability', InstructorAvailabilityViewSet)
 router.register(r'note', NoteViewSet)
 
 urlpatterns = [
