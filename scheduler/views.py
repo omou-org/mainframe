@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from rest_framework import viewsets
 from rest_framework.authentication import TokenAuthentication
@@ -25,7 +25,17 @@ class SessionViewSet(viewsets.ModelViewSet):
         queryset = self.get_queryset()
         if view_option == "class":
             queryset = queryset.filter(course__type=Course.CLASS)
-        if view_option == "tutoring":
+        elif view_option == "tutoring":
             queryset = queryset.filter(course__type=Course.TUTORING)
+
+        now = datetime.now()
+        if time_frame == "day":
+            start_of_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
+            queryset = queryset.filter(
+                start_datetime__gte=start_of_day)
+        elif time_frame == "week":
+            pass
+        elif time_frame == "month":
+            pass
         serializer = self.get_serializer_class()(queryset, many=True)
         return Response(serializer.data)
