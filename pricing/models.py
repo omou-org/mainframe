@@ -1,5 +1,6 @@
 from django.db import models
 from course.models import CourseCategory
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 # Create your models here.
 
@@ -11,7 +12,7 @@ class PriceRule(models.Model):
         blank=True,
         null=True,
     )
-    hourly_tuition = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
+    hourly_tuition = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     category = models.ForeignKey(
         CourseCategory,
         on_delete=models.PROTECT,
@@ -50,3 +51,63 @@ class PriceRule(models.Model):
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+
+class Discount(models.Model):
+    # Basic discount information
+    name = models.CharField(
+        max_length=1000,
+        blank=True,
+        null=True,
+    )
+    description = models.CharField(
+        max_length=1000,
+        blank=True,
+        null=True,
+    )
+    amount = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
+    PERCENT = "percent"
+    FIXED = "fixed"
+
+    AMOUNT_CHOICES = (
+        (PERCENT, "percent"),
+        (FIXED, "fixed"),
+    )
+    amount_type = models.CharField(
+        max_length=10,
+        choices=AMOUNT_CHOICES,
+        default=FIXED,
+    )
+
+    # Timestamps
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class MultiCourseDiscount(Discount):
+    discount = Discount()
+
+    num_classes = models.IntegerField(
+        validators=[MinValueValidator(2), MaxValueValidator(1000)],
+    )
+    num_accounts = models.IntegerField(
+        validators=[MinValueValidator(2), MaxValueValidator(1000)],
+        blank=True,
+        null=True,
+    )
+
+
+class DateRangeDiscount(Discount):
+    discount = Discount()
+
+    start_date = models.DateField()
+    end_date = models.DateField()
+
+
+class PaymentMethodDiscount(Discount):
+    discount = Discount()
+
+    payment_method = models.CharField(max_length=50)
+
+
