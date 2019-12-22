@@ -1,6 +1,12 @@
 from rest_framework import serializers
 
-from pricing.models import PriceRule
+from pricing.models import (
+    PriceRule,
+    Discount,
+    DateRangeDiscount,
+    MultiCourseDiscount,
+    PaymentMethodDiscount,
+)
 
 
 class PriceRuleSerializer(serializers.ModelSerializer):
@@ -21,3 +27,85 @@ class PriceRuleSerializer(serializers.ModelSerializer):
             'updated_at',
             'created_at',
         )
+
+
+class DiscountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Discount
+        read_only_fields = (
+            'id',
+            'updated_at',
+            'created_at',
+        )
+        fields = (
+            'id',
+            'name',
+            'description',
+            'amount',
+            'amount_type',
+            'updated_at',
+            'created_at',
+        )
+
+
+class MultiCourseDiscountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MultiCourseDiscount
+        read_only_fields = (
+            'id',
+            'updated_at',
+            'created_at',
+        )
+        fields = (
+            'id',
+            'name',
+            'description',
+            'num_classes',
+            'num_accounts',
+            'amount',
+            'amount_type',
+            'updated_at',
+            'created_at',
+        )
+
+
+class DateRangeDiscountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DateRangeDiscount
+        read_only_fields = (
+            'id',
+            'updated_at',
+            'created_at',
+        )
+        fields = (
+            'id',
+            'name',
+            'description',
+            'start_date',
+            'end_date',
+            'amount',
+            'amount_type',
+            'updated_at',
+            'created_at',
+        )
+
+
+class PaymentMethodDiscountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PaymentMethodDiscount
+        read_only_fields = (
+            'id',
+            'updated_at',
+            'created_at',
+        )
+        fields = (
+            'id',
+            'name',
+            'description',
+            'payment_method',
+            'amount',
+            'amount_type',
+            'updated_at',
+            'created_at',
+        )
+
