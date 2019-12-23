@@ -6,10 +6,6 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 
-from scheduler.serializers import (
-    SessionSerializer
-)
-
 from course.models import Course
 from scheduler.models import Session
 from scheduler.serializers import SessionSerializer
@@ -22,6 +18,7 @@ class SessionViewSet(viewsets.ModelViewSet):
     def list(self, request):
         time_frame = request.query_params.get("time_frame", None)
         view_option = request.query_params.get("view_option", None)
+        time_shift = int(request.query_params.get("time_shift", 0))
         queryset = self.get_queryset()
         if view_option == "class":
             queryset = queryset.filter(course__type=Course.CLASS)
@@ -29,24 +26,30 @@ class SessionViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(course__type=Course.TUTORING)
 
         now = datetime.now()
-        start_of_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        base = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        print(time_shift)
         if time_frame == "day":
+            start_of_day = base + timedelta(days=time_shift)
             end_of_day = start_of_day + timedelta(days=1)
             queryset = queryset.filter(
                 start_datetime__gte=start_of_day,
                 end_datetime__lt=end_of_day
             )
         elif time_frame == "week":
-            start_of_week = start_of_day - timedelta(days=(start_of_day.weekday() + 1) % 7)
+            start_of_week = base - timedelta(days=(base.weekday() + 1) % 7)
+            start_of_week += timedelta(days=7 * time_shift)
             end_of_week = start_of_week + timedelta(days=7)
             queryset = queryset.filter(
                 start_datetime__gte=start_of_week,
                 end_datetime__lt=end_of_week
             )
         elif time_frame == "month":
-            start_of_month = start_of_day.replace(day=1)
+            start_of_month = base.replace(day=1)
             if start_of_month.month == 12:
-                end_of_month = start_of_month.replace(month=1)
+                end_of_month = start_of_month.replace(
+                    year=start_of_month.year + 1,
+                    month=1
+                )
             else:
                 end_of_month = start_of_month.replace(month=start_of_month.month + 1)
             queryset = queryset.filter(
