@@ -12,12 +12,12 @@ from scheduler.serializers import (
 
 from course.models import Course
 from scheduler.models import Session
-from scheduler.serializers import
+from scheduler.serializers import SessionSerializer
 
 
 class SessionViewSet(viewsets.ModelViewSet):
-   queryset = Session.objects.all()
-   serializer_class = SessionSerializer
+    queryset = Session.objects.all()
+    serializer_class = SessionSerializer
 
     def list(self, request):
         time_frame = request.query_params.get("time_frame", None)
