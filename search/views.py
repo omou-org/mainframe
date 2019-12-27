@@ -90,6 +90,10 @@ class AccountsSearchView(generics.ListAPIView):
                 searchResults = sorted(searchResults, key=lambda obj:obj.user.id)
             elif sortFilter == "idDesc": 
                 searchResults = sorted(searchResults, key=lambda obj:obj.user.id, reverse=True)
+            elif sortFilter == "updateAsc":
+                searchResults = sorted(searchResults, key=lambda obj:obj.updated_at)
+            elif sortFilter == "updateDesc":
+                searchResults = sorted(searchResults, key=lambda obj:obj.updated_at, reverse=True)
 
         searchResults = list(searchResults)
         # extract searches in page range. Out of bounds page returns nothing
