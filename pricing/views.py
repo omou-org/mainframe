@@ -1,11 +1,13 @@
 from django.shortcuts import render
 from pricing.models import PriceRule
 from rest_framework import viewsets
+from rest_framework.views import APIView
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from mainframe.permissions import IsDev, ReadOnly
+import json
 
 from pricing.serializers import PriceRuleSerializer
 
@@ -21,3 +23,32 @@ class PriceRuleViewSet(viewsets.ModelViewSet):
     queryset = PriceRule.objects.all()
     serializer_class = PriceRuleSerializer
 
+class QuoteTotalView(APIView): 
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsDev | (IsAuthenticated & (IsAdminUser | ReadOnly))]
+
+    def get(self, request):
+        # load request body
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        
+        contacts = body["contacts"]
+        for contact in contacts:
+            print(contact)
+
+        return Response("test")
+
+        # payment_method
+        # courses
+            # course_id
+            # sessions
+        # tutoring
+            # category_id
+            # academic_level
+            # sessions
+            # duration
+        # students
+            # id
+        # disabled_discounts
+            # id
+        # price_adjustment

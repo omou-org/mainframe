@@ -5,7 +5,7 @@ from pricing import views
 router = routers.DefaultRouter()
 router.register(r'rule', views.PriceRuleViewSet)
 
-
 urlpatterns = [
-    path('', include(router.urls))
+    path('', include(router.urls)),
+    path(r'quote', views.QuoteTotalView.as_view())
 ]
