@@ -88,13 +88,8 @@ class Discount(models.Model):
 class MultiCourseDiscount(Discount):
     discount = Discount()
 
-    num_classes = models.IntegerField(
+    num_sessions = models.IntegerField(
         validators=[MinValueValidator(2), MaxValueValidator(1000)],
-    )
-    num_accounts = models.IntegerField(
-        validators=[MinValueValidator(2), MaxValueValidator(1000)],
-        blank=True,
-        null=True,
     )
 
 
