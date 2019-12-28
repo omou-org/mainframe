@@ -44,9 +44,21 @@ class CourseManager(models.Manager):
 class Course(models.Model):
     CLASS = 'C'
     TUTORING = 'T'
+    SMALL_GROUP = 'S'
     TYPE_CHOICES = (
         (CLASS, 'Class'),
+        (SMALL_GROUP, 'Small Group'),
         (TUTORING, 'Tutoring'),
+    )
+    ELEMENTARY_LEVEL = 'elementary'
+    MIDDLE_LEVEL = 'middle'
+    HIGH_LEVEL = 'high'
+    COLLEGE_LEVEL = 'college'
+    ACADEMIC_LEVEL_CHOICES = (
+        (ELEMENTARY_LEVEL, 'Elementary School Level'),
+        (MIDDLE_LEVEL, 'Middle School Level'),
+        (HIGH_LEVEL, 'High School Level'),
+        (COLLEGE_LEVEL, 'College Level'),
     )
 
     # Course information
