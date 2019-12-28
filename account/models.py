@@ -207,6 +207,33 @@ class InstructorManager(models.Manager):
 class Instructor(UserInfo):
     objects = InstructorManager()
 
+
+class InstructorAvailability(models.Model):
+    instructor = models.ForeignKey(
+        Instructor,
+        on_delete=models.PROTECT,
+    )
+
+    monday_start_time = models.TimeField(null=True, blank=True)
+    monday_end_time = models.TimeField(null=True, blank=True)
+    tuesday_start_time = models.TimeField(null=True, blank=True)
+    tuesday_end_time = models.TimeField(null=True, blank=True)
+    wednesday_start_time = models.TimeField(null=True, blank=True)
+    wednesday_end_time = models.TimeField(null=True, blank=True)
+    thursday_start_time = models.TimeField(null=True, blank=True)
+    thursday_end_time = models.TimeField(null=True, blank=True)
+    friday_start_time = models.TimeField(null=True, blank=True)
+    friday_end_time = models.TimeField(null=True, blank=True)
+    saturday_start_time = models.TimeField(null=True, blank=True)
+    saturday_end_time = models.TimeField(null=True, blank=True)
+    sunday_start_time = models.TimeField(null=True, blank=True)
+    sunday_end_time = models.TimeField(null=True, blank=True)
+
+    # Timestamps
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
 class AdminManager(models.Manager):
     def search(self, query=None, qs_initial=None):
         if qs_initial is None or len(qs_initial) == 0:
@@ -226,6 +253,7 @@ class AdminManager(models.Manager):
                 Q(admin_type__icontains=query))
             qs = qs.filter(or_lookup).distinct()
         return qs
+
 
 class Admin(UserInfo):
     OWNER_TYPE = "OWNER"
