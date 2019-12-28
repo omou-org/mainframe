@@ -80,6 +80,8 @@ class Discount(models.Model):
         default=FIXED,
     )
 
+    active = models.BooleanField(default=True)
+
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)

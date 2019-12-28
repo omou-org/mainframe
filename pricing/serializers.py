@@ -43,6 +43,7 @@ class DiscountSerializer(serializers.ModelSerializer):
             'description',
             'amount',
             'amount_type',
+            'active',
             'updated_at',
             'created_at',
         )
@@ -63,6 +64,7 @@ class MultiCourseDiscountSerializer(serializers.ModelSerializer):
             'num_sessions',
             'amount',
             'amount_type',
+            'active',
             'updated_at',
             'created_at',
         )
@@ -104,6 +106,7 @@ class PaymentMethodDiscountSerializer(serializers.ModelSerializer):
             'payment_method',
             'amount',
             'amount_type',
+            'active',
             'updated_at',
             'created_at',
         )
