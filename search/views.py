@@ -90,6 +90,10 @@ class AccountsSearchView(generics.ListAPIView):
                 searchResults = sorted(searchResults, key=lambda obj:obj.user.id)
             elif sortFilter == "idDesc": 
                 searchResults = sorted(searchResults, key=lambda obj:obj.user.id, reverse=True)
+            elif sortFilter == "updateAsc":
+                searchResults = sorted(searchResults, key=lambda obj:obj.updated_at)
+            elif sortFilter == "updateDesc":
+                searchResults = sorted(searchResults, key=lambda obj:obj.updated_at, reverse=True)
 
         searchResults = list(searchResults)
         # extract searches in page range. Out of bounds page returns nothing
@@ -144,6 +148,17 @@ class CoursesSearchView(generics.ListAPIView):
                 searchResults = searchResults.filter(max_capacity__lte = 5) 
             if courseFilter == "class":
                 searchResults = searchResults.filter(max_capacity__gt = 5)
+        
+        # size filter
+        sizeFilter = self.request.query_params.get('size', None)
+        if sizeFilter is not None:
+            size = int(sizeFilter)
+            course_ids = []
+            for course in searchResults:
+                curr_size = len(Enrollment.objects.filter(course = course.course_id))
+                if curr_size <= size:
+                    course_ids.append(course.course_id)
+            searchResults = Course.objects.filter(course_id__in = course_ids) 
 
         # availability filter
         availabilityFilter = self.request.query_params.get('availability', None)
