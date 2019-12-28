@@ -48,90 +48,86 @@ class QuoteTotalView(APIView):
         # load request body
         body_unicode = request.body.decode('utf-8')
         body = json.loads(body_unicode)
-
-        # payment_method
-        # courses
-            # course_id
-            # sessions
-        # tutoring
-            # category_id
-            # academic_level
-            # sessions
-            # duration
-        # students
-            # id
-        # disabled_discounts
-            # id
-        # price_adjustment
         
         course_students = set()
+        sub_total = 0.0      
 
-        sub_total_course = 0.0
-        sub_total_smallGroup = 0.0
-        sub_total_tutoring = 0.0
-
-        # extract courses costs
-        for course in body.get("courses", []):
-            CourseObject = Course.objects.filter(course_id = course["course_id"])
-            tuition = CourseObject.tuition
-
-            if CourseObject.type == 'C':
-                course_students.add(CourseObject.user.id)
-                sub_total_course += tuition * course.get("sessions", 0)
-            if CourseObject.type == 'S':
-                sub_total_smallGroup += tuition * course.get("sessions", 0)
-            
-        # extract tutoring costs (assuming category/level combo exists)
-        for tutelage in body.get("tutoring", []):
-            tutoring_priceRules = PriceRule.objects.filter(
-                Q(category = tutelage.get("category_id","")) &
-                Q(academic_level = tutelage.get("academic_level","")))
-            tuition = tutoring_priceRules[0].hourly_tuition
-            sub_total_tutoring += tuition * tutelage.get("duration", 0) * tutelage.get("sessions", 0)
-        
-        # total including course tuition, discounts, and price adjustments
-
-        fixedDiscount = 0.0
-        percentDiscount = 0.0
-
-        # include price adjustment
-        price_adjustment = body.get("price_adjustment", 0)
-        total += price_adjustment
-
-        # ignore disabled discounts
         disabled_discounts = body.get("disabled_discounts", [])
+        usedDiscounts = []
+        totalDiscountVal = 0.0
 
+        # extract tutoring costs (assuming category/level combo exists)
+        for TutorJSON in body.get("tutoring", []):
+            tutoring_priceRules = PriceRule.objects.filter(
+                Q(category = TutorJSON["category_id",""]) &
+                Q(academic_level = TutorJSON["academic_level"]))
+            tuition = tutoring_priceRules[0].hourly_tuition
+            sub_total += tuition * TutorJSON["duration"] * TutorJSON["sessions"]  
+
+        # extract course costs and discounts
+        for CourseJSON in body.get("courses", []):
+            course = Course.objects.filter(course_id = CourseJSON["course_id"])
+            course_subTotal = course.tuition*CourseJSON["sessions"]
+
+            if course.type == 'C':
+                course_students.add(course.user.id)
+
+                # DateRangeDiscount
+                dateRange_discounts = DateRangeDiscount.objects.filter(
+                    Q(start_date__lte = course.start_date) &
+                    Q(end_date__gte = course.end_date))
+                
+                for discount in dateRange_discounts:
+                    if discount.id not in disabled_discounts and discount.active:
+                        if discount.amount_type == 'percent':
+                            amount = course_subTotal*(100.0-discount.amount)/100.0
+                        else:
+                            amount = discount.amount
+                        totalDiscountVal += amount
+                        usedDiscounts.append((discount.name, amount))
+                
+                # MultiCourseDiscount (sessions on course basis)            
+                multiCourse_discounts = MultiCourseDiscount.objects.filter(num_sessions__lte = CourseJSON["sessions"])
+                for discount in multiCourse_discounts.order_by("-num_sessions"):
+                    # take highest applicable discount based on session count
+                    if discount.id not in disabled_discounts and discount.active:
+                        if discount.amount_type == 'percent':
+                            amount = course_subTotal*(100.0-discount.amount)/100.0
+                        else:
+                            amount = discount.amount
+                        totalDiscountVal += amount
+                        usedDiscounts.append((discount.name, amount))
+                        break
+        
+            sub_total += course_subTotal
+
+         # sibling discount
+        if len(course_students) > 1:
+            totalDiscountVal += 25
+            usedDiscounts.append(("Siblings Discount", 25))      
+        
         # PaymentMethodDiscount
-        payment_method = body.get("payment_method", "")
+        payment_method = body["payment_method"]
         payment_method_discounts = PaymentMethodDiscount.objects.filter(payment_method=payment_method)
         for discount in payment_method_discounts:
-            pass
-
-        # DateRangeDiscount
-
-        # MultiCourseDiscount
-
-
-        student_count = 0
-        student_count = len(body.get("students", []))
+            if discount.id not in disabled_discounts and discount.active:
+                if discount.amount_type == 'percent':
+                    amount = sub_total*(100.0-discount.amount)/100.0
+                else:
+                    amount = discount.amount
+                totalDiscountVal += amount
+                usedDiscounts.append((discount.name, amount))
         
+        # price adjustment
+        price_adjustment = body("price_adjustment", 0)
+
         data = {
             "sub_total" : sub_total,
-            "discounts" : json.dumps(discounts),
+            "discounts" : json.dumps(usedDiscounts),
             "price_adjustment" : price_adjustment,
-            "total" : total
+            "total" : sub_total-totalDiscountVal-price_adjustment 
         }
-        return JsonResponse(data)
-        
-        # sub_total: //sum total of all course tuitions,
-        # discounts: [
-        # {
-        #    amount: 20,
-        #    discount_title: "EARLY BIRD"
-        #}, 
-        #],
-        # price_adjustment: 100,
-        # total: // total including course tuition, discounts, and price adjustment 
+        return JsonResponse(data)     
 
 class DiscountViewSet(viewsets.ModelViewSet):
     """
