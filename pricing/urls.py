@@ -11,5 +11,6 @@ router.register(r'discount-payment-method', views.PaymentMethodDiscountViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-    path(r'quote', views.QuoteTotalView.as_view())
+    path(r'quote', views.QuoteTotalView.as_view()),
+    path(r'rules-quote', views.QuoteRuleView.as_view())
 ]

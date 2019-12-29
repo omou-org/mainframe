@@ -59,8 +59,9 @@ class QuoteTotalView(APIView):
         # extract tutoring costs (assuming category/level combo exists)
         for TutorJSON in body.get("tutoring", []):
             tutoring_priceRules = PriceRule.objects.filter(
-                Q(category = TutorJSON["category_id",""]) &
-                Q(academic_level = TutorJSON["academic_level"]))
+                Q(category = TutorJSON["category_id"]) &
+                Q(academic_level = TutorJSON["academic_level"]) &
+                Q(course_type = "Tutoring"))
             tuition = tutoring_priceRules[0].hourly_tuition
             sub_total += tuition * TutorJSON["duration"] * TutorJSON["sessions"]  
 
@@ -127,7 +128,28 @@ class QuoteTotalView(APIView):
             "price_adjustment" : price_adjustment,
             "total" : sub_total-totalDiscountVal-price_adjustment 
         }
-        return JsonResponse(data)     
+        return JsonResponse(data)
+
+class QuoteRuleView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsDev | (IsAuthenticated & (IsAdminUser | ReadOnly))]
+
+    def get(self, request):
+        # load request body
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+
+        priceRules = PriceRule.objects.filter(
+            Q(category = body["category_id"]) &
+            Q(academic_level = body["academic_level"]) &
+            Q(course_type = body["course_size"]))
+
+        data = {
+            "per_session" : priceRules[0].hourly_tuition * body["duration"],
+            "total" :  priceRules[0].hourly_tuition * body["duration"] * body["sessions"]
+        }
+        return JsonResponse(data)
+
 
 class DiscountViewSet(viewsets.ModelViewSet):
     """
