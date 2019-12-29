@@ -75,8 +75,9 @@ class QuoteTotalView(APIView):
 
                 # DateRangeDiscount
                 dateRange_discounts = DateRangeDiscount.objects.filter(
-                    Q(start_date__lte = course.start_date) &
-                    Q(end_date__gte = course.end_date))
+                    (Q(start_date__lte = course.start_date) & Q(end_date__lte = course.end_date)) |
+                    (Q(start_date__gte = course.start_date) & Q(start_date__lte = course.end_date)) |
+                    (Q(end_date__gte = course.start_date) & Q(end_date__lte = course.end_date)))
                 
                 for discount in dateRange_discounts:
                     if discount.id not in disabled_discounts and discount.active:
@@ -129,6 +130,7 @@ class QuoteTotalView(APIView):
             "total" : sub_total-totalDiscountVal-price_adjustment 
         }
         return JsonResponse(data)
+
 
 class QuoteRuleView(APIView):
     authentication_classes = [TokenAuthentication]
