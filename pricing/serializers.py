@@ -86,6 +86,7 @@ class DateRangeDiscountSerializer(serializers.ModelSerializer):
             'end_date',
             'amount',
             'amount_type',
+            'active',
             'updated_at',
             'created_at',
         )
