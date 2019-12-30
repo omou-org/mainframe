@@ -34,7 +34,7 @@ class CourseManager(models.Manager):
                 Q(course_category__description__icontains=query))
             try:
                 query = int(query)
-                or_lookup |= (Q(tuition=query))
+                or_lookup |= (Q(hourly_tuition=query))
             except ValueError:
                 pass
             qs = qs.filter(or_lookup).distinct()
@@ -44,9 +44,21 @@ class CourseManager(models.Manager):
 class Course(models.Model):
     CLASS = 'C'
     TUTORING = 'T'
+    SMALL_GROUP = 'S'
     TYPE_CHOICES = (
         (CLASS, 'Class'),
+        (SMALL_GROUP, 'Small Group'),
         (TUTORING, 'Tutoring'),
+    )
+    ELEMENTARY_LEVEL = 'elementary'
+    MIDDLE_LEVEL = 'middle'
+    HIGH_LEVEL = 'high'
+    COLLEGE_LEVEL = 'college'
+    ACADEMIC_LEVEL_CHOICES = (
+        (ELEMENTARY_LEVEL, 'Elementary School Level'),
+        (MIDDLE_LEVEL, 'Middle School Level'),
+        (HIGH_LEVEL, 'High School Level'),
+        (COLLEGE_LEVEL, 'College Level'),
     )
 
     # Course information
@@ -55,11 +67,18 @@ class Course(models.Model):
         choices=TYPE_CHOICES,
         default=CLASS,
     )
+    academic_level = models.CharField(
+        max_length=15,
+        choices=ACADEMIC_LEVEL_CHOICES,
+        null=True,
+        blank=True,
+    )
     course_id = models.CharField(max_length=50, blank=True)
     subject = models.CharField(max_length=100)
     description = models.CharField(max_length=1000, null=True, blank=True)
     instructor = models.ForeignKey(Instructor, on_delete=models.PROTECT, null=True, blank=True)
-    tuition = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
+    hourly_tuition = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
+    total_tuition = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
 
     # Logistical information
     room = models.CharField(max_length=50, null=True, blank=True)
@@ -105,6 +124,7 @@ class CourseNote(models.Model):
 class Enrollment(models.Model):
     student = models.ForeignKey(Student, on_delete=models.PROTECT)
     course = models.ForeignKey(Course, on_delete=models.PROTECT)
+    num_sessions = models.IntegerField(default=0)
     payment = models.CharField(max_length=15, null=True, blank=True)
 
     # Timestamps
