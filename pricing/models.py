@@ -65,7 +65,7 @@ class Discount(models.Model):
         blank=True,
         null=True,
     )
-    amount = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
+    amount = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
     PERCENT = "percent"
     FIXED = "fixed"
 
@@ -78,6 +78,8 @@ class Discount(models.Model):
         choices=AMOUNT_CHOICES,
         default=FIXED,
     )
+
+    active = models.BooleanField(default=True)
 
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)
