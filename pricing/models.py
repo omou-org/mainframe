@@ -4,7 +4,6 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 
 # Create your models here.
 
-
 class PriceRule(models.Model):
     # Basic price information
     name = models.CharField(
@@ -55,6 +54,7 @@ class PriceRule(models.Model):
 
 class Discount(models.Model):
     # Basic discount information
+    
     name = models.CharField(
         max_length=1000,
         blank=True,
@@ -66,17 +66,18 @@ class Discount(models.Model):
         null=True,
     )
     amount = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
+
     PERCENT = "percent"
     FIXED = "fixed"
 
     AMOUNT_CHOICES = (
         (PERCENT, "percent"),
-        (FIXED, "fixed"),
+        (FIXED, "fixed")
     )
     amount_type = models.CharField(
         max_length=10,
         choices=AMOUNT_CHOICES,
-        default=FIXED,
+        default=FIXED
     )
 
     active = models.BooleanField(default=True)
@@ -105,5 +106,3 @@ class PaymentMethodDiscount(Discount):
     discount = Discount()
 
     payment_method = models.CharField(max_length=50)
-
-
