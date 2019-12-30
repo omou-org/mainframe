@@ -2,11 +2,13 @@ from datetime import datetime
 
 import arrow
 from django.db import transaction
+from django.db.models import Q
 
 from course.models import EnrollmentNote, CourseNote, Course, CourseCategory, Enrollment
 from scheduler.models import Session
 from rest_framework import serializers
 
+from pricing.models import PriceRule
 
 class EnrollmentNoteSerializer(serializers.ModelSerializer):
 
@@ -88,6 +90,15 @@ class CourseSerializer(serializers.ModelSerializer):
                     session.save()
                     num_sessions += 1
                     current_date = current_date.shift(weeks=+1)
+
+            if course.type == 'S':
+                priceRule = PriceRule.objects.get(
+                    Q(category = course.course_category) &
+                    Q(academic_level = course.academic_level) &
+                    Q(course_type = course.type))
+
+                course.hourly_tuition = priceRule.hourly_tuition
+                course.total_tuition = priceRule.hourly_tuition * num_sessions
 
             course.num_sessions = num_sessions
             course.save()
