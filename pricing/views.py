@@ -58,19 +58,23 @@ class QuoteTotalView(APIView):
 
         # extract tutoring costs (assuming category/level combo exists)
         for TutorJSON in body.get("tutoring", []):
-            tutoring_priceRules = PriceRule.objects.get(
+            tutoring_priceRules = PriceRule.objects.filter(
                 Q(category = TutorJSON["category_id"]) &
                 Q(academic_level = TutorJSON["academic_level"]) &
-                Q(course_type = "tutoring"))
+                Q(course_type = "T"))[0]
             tuition = float(tutoring_priceRules.hourly_tuition)
             sub_total += tuition * float(TutorJSON["duration"]) * int(TutorJSON["sessions"])  
 
         # extract course costs and discounts
         for CourseJSON in body.get("courses", []):
-            course = Course.objects.get(course_id = CourseJSON["course_id"])
-            course_subTotal = float(course.tuition)*int(CourseJSON["sessions"])
+            course = Course.objects.filter(course_id = CourseJSON["course_id"])[0]
+            
+            print(Course.objects.filter(course_id = CourseJSON["course_id"]))
 
-            if course.type == 'C':
+
+            course_subTotal = float(course.hourly_tuition)*int(CourseJSON["sessions"])
+
+            if course.course_type == 'C':
                 course_students.add(CourseJSON["student_id"])
 
                 # DateRangeDiscount
@@ -82,7 +86,7 @@ class QuoteTotalView(APIView):
                 for discount in dateRange_discounts:
                     if discount.id not in disabled_discounts and discount.active:
                         if discount.amount_type == 'percent':
-                            amount = float(course.tuition)*(100.0-float(discount.amount))/100.0
+                            amount = float(course.hourly_tuition)*(100.0-float(discount.amount))/100.0
                         else:
                             amount = float(discount.amount)
                         totalDiscountVal += amount
@@ -94,7 +98,7 @@ class QuoteTotalView(APIView):
                     # take highest applicable discount based on session count
                     if discount.id not in disabled_discounts and discount.active:
                         if discount.amount_type == 'percent':
-                            amount = float(course.tuition)*(100.0-float(discount.amount))/100.0
+                            amount = float(course.hourly_tuition)*(100.0-float(discount.amount))/100.0
                         else:
                             amount = float(discount.amount)
                         totalDiscountVal += amount
@@ -142,14 +146,14 @@ class QuoteRuleView(APIView):
         body_unicode = request.body.decode('utf-8')
         body = json.loads(body_unicode)
 
-        priceRules = PriceRule.objects.filter(
+        priceRule = PriceRule.objects.filter(
             Q(category = body["category_id"]) &
             Q(academic_level = body["academic_level"]) &
-            Q(course_type = body["course_size"]))
+            Q(course_type = body["course_size"]))[0]
 
         data = {
-            "per_session" : float(priceRules[0].hourly_tuition) * float(body["duration"]),
-            "total" :  float(priceRules[0].hourly_tuition) * float(body["duration"]) * int(body["sessions"])
+            "per_session" : float(priceRule.hourly_tuition) * float(body["duration"]),
+            "total" :  float(priceRule.hourly_tuition) * float(body["duration"]) * int(body["sessions"])
         }
         return JsonResponse(data)
 

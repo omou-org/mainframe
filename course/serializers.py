@@ -85,21 +85,20 @@ class CourseSerializer(serializers.ModelSerializer):
                         course=course,
                         start_datetime=start_datetime,
                         end_datetime=end_datetime,
-                        is_confirmed=course.type == 'C'
+                        is_confirmed=course.course_type == 'C'
                     )
                     session.save()
                     num_sessions += 1
                     current_date = current_date.shift(weeks=+1)
 
-            if course.type == 'S':
-                priceRule = PriceRule.objects.get(
+            if course.course_type == 'S':
+                priceRule = PriceRule.objects.filter(
                     Q(category = course.course_category) &
                     Q(academic_level = course.academic_level) &
-                    Q(course_type = course.type))
-
+                    Q(course_type = 'S'))[0]
                 course.hourly_tuition = priceRule.hourly_tuition
-                course.total_tuition = priceRule.hourly_tuition * num_sessions
 
+            course.total_tuition = course.hourly_tuition * num_sessions
             course.num_sessions = num_sessions
             course.save()
             return course
@@ -109,8 +108,10 @@ class CourseSerializer(serializers.ModelSerializer):
 
         fields = (
             'id',
+            'course_id',
+            'num_sessions',
             'subject',
-            'type',
+            'course_type',
             'academic_level',
             'description',
             'instructor',
