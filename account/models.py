@@ -38,7 +38,7 @@ class UserInfo(models.Model):
     account_type = models.CharField(max_length=20, choices=ACCOUNT_TYPE_CHOICES)
     user_uuid = models.CharField(max_length=50, blank=True, null=True)
     gender = models.CharField(
-        max_length=1,
+        max_length=20,
         choices=GENDER_CHOICES,
         default=UNSPECIFIED_GENDER,
     )
@@ -170,7 +170,7 @@ class Parent(UserInfo):
         (OTHER_REL, "Other"),
     )
     relationship = models.CharField(
-        max_length=10,
+        max_length=20,
         choices=RELATIONSHIP_CHOICES,
         blank=True,
         null=True,
