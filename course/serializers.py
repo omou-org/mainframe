@@ -1,11 +1,12 @@
 from datetime import datetime
+import pytz
 
 import arrow
 from django.db import transaction
+from rest_framework import serializers
 
 from course.models import EnrollmentNote, CourseNote, Course, CourseCategory, Enrollment
 from scheduler.models import Session
-from rest_framework import serializers
 
 
 class EnrollmentNoteSerializer(serializers.ModelSerializer):
@@ -79,13 +80,17 @@ class CourseSerializer(serializers.ModelSerializer):
                         current_date.datetime,
                         course.end_time
                     )
-                    session = Session.objects.create(
+                    start_datetime = pytz.timezone(
+                        'US/Pacific').localize(start_datetime)
+                    end_datetime = pytz.timezone(
+                        'US/Pacific').localize(end_datetime)
+
+                    Session.objects.create(
                         course=course,
                         start_datetime=start_datetime,
                         end_datetime=end_datetime,
                         is_confirmed=course.type == 'C'
                     )
-                    session.save()
                     num_sessions += 1
                     current_date = current_date.shift(weeks=+1)
 
@@ -138,5 +143,6 @@ class EnrollmentSerializer(serializers.ModelSerializer):
             'id',
             'student',
             'course',
-            'payment',
         )
+
+        read_only_fields = ['id']

@@ -8,10 +8,10 @@ from django.conf import settings
 
 class UserInfo(models.Model):
     # Account type
-    STUDENT_TYPE = 'STUDENT'
-    PARENT_TYPE = 'PARENT'
-    INSTRUCTOR_TYPE = 'INSTRUCTOR'
-    ADMIN_TYPE = 'ADMIN'
+    STUDENT_TYPE = 'student'
+    PARENT_TYPE = 'parent'
+    INSTRUCTOR_TYPE = 'instructor'
+    ADMIN_TYPE = 'admin'
     ACCOUNT_TYPE_CHOICES = (
         (STUDENT_TYPE, 'Student'),
         (PARENT_TYPE, 'Parent'),
@@ -20,9 +20,9 @@ class UserInfo(models.Model):
     )
 
     # Gender
-    MALE_GENDER = 'M'
-    FEMALE_GENDER = 'F'
-    UNSPECIFIED_GENDER = 'U'
+    MALE_GENDER = 'male'
+    FEMALE_GENDER = 'female'
+    UNSPECIFIED_GENDER = 'unspecified'
     GENDER_CHOICES = (
         (MALE_GENDER, 'Male'),
         (FEMALE_GENDER, 'Female'),
@@ -158,10 +158,10 @@ class ParentManager(models.Manager):
 
 
 class Parent(UserInfo):
-    MOTHER_REL = "MOTHER"
-    FATHER_REL = "FATHER"
-    GUARDIAN_REL = "GUARDIAN"
-    OTHER_REL = "OTHER"
+    MOTHER_REL = "mother"
+    FATHER_REL = "father"
+    GUARDIAN_REL = "guardian"
+    OTHER_REL = "other"
 
     RELATIONSHIP_CHOICES = (
         (MOTHER_REL, "Mother"),
@@ -256,9 +256,9 @@ class AdminManager(models.Manager):
 
 
 class Admin(UserInfo):
-    OWNER_TYPE = "OWNER"
-    RECEPTIONIST_TYPE = "RECEPTIONIST"
-    ASSISSTANT_TYPE = "ASSISSTANT"
+    OWNER_TYPE = "owner"
+    RECEPTIONIST_TYPE = "receptionist"
+    ASSISSTANT_TYPE = "assisstant"
 
     TYPE_CHOICES = (
         (OWNER_TYPE, "Owner"),

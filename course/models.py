@@ -42,9 +42,9 @@ class CourseManager(models.Manager):
 
 
 class Course(models.Model):
-    CLASS = 'C'
-    TUTORING = 'T'
-    SMALL_GROUP = 'S'
+    CLASS = 'class'
+    TUTORING = 'tutoring'
+    SMALL_GROUP = 'small_group'
     TYPE_CHOICES = (
         (CLASS, 'Class'),
         (SMALL_GROUP, 'Small Group'),
@@ -63,7 +63,7 @@ class Course(models.Model):
 
     # Course information
     type = models.CharField(
-        max_length=1,
+        max_length=15,
         choices=TYPE_CHOICES,
         default=CLASS,
     )
@@ -124,8 +124,6 @@ class CourseNote(models.Model):
 class Enrollment(models.Model):
     student = models.ForeignKey(Student, on_delete=models.PROTECT)
     course = models.ForeignKey(Course, on_delete=models.PROTECT)
-    num_sessions = models.IntegerField(default=0)
-    payment = models.CharField(max_length=15, null=True, blank=True)
 
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)

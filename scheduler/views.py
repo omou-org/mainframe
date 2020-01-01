@@ -1,17 +1,20 @@
 from datetime import datetime, timedelta
+import pytz
 
 from rest_framework import status, viewsets
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 
 from course.models import Course
+from mainframe.permissions import ReadOnly, IsDev
 from scheduler.models import Session
 from scheduler.serializers import SessionSerializer
 
 
 class SessionViewSet(viewsets.ModelViewSet):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsDev | (IsAuthenticated & (IsAdminUser | ReadOnly))]
     queryset = Session.objects.all()
     serializer_class = SessionSerializer
 
@@ -25,9 +28,8 @@ class SessionViewSet(viewsets.ModelViewSet):
         elif view_option == "tutoring":
             queryset = queryset.filter(course__type=Course.TUTORING)
 
-        now = datetime.now()
+        now = datetime.now(tz=pytz.timezone('US/Pacific'))
         base = now.replace(hour=0, minute=0, second=0, microsecond=0)
-        print(time_shift)
         if time_frame == "day":
             start_of_day = base + timedelta(days=time_shift)
             end_of_day = start_of_day + timedelta(days=1)

@@ -27,6 +27,7 @@ urlpatterns = [
     path('search/', include('search.urls')),
     path('course/', include('course.urls')),
     path('account/', include('account.urls')),
+    path('payment/', include('payment.urls')),
     path('admin/', admin.site.urls),
     url(r'^$', views.api_root, name='api_root'),
     url(r'^auth_token/', auth_views.obtain_auth_token),

@@ -17,6 +17,8 @@ from mainframe.permissions import IsDev, ReadOnly
 
 
 class CourseNoteViewSet(viewsets.ModelViewSet):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsDev | (IsAuthenticated & (IsAdminUser | ReadOnly))]
     queryset = CourseNote.objects.all()
     serializer_class = CourseNoteSerializer
 
@@ -62,6 +64,8 @@ class CourseCategoryViewSet(viewsets.ModelViewSet):
 
 
 class EnrollmentNoteViewSet(viewsets.ModelViewSet):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsDev | (IsAuthenticated & (IsAdminUser | ReadOnly))]
     queryset = EnrollmentNote.objects.all()
     serializer_class = EnrollmentNoteSerializer
 
@@ -79,6 +83,8 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows enrollments to be created or edited
     """
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsDev | (IsAuthenticated & (IsAdminUser | ReadOnly))]
     queryset = Enrollment.objects.all()
     serializer_class = EnrollmentSerializer
 
