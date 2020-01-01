@@ -107,7 +107,7 @@ class StudentSerializer(serializers.ModelSerializer):
             # create account
             student = Student.objects.create(
                 user=user,
-                account_type='STUDENT',
+                account_type='student',
                 **validated_data
             )
             return student
@@ -177,7 +177,7 @@ class ParentSerializer(serializers.ModelSerializer):
             # create account
             parent = Parent.objects.create(
                 user=user,
-                account_type='PARENT',
+                account_type='parent',
                 **validated_data
             )
             return parent
@@ -240,7 +240,7 @@ class InstructorSerializer(serializers.ModelSerializer):
             # create account
             instructor = Instructor.objects.create(
                 user=user,
-                account_type='INSTRUCTOR',
+                account_type='instructor',
                 **validated_data,
             )
             return instructor
@@ -339,6 +339,7 @@ class InstructorAvailablitySerializer(serializers.ModelSerializer):
             'created_at',
         )
 
+
 class AdminSerializer(serializers.ModelSerializer):
     user = UserSerializer()
 
@@ -366,7 +367,7 @@ class AdminSerializer(serializers.ModelSerializer):
                 first_name=user_info['first_name'],
                 last_name=user_info['last_name'],
             )
-            if validated_data['admin_type'] == 'OWNER':
+            if validated_data['admin_type'] == 'owner':
                 user.is_staff = True
                 user.save()
             Token.objects.get_or_create(user=user)
@@ -374,7 +375,7 @@ class AdminSerializer(serializers.ModelSerializer):
             # create account
             admin = Admin.objects.create(
                 user=user,
-                account_type='ADMIN',
+                account_type='admin',
                 **validated_data
             )
             return admin
