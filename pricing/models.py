@@ -18,10 +18,10 @@ class PriceRule(models.Model):
         on_delete=models.PROTECT,
         default=-1,
     )
-    ELEMENTARY_LVL = "elementary_lvl"
-    MIDDLE_LVL = "middle_lvl"
-    HIGH_LVL = "high_lvl"
-    COLLEGE_LVL = "college_lvl"
+    ELEMENTARY_LVL = "E"
+    MIDDLE_LVL = "M"
+    HIGH_LVL = "H"
+    COLLEGE_LVL = "C"
 
     ACADEMIC_CHOICES = (
         (ELEMENTARY_LVL, "Elementary"),
@@ -30,20 +30,20 @@ class PriceRule(models.Model):
         (COLLEGE_LVL, "College"),
     )
     academic_level = models.CharField(
-        max_length=20,
+        max_length=1,
         choices=ACADEMIC_CHOICES,
         default=ELEMENTARY_LVL
     )
-    TUTORING = "tutoring"
-    SMALL_GROUP = "small_group"
-    CLASS = "class"
+    TUTORING = "T"
+    SMALL_GROUP = "S"
+    CLASS = "C"
     COURSE_CHOICES = (
         (TUTORING, "Tutoring"),
         (SMALL_GROUP, "Small group"),
         (CLASS, "Class"),
     )
     course_type = models.CharField(
-        max_length=20,
+        max_length=1,
         choices=COURSE_CHOICES,
         default=TUTORING
     )
