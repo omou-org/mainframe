@@ -34,6 +34,7 @@ class PriceRule(models.Model):
         choices=ACADEMIC_CHOICES,
         default=ELEMENTARY_LVL
     )
+
     TUTORING = "tutoring"
     SMALL_GROUP = "small_group"
     CLASS = "class"

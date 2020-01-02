@@ -3,12 +3,14 @@ import pytz
 
 import arrow
 from django.db import transaction
+from django.db.models import Q
 from rest_framework import serializers
 
 from course.models import EnrollmentNote, CourseNote, Course, CourseCategory, Enrollment
 from payment.serializers import PaymentSerializer
 from scheduler.models import Session
 
+from pricing.models import PriceRule
 
 class EnrollmentNoteSerializer(serializers.ModelSerializer):
 
@@ -95,6 +97,14 @@ class CourseSerializer(serializers.ModelSerializer):
                 num_sessions += 1
                 current_date = current_date.shift(weeks=+1)
 
+        if course.course_type == 'small_group' or course.course_type == 'tutoring':
+            priceRule = PriceRule.objects.filter(
+                Q(category = course.course_category) &
+                Q(academic_level = course.academic_level) &
+                Q(course_type = course.course_type))[0]
+            course.hourly_tuition = priceRule.hourly_tuition
+
+        course.total_tuition = course.hourly_tuition * num_sessions
         course.num_sessions = num_sessions
         course.save()
         return course
@@ -116,8 +126,9 @@ class CourseSerializer(serializers.ModelSerializer):
 
         fields = (
             'id',
+            'course_id',
             'subject',
-            'type',
+            'course_type',
             'academic_level',
             'description',
             'instructor',
