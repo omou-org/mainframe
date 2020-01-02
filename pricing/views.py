@@ -54,8 +54,6 @@ class QuoteTotalView(APIView):
             tuition = float(tutoring_priceRules.hourly_tuition)
             sub_total += tuition * float(TutorJSON["duration"]) * int(TutorJSON["sessions"])  
 
-            print (tuition)
-
         # extract course costs and discounts
         for CourseJSON in body.get("courses", []):
             course = Course.objects.filter(course_id = CourseJSON["course_id"])[0]
