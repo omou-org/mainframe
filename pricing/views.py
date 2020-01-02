@@ -50,7 +50,7 @@ class QuoteTotalView(APIView):
             tutoring_priceRules = PriceRule.objects.filter(
                 Q(category = TutorJSON["category_id"]) &
                 Q(academic_level = TutorJSON["academic_level"]) &
-                Q(course_type = "T"))[0]
+                Q(course_type = "tutoring"))[0]
             tuition = float(tutoring_priceRules.hourly_tuition)
             sub_total += tuition * float(TutorJSON["duration"]) * int(TutorJSON["sessions"])  
 
@@ -59,7 +59,7 @@ class QuoteTotalView(APIView):
             course = Course.objects.filter(course_id = CourseJSON["course_id"])[0]
             course_subTotal = float(course.hourly_tuition)*int(CourseJSON["sessions"])
 
-            if course.course_type == 'C':
+            if course.course_type == 'class':
                 course_students.add(CourseJSON["student_id"])
 
                 # DateRangeDiscount

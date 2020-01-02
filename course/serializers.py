@@ -97,7 +97,7 @@ class CourseSerializer(serializers.ModelSerializer):
                 num_sessions += 1
                 current_date = current_date.shift(weeks=+1)
 
-        if course.course_type == 'S' or course.course_type == 'T':
+        if course.course_type == 'small_group' or course.course_type == 'tutoring':
             priceRule = PriceRule.objects.filter(
                 Q(category = course.course_category) &
                 Q(academic_level = course.academic_level) &

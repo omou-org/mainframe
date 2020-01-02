@@ -42,36 +42,36 @@ class CourseManager(models.Manager):
 
 
 class Course(models.Model):
-    CLASS = 'C'
-    TUTORING = 'T'
-    SMALL_GROUP = 'S'
-    TYPE_CHOICES = (
-        (CLASS, 'Class'),
-        (SMALL_GROUP, 'Small Group'),
-        (TUTORING, 'Tutoring'),
+    TUTORING = "tutoring"
+    SMALL_GROUP = "small_group"
+    CLASS = "class"
+    COURSE_CHOICES = (
+        (TUTORING, "Tutoring"),
+        (SMALL_GROUP, "Small group"),
+        (CLASS, "Class"),
     )
-    ELEMENTARY_LEVEL = 'E'
-    MIDDLE_LEVEL = 'M'
-    HIGH_LEVEL = 'H'
-    COLLEGE_LEVEL = 'C'
-    ACADEMIC_LEVEL_CHOICES = (
-        (ELEMENTARY_LEVEL, 'Elementary School Level'),
-        (MIDDLE_LEVEL, 'Middle School Level'),
-        (HIGH_LEVEL, 'High School Level'),
-        (COLLEGE_LEVEL, 'College Level'),
+
+    ELEMENTARY_LVL = "elementary_lvl"
+    MIDDLE_LVL = "middle_lvl"
+    HIGH_LVL = "high_lvl"
+    COLLEGE_LVL = "college_lvl"
+    ACADEMIC_CHOICES = (
+        (ELEMENTARY_LVL, "Elementary"),
+        (MIDDLE_LVL, "Middle"),
+        (HIGH_LVL, "High"),
+        (COLLEGE_LVL, "College"),
     )
 
     # Course information
     course_type = models.CharField(
-        max_length=1,
-        choices=TYPE_CHOICES,
-        default=CLASS,
+        max_length=20,
+        choices=COURSE_CHOICES,
+        default=TUTORING
     )
     academic_level = models.CharField(
-        max_length=1,
-        choices=ACADEMIC_LEVEL_CHOICES,
-        null=True,
-        blank=True,
+        max_length=20,
+        choices=ACADEMIC_CHOICES,
+        default=ELEMENTARY_LVL
     )
     course_id = models.CharField(max_length=50, blank=True)
     subject = models.CharField(max_length=100)
