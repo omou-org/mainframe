@@ -27,7 +27,11 @@ class Payment(models.Model):
         max_length=20,
         choices=METHOD_CHOICES,
     )
-    enrollments = models.ManyToManyField(Enrollment, through='Registration')
+    enrollments = models.ManyToManyField(
+        Enrollment,
+        through='Registration',
+        related_name='payment_list',
+    )
 
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)
