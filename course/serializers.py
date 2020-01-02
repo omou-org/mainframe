@@ -103,8 +103,8 @@ class CourseSerializer(serializers.ModelSerializer):
                 Q(academic_level = course.academic_level) &
                 Q(course_type = course.course_type))[0]
             course.hourly_tuition = priceRule.hourly_tuition
-
-        course.total_tuition = course.hourly_tuition * num_sessions
+            course.total_tuition = course.hourly_tuition * num_sessions
+        
         course.num_sessions = num_sessions
         course.save()
         return course
