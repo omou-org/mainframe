@@ -1,12 +1,13 @@
 from datetime import datetime
+import pytz
 
-import arrow
 from django.db import transaction
 from django.db.models import Q
+from rest_framework import serializers
 
 from course.models import EnrollmentNote, CourseNote, Course, CourseCategory, Enrollment
+from payment.serializers import PaymentSerializer
 from scheduler.models import Session
-from rest_framework import serializers
 
 from pricing.models import PriceRule
 
@@ -64,44 +65,60 @@ class CourseSerializer(serializers.ModelSerializer):
     def get_enrollment_id_list(self, obj):
         return obj.enrollment_id_list
 
+    @transaction.atomic
     def create(self, validated_data):
-        with transaction.atomic():
-            # create course
-            course = Course.objects.create(**validated_data)
-            num_sessions = 0
-            if course.start_date and course.end_date:
-                current_date = arrow.get(course.start_date)
-                end_date = arrow.get(course.end_date)
-                while current_date <= end_date:
-                    start_datetime = datetime.combine(
-                        current_date.datetime,
-                        course.start_time
-                    )
-                    end_datetime = datetime.combine(
-                        current_date.datetime,
-                        course.end_time
-                    )
-                    session = Session.objects.create(
-                        course=course,
-                        start_datetime=start_datetime,
-                        end_datetime=end_datetime,
-                        is_confirmed=course.course_type == 'C'
-                    )
-                    session.save()
-                    num_sessions += 1
-                    current_date = current_date.shift(weeks=+1)
+        # create course
+        course = Course.objects.create(**validated_data)
+        num_sessions = 0
+        if course.start_date and course.end_date:
+            current_date = arrow.get(course.start_date)
+            end_date = arrow.get(course.end_date)
+            while current_date <= end_date:
+                start_datetime = datetime.combine(
+                    current_date.datetime,
+                    course.start_time
+                )
+                end_datetime = datetime.combine(
+                    current_date.datetime,
+                    course.end_time
+                )
+                start_datetime = pytz.timezone(
+                    'US/Pacific').localize(start_datetime)
+                end_datetime = pytz.timezone(
+                    'US/Pacific').localize(end_datetime)
 
-            if course.course_type == 'S':
-                priceRule = PriceRule.objects.filter(
-                    Q(category = course.course_category) &
-                    Q(academic_level = course.academic_level) &
-                    Q(course_type = 'S'))[0]
-                course.hourly_tuition = priceRule.hourly_tuition
+                Session.objects.create(
+                    course=course,
+                    start_datetime=start_datetime,
+                    end_datetime=end_datetime,
+                    is_confirmed=True
+                )
+                num_sessions += 1
+                current_date = current_date.shift(weeks=+1)
+        
+        if course.course_type == 'S' or course.course_type == 'T':
+            priceRule = PriceRule.objects.filter(
+                Q(category = course.course_category) &
+                Q(academic_level = course.academic_level) &
+                Q(course_type = course.course_type))[0]
+            course.hourly_tuition = priceRule.hourly_tuition
 
-            course.total_tuition = course.hourly_tuition * num_sessions
-            course.num_sessions = num_sessions
-            course.save()
-            return course
+        course.total_tuition = course.hourly_tuition * num_sessions
+        course.num_sessions = num_sessions
+        course.save()
+        return course
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        sessions = Session.objects.filter(course=instance)
+
+        if "start_time" in validated_data or "end_time" in validated_data:
+            for session in sessions:
+                session.start_datetime = validated_data
+
+            instance.update(**validated_data)
+            instance.save()
+        return instance
 
     class Meta:
         model = Course
@@ -143,6 +160,8 @@ class CourseCategorySerializer(serializers.ModelSerializer):
 
 
 class EnrollmentSerializer(serializers.ModelSerializer):
+    payment_list = PaymentSerializer(read_only=True, many=True)
+
     class Meta:
         model = Enrollment
 
@@ -150,5 +169,9 @@ class EnrollmentSerializer(serializers.ModelSerializer):
             'id',
             'student',
             'course',
-            'payment',
+            'payment_list',
         )
+
+        read_only_fields = [
+            'id',
+        ]

@@ -126,8 +126,6 @@ class CourseNote(models.Model):
 class Enrollment(models.Model):
     student = models.ForeignKey(Student, on_delete=models.PROTECT)
     course = models.ForeignKey(Course, on_delete=models.PROTECT)
-    num_sessions = models.IntegerField(default=0)
-    payment = models.CharField(max_length=15, null=True, blank=True)
 
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)
