@@ -126,8 +126,9 @@ class CourseSerializer(serializers.ModelSerializer):
 
         fields = (
             'id',
+            'course_id',
             'subject',
-            'type',
+            'course_type',
             'academic_level',
             'description',
             'instructor',
