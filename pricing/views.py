@@ -33,7 +33,7 @@ class QuoteTotalView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsDev | (IsAuthenticated & (IsAdminUser | ReadOnly))]
 
-    def get(self, request):
+    def post(self, request):
         # load request body
         body_unicode = request.body.decode('utf-8')
         body = json.loads(body_unicode)
