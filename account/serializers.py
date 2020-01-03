@@ -265,6 +265,10 @@ class InstructorSerializer(serializers.ModelSerializer):
             'account_type',
             'updated_at',
             'created_at',
+            'biography',
+            'experience',
+            'subjects',
+            'language',
         )
 
 
