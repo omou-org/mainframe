@@ -87,7 +87,7 @@ class QuoteTotalView(APIView):
                         else:
                             amount = float(discount.amount)
                         totalDiscountVal += amount
-                        usedDiscounts.append({"discount_title" : discount.name, "amount" : amount})
+                        usedDiscounts.append({"name" : discount.name, "amount" : amount, "id": discount.id})
                         break
         
             sub_total += course_subTotal
@@ -107,7 +107,7 @@ class QuoteTotalView(APIView):
                 else:
                     amount = float(discount.amount)
                 totalDiscountVal += amount
-                usedDiscounts.append({"discount_title" : discount.name, "amount" : amount})
+                usedDiscounts.append({"name" : discount.name, "amount" : amount, "id": discount.id})
         
         # price adjustment
         price_adjustment = body.get("price_adjustment", 0)
