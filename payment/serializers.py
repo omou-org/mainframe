@@ -2,6 +2,7 @@ from django.db import transaction
 from rest_framework import serializers
 
 
+from course.models import Enrollment
 from payment.models import Payment, Registration
 # from pricing.serializers import DiscountSerializer
 
@@ -27,9 +28,21 @@ class RegistrationSerializer(serializers.ModelSerializer):
         )
 
 
+class EnrollmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Enrollment
+
+        fields = (
+            'id',
+            'student',
+            'course',
+        )
+
+
 class PaymentSerializer(serializers.ModelSerializer):
     # applied_discounts = DiscountSerializer(many=True)
     registrations = RegistrationSerializer(many=True, write_only=True)
+    enrollments = EnrollmentSerializer(many=True, read_only=True)
 
     @transaction.atomic
     def create(self, validated_data):

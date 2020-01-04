@@ -207,6 +207,11 @@ class InstructorManager(models.Manager):
 class Instructor(UserInfo):
     objects = InstructorManager()
 
+    biography = models.CharField(max_length=2000, null=True, blank=True)
+    experience = models.CharField(max_length=2000, null=True, blank=True)
+    language = models.CharField(max_length=2000, null=True, blank=True)
+    subjects = models.CharField(max_length=2000, null=True, blank=True)
+
 
 class InstructorAvailability(models.Model):
     instructor = models.ForeignKey(
