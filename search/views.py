@@ -47,12 +47,11 @@ class AccountsSearchView(generics.ListAPIView):
                 "parent" : Parent.objects,
                 "admin" : Admin.objects
             }
-            adminTypeDic = {
-                "owner":"OWNER",
-                "receptionist":"RECEPTIONIST",
-                "assisstant":"ASSISSTANT"
-            }
 
+            for query in queries.split():
+                if filterToSearch.get(profileFilter):
+                    searchResults = filterToSearch[profileFilter](filterToModel[profileFilter], query, searchResults)
+            
             if profileFilter == "student":
                 try:
                     gradeFilter = int(self.request.query_params.get('grade', None))
@@ -60,13 +59,6 @@ class AccountsSearchView(generics.ListAPIView):
                         searchResults = Student.objects.filter(grade=gradeFilter)
                 except:
                     pass
-
-            for query in queries.split():
-                if profileFilter == "admin" and adminTypeDic.get(query.lower()):
-                    query = adminTypeDic.get(query.lower())
-                
-                if filterToSearch.get(profileFilter):
-                    searchResults = filterToSearch[profileFilter](filterToModel[profileFilter], query, searchResults)
 
         # query on all models
         else:
