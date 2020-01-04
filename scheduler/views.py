@@ -24,9 +24,9 @@ class SessionViewSet(viewsets.ModelViewSet):
         time_shift = int(request.query_params.get("time_shift", 0))
         queryset = self.get_queryset()
         if view_option == "class":
-            queryset = queryset.filter(course__type=Course.CLASS)
+            queryset = queryset.filter(course__course_type=Course.CLASS)
         elif view_option == "tutoring":
-            queryset = queryset.filter(course__type=Course.TUTORING)
+            queryset = queryset.filter(course__course_type=Course.TUTORING)
 
         now = datetime.now(tz=pytz.timezone('US/Pacific'))
         base = now.replace(hour=0, minute=0, second=0, microsecond=0)
