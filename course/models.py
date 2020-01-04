@@ -23,7 +23,7 @@ class CourseManager(models.Manager):
             qs = qs_initial
 
         if query is not None:
-            or_lookup = (Q(type__icontains=query) |
+            or_lookup = (Q(course_type__icontains=query) |
                 Q(subject__icontains=query) |
                 Q(description__icontains=query) |
                 Q(instructor__user__first_name__icontains=query) |
