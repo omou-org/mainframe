@@ -10,9 +10,9 @@ from payment.models import Payment, Registration
 class EnrollmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Enrollment
+        ref_name = 'enrollment_for_registration'
 
         fields = (
-            'id',
             'student',
             'course',
         )
