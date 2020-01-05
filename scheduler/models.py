@@ -6,6 +6,8 @@ from django.db.models import Q
 
 from course.models import Course
 
+from account.models import Student
+
 class SessionManager(models.Manager):
     def search(self, query=None, qs_initial=None):
         if qs_initial is None or len(qs_initial) == 0:
@@ -14,14 +16,26 @@ class SessionManager(models.Manager):
             qs = qs_initial       
 
         if query is not None:
-            # filter by session start date / time
             try:
+                # filter by session start date / time
                 query = parse(query)
                 qs = qs.filter(Q(start_datetime__date = query) | Q(start_datetime__time = query)).distinct()
             except ValueError:
-                pass
-
-            # filter by course instructor, enrollments, title
+                
+                # filter by course instructor, enrollments, title
+                course_qs = Course.objects.search(query)
+                student_qs = set(Student.objects.search(query).values_list("user", flat=True))
+                
+                session_courseID = set(qs.values_list("course__id", flat=True))
+                valid_courseID = []
+                for course_id in session_courseID:
+                    course = Course.objects.get(id=course_id)
+                    if course in course_qs:
+                        valid_courseID.append(course_id)
+                    elif not student_qs.isdisjoint(course.enrollment_list):
+                        valid_courseID.append(course_id)
+                
+                qs = qs.filter(course__id__in = valid_courseID)
 
         return qs
 
