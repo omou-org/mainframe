@@ -209,7 +209,6 @@ class SessionsSearchView(generics.ListAPIView):
     def get_queryset(self):
         searchResults = Session.objects.all()
 
-        # query input check
         query = self.request.query_params.get('query', None)
         if query is not None:
             for word in query.split():

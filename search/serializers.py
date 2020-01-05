@@ -27,6 +27,10 @@ from course.serializers import (
     CourseSerializer,
 )
 
+from scheduler.serializers import (
+    SessionSerializer,
+)
+
 from rest_framework.request import Request
 
 class SearchViewSerializer(serializers.Serializer):
@@ -42,6 +46,8 @@ class SearchViewSerializer(serializers.Serializer):
             serializer = AdminSerializer(value)
         elif isinstance(value, Course):
             serializer = CourseSerializer(value)
+        elif isinstance(value, Session):
+            serializer = SessionSerializer(value)
         else:
             raise Exception("Not recognized model instance!")
         return serializer.data
