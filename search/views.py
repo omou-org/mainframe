@@ -3,6 +3,8 @@ from rest_framework import generics
 from rest_framework.response import Response
 from operator import attrgetter
 
+from datetime import datetime
+
 from account.models import (
     Student,
     StudentManager,
@@ -17,6 +19,10 @@ from account.models import (
 from course.models import (
     Course,
     Enrollment
+)
+
+from scheduler.models import (
+    Session
 )
 
 from search.serializers import SearchViewSerializer
@@ -195,3 +201,42 @@ class CoursesSearchView(generics.ListAPIView):
                 pass
 
         return searchResults
+
+
+class SessionsSearchView(generics.ListAPIView):
+    serializer_class = SearchViewSerializer
+
+    def get_queryset(self):
+        searchResults = Session.objects.all()
+
+        # query input check
+        query = self.request.query_params.get('query', None)
+        if query is not None:
+            for word in query.split():
+                searchResults = Session.objects.search(word, searchResults)
+        
+        # time filter
+        timeFilter = self.request.query_params.get('time', None)
+        if timeFilter is not None: # all is default
+            if timeFilter == "future":
+                searchResults = searchResults.filter(start_datetime__gte = datetime.now())
+            elif timeFilter == "past":
+                searchResults = searchResults.filter(start_datetime__lte = datetime.now())
+            elif timeFilter == "today":
+                searchResults = searchResults.filter(start_datetime__date = datetime.now().date())
+
+        # sort results
+        sortFilter = self.request.query_params.get('sort', None)
+        if sortFilter is not None:
+            sortToParameter = {
+                "timeAsc":"start_datetime",
+                "timeDesc":"-start_datetime"
+            }
+            if sortToParameter.get(sortFilter):
+                searchResults = searchResults.order_by(sortToParameter[sortFilter])
+        
+        return searchResults
+
+
+
+
