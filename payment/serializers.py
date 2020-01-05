@@ -7,7 +7,20 @@ from payment.models import Payment, Registration
 # from pricing.serializers import DiscountSerializer
 
 
+class EnrollmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Enrollment
+
+        fields = (
+            'id',
+            'student',
+            'course',
+        )
+
+
 class RegistrationSerializer(serializers.ModelSerializer):
+    enrollment_details = EnrollmentSerializer(read_only=True, source='enrollment')
+
     class Meta:
         model = Registration
 
@@ -23,30 +36,19 @@ class RegistrationSerializer(serializers.ModelSerializer):
             'payment',
             'enrollment',
             'num_sessions',
+            'enrollment_details',
             'updated_at',
             'created_at',
         )
 
 
-class EnrollmentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Enrollment
-
-        fields = (
-            'id',
-            'student',
-            'course',
-        )
-
-
 class PaymentSerializer(serializers.ModelSerializer):
     # applied_discounts = DiscountSerializer(many=True)
-    registrations = RegistrationSerializer(many=True, write_only=True)
-    enrollments = EnrollmentSerializer(many=True, read_only=True)
+    registrations = RegistrationSerializer(many=True, source='registration_set')
 
     @transaction.atomic
     def create(self, validated_data):
-        registrations = validated_data.pop("registrations")
+        registrations = validated_data.pop("registration_set")
         total_amount = (validated_data.get("base_amount") +
                         validated_data.get("price_adjustment"))
         payment = Payment.objects.create(
@@ -72,7 +74,6 @@ class PaymentSerializer(serializers.ModelSerializer):
             'price_adjustment',
             'total_amount',
             'method',
-            'enrollments',
             'registrations',
             'updated_at',
             'created_at'
@@ -81,7 +82,6 @@ class PaymentSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'id',
             'total_amount',
-            'enrollments',
             'updated_at',
             'created_at'
         )
