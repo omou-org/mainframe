@@ -111,14 +111,56 @@ class CourseSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def update(self, instance, validated_data):
-        sessions = Session.objects.filter(course=instance)
+        now = datetime.now()
+        sessions = Session.objects.filter(
+            course=instance,
+            start_datetime__gte=now
+        )
 
-        if "start_time" in validated_data or "end_time" in validated_data:
-            for session in sessions:
-                session.start_datetime = validated_data
+        for session in sessions:
+            start_datetime = datetime.combine(
+                session.start_datetime.date,
+                validated_data['start_time']
+            )
+            end_datetime = datetime.combine(
+                session.end_datetime.date,
+                validated_data['end_time']
+            )
+            session.start_datetime = pytz.timezone(
+                'US/Pacific').localize(start_datetime)
+            session.end_datetime = pytz.timezone(
+                'US/Pacific').localize(end_datetime)
+            session.save()
 
-            instance.update(**validated_data)
-            instance.save()
+        if 'end_date' in validated_data:
+            latest_session = sessions.latest('start_datetime')
+            current_date = arrow.get(latest_session.start_datetime.date).shift(weeks=+1)
+            end_date = arrow.get(validated_data['end_date'])
+            while current_date <= end_date:
+                start_datetime = datetime.combine(
+                    current_date.datetime,
+                    validated_data['start_time']
+                )
+                end_datetime = datetime.combine(
+                    current_date.datetime,
+                    validated_data['end_time']
+                )
+                start_datetime = pytz.timezone(
+                    'US/Pacific').localize(start_datetime)
+                end_datetime = pytz.timezone(
+                    'US/Pacific').localize(end_datetime)
+
+                Session.objects.create(
+                    course=instance,
+                    start_datetime=start_datetime,
+                    end_datetime=end_datetime,
+                    is_confirmed=True
+                )
+                instance.num_sessions += 1
+                current_date = current_date.shift(weeks=+1)
+
+        instance.update(**validated_data)
+        instance.save()
         return instance
 
     class Meta:
