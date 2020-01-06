@@ -12,6 +12,7 @@ from scheduler.models import Session
 
 from pricing.models import PriceRule
 
+
 class EnrollmentNoteSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -70,7 +71,13 @@ class CourseSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         # create course
         course = Course.objects.create(**validated_data)
-        num_sessions = 0
+        course.num_sessions = 0
+        course.save()
+
+        # don't generate sessions if course is not confirmed
+        if not validated_data['is_confirmed']:
+            return course
+
         if course.start_date and course.end_date:
             current_date = arrow.get(course.start_date)
             end_date = arrow.get(course.end_date)
@@ -94,7 +101,7 @@ class CourseSerializer(serializers.ModelSerializer):
                     end_datetime=end_datetime,
                     is_confirmed=True
                 )
-                num_sessions += 1
+                course.num_sessions += 1
                 current_date = current_date.shift(weeks=+1)
 
         if course.course_type == 'small_group' or course.course_type == 'tutoring':
@@ -103,9 +110,8 @@ class CourseSerializer(serializers.ModelSerializer):
                 Q(academic_level = course.academic_level) &
                 Q(course_type = course.course_type))[0]
             course.hourly_tuition = priceRule.hourly_tuition
-            course.total_tuition = course.hourly_tuition * num_sessions
+            course.total_tuition = course.hourly_tuition * course.num_sessions
         
-        course.num_sessions = num_sessions
         course.save()
         return course
 
@@ -132,9 +138,13 @@ class CourseSerializer(serializers.ModelSerializer):
                 'US/Pacific').localize(end_datetime)
             session.save()
 
-        if 'end_date' in validated_data:
+        if 'end_date' in validated_data or validated_data.get('is_confirmed', False):
             latest_session = sessions.latest('start_datetime')
-            current_date = arrow.get(latest_session.start_datetime.date).shift(weeks=+1)
+            if len(sessions) == 0 and validated_data.get('is_confirmed', False):
+                current_date = arrow.get(validated_data['start_date'])
+            else:
+                current_date = arrow.get(
+                    latest_session.start_datetime.date).shift(weeks=+1)
             end_date = arrow.get(validated_data['end_date'])
             while current_date <= end_date:
                 start_datetime = datetime.combine(
@@ -183,6 +193,7 @@ class CourseSerializer(serializers.ModelSerializer):
             'start_time',
             'end_time',
             'max_capacity',
+            'is_confirmed',
             'course_category',
             'enrollment_list',
             'enrollment_id_list',

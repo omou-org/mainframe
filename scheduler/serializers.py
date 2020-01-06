@@ -9,6 +9,7 @@ class SessionSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'course',
+            'instructor',
             'details',
             'start_datetime',
             'end_datetime',

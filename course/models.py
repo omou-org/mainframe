@@ -89,6 +89,7 @@ class Course(models.Model):
     start_time = models.TimeField()
     end_time = models.TimeField()
     max_capacity = models.IntegerField(null=True, blank=True)
+    is_confirmed = models.BooleanField(default=False)
 
     # One-to-many relationship with CourseCategory
     course_category = models.ForeignKey(

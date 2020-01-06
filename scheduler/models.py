@@ -1,5 +1,6 @@
 from django.db import models
 
+from account.models import Instructor
 from course.models import Course
 
 
@@ -10,6 +11,12 @@ class Session(models.Model):
     )
     details = models.CharField(
         max_length=1000,
+        blank=True,
+        null=True,
+    )
+    instructor = models.ForeignKey(
+        Instructor,
+        on_delete=models.PROTECT,
         blank=True,
         null=True,
     )
