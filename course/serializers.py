@@ -99,6 +99,7 @@ class CourseSerializer(serializers.ModelSerializer):
                     course=course,
                     start_datetime=start_datetime,
                     end_datetime=end_datetime,
+                    instructor=course.instructor,
                     is_confirmed=True
                 )
                 course.num_sessions += 1
@@ -164,6 +165,7 @@ class CourseSerializer(serializers.ModelSerializer):
                     course=instance,
                     start_datetime=start_datetime,
                     end_datetime=end_datetime,
+                    instructor=validated_data.get('instructor', instance.instructor),
                     is_confirmed=True
                 )
                 instance.num_sessions += 1
