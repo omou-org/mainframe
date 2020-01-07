@@ -75,7 +75,7 @@ class CourseSerializer(serializers.ModelSerializer):
         course.save()
 
         # don't generate sessions if course is not confirmed
-        if not validated_data['is_confirmed']:
+        if not course.is_confirmed:
             return course
 
         if course.start_date and course.end_date:
@@ -83,11 +83,11 @@ class CourseSerializer(serializers.ModelSerializer):
             end_date = arrow.get(course.end_date)
             while current_date <= end_date:
                 start_datetime = datetime.combine(
-                    current_date.datetime,
+                    current_date.date(),
                     course.start_time
                 )
                 end_datetime = datetime.combine(
-                    current_date.datetime,
+                    current_date.date(),
                     course.end_time
                 )
                 start_datetime = pytz.timezone(
@@ -126,12 +126,12 @@ class CourseSerializer(serializers.ModelSerializer):
 
         for session in sessions:
             start_datetime = datetime.combine(
-                session.start_datetime.date,
-                validated_data['start_time']
+                session.start_datetime.date(),
+                validated_data.get('start_time', instance.start_time)
             )
             end_datetime = datetime.combine(
-                session.end_datetime.date,
-                validated_data['end_time']
+                session.end_datetime.date(),
+                validated_data.get('end_time', instance.end_time)
             )
             session.start_datetime = pytz.timezone(
                 'US/Pacific').localize(start_datetime)
@@ -146,15 +146,16 @@ class CourseSerializer(serializers.ModelSerializer):
             else:
                 current_date = arrow.get(
                     latest_session.start_datetime.date).shift(weeks=+1)
+                print(latest_session.start_datetime.date)
             end_date = arrow.get(validated_data['end_date'])
             while current_date <= end_date:
                 start_datetime = datetime.combine(
-                    current_date.datetime,
-                    validated_data['start_time']
+                    current_date.date(),
+                    validated_data.get('start_time', instance.start_time)
                 )
                 end_datetime = datetime.combine(
-                    current_date.datetime,
-                    validated_data['end_time']
+                    current_date.date(),
+                    validated_data.get('end_time', instance.end_time)
                 )
                 start_datetime = pytz.timezone(
                     'US/Pacific').localize(start_datetime)
@@ -171,8 +172,9 @@ class CourseSerializer(serializers.ModelSerializer):
                 instance.num_sessions += 1
                 current_date = current_date.shift(weeks=+1)
 
-        instance.update(**validated_data)
         instance.save()
+        Course.objects.filter(id=instance.id).update(**validated_data)
+        instance.refresh_from_db()
         return instance
 
     class Meta:
