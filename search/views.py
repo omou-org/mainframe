@@ -72,13 +72,15 @@ class AccountsSearchView(generics.ListAPIView):
         # query on all models
         else:
             studentSearchResults = Student.objects.none()
+            parentSearchResults = Parent.objects.none()
             instructorSearchResults = Instructor.objects.none()
             adminSearchResults = Admin.objects.none()
             for query in queries.split():
                 studentSearchResults = Student.objects.search(query, studentSearchResults)
+                parentSearchResults = Parent.objects.search(query, parentSearchResults)
                 instructorSearchResults = Instructor.objects.search(query, instructorSearchResults)
                 adminSearchResults = Admin.objects.search(query, adminSearchResults)
-            searchResults = chain(studentSearchResults, instructorSearchResults, adminSearchResults)
+            searchResults = chain(studentSearchResults, parentSearchResults, instructorSearchResults, adminSearchResults)
 
         # sort results
         sortFilter = self.request.query_params.get('sort', None)
