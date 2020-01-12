@@ -145,8 +145,7 @@ class CourseSerializer(serializers.ModelSerializer):
                 current_date = arrow.get(validated_data['start_date'])
             else:
                 current_date = arrow.get(
-                    latest_session.start_datetime.date).shift(weeks=+1)
-                print(latest_session.start_datetime.date)
+                    latest_session.start_datetime.date()).shift(weeks=+1)
             end_date = arrow.get(validated_data['end_date'])
             while current_date <= end_date:
                 start_datetime = datetime.combine(

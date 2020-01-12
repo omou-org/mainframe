@@ -23,7 +23,6 @@ class Command(BaseCommand):
         dataframe = self.read_data_from_file("data/summit_classes.csv")
 
         self.insert_courses(dataframe)
-        print(str(self.bad_rows))
 
     def read_data_from_file(self, file_name):
         return pd.read_csv(file_name)
@@ -93,7 +92,7 @@ class Command(BaseCommand):
                     course_id=course_id,
                     subject=name,
                     instructor=instructor,
-                    tuition=tuition,
+                    total_tuition=tuition,
                     room=room,
                     day_of_week=day_of_week,
                     start_date=start_date,
@@ -101,10 +100,12 @@ class Command(BaseCommand):
                     start_time=start_time,
                     end_time=end_time,
                     max_capacity=max_capacity,
-                    type='C',
-                    course_category=course_category
+                    course_type='class',
+                    course_category=course_category,
+                    is_confirmed=True
                 )
                 course.save()
+                print("created course")
 
                 if isinstance(note, str):
                     course_note = CourseNote.objects.create(

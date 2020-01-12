@@ -21,8 +21,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS('Successfully called'))
         dataframe = self.read_data_from_file("data/summit_student.csv")
-        # skip first 6 rows
-        dataframe = dataframe.iloc[6:]
 
         self.insert_accounts(dataframe)
         print(str(self.bad_rows))
