@@ -273,57 +273,14 @@ class InstructorSerializer(serializers.ModelSerializer):
 
 
 class InstructorAvailablitySerializer(serializers.ModelSerializer):
-    def create(self, validated_data):
-        with transaction.atomic():
-            availability = InstructorAvailability.objects.create(
-                instructor=validated_data.get("instructor"),
-                monday_start_time=validated_data.get("1", {}).get("start", None),
-                monday_end_time=validated_data.get("1", {}).get("end", None),
-                tuesday_start_time=validated_data.get("2", {}).get("start", None),
-                tuesday_end_time=validated_data.get("2", {}).get("end", None),
-                wednesday_start_time=validated_data.get("3", {}).get("start", None),
-                wednesday_end_time=validated_data.get("3", {}).get("end", None),
-                thursday_start_time=validated_data.get("4", {}).get("start", None),
-                thursday_end_time=validated_data.get("4", {}).get("end", None),
-                friday_start_time=validated_data.get("5", {}).get("start", None),
-                friday_end_time=validated_data.get("5", {}).get("end", None),
-                saturday_start_time=validated_data.get("6", {}).get("start", None),
-                saturday_end_time=validated_data.get("6", {}).get("end", None),
-                sunday_start_time=validated_data.get("0", {}).get("start", None),
-                sunday_end_time=validated_data.get("0", {}).get("end", None),
-            )
-            availability.save()
-            return availability
-
-    def update(self, instance, validated_data):
-        instance.update(
-            monday_start_time=validated_data.get("1", {}).get("start", None),
-            monday_end_time=validated_data.get("1", {}).get("end", None),
-            tuesday_start_time=validated_data.get("2", {}).get("start", None),
-            tuesday_end_time=validated_data.get("2", {}).get("end", None),
-            wednesday_start_time=validated_data.get("3", {}).get("start", None),
-            wednesday_end_time=validated_data.get("3", {}).get("end", None),
-            thursday_start_time=validated_data.get("4", {}).get("start", None),
-            thursday_end_time=validated_data.get("4", {}).get("end", None),
-            friday_start_time=validated_data.get("5", {}).get("start", None),
-            friday_end_time=validated_data.get("5", {}).get("end", None),
-            saturday_start_time=validated_data.get("6", {}).get("start", None),
-            saturday_end_time=validated_data.get("6", {}).get("end", None),
-            sunday_start_time=validated_data.get("0", {}).get("start", None),
-            sunday_end_time=validated_data.get("0", {}).get("end", None),
-        )
-        instance.save()
-        return instance
-
+    
     class Meta:
         model = InstructorAvailability
         read_only_fields = (
-            'id',
             'updated_at',
             'created_at',
         )
         fields = (
-            'id',
             'instructor',
             'monday_start_time',
             'monday_end_time',

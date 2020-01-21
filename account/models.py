@@ -214,9 +214,10 @@ class Instructor(UserInfo):
 
 
 class InstructorAvailability(models.Model):
-    instructor = models.ForeignKey(
+    instructor = models.OneToOneField(
         Instructor,
         on_delete=models.PROTECT,
+        primary_key=True
     )
 
     monday_start_time = models.TimeField(null=True, blank=True)

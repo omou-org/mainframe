@@ -88,13 +88,13 @@ class InstructorAvailabilityViewSet(viewsets.ModelViewSet):
     permission_classes = [IsDev | (IsAuthenticated & (IsAdminUser | ReadOnly))]
     queryset = InstructorAvailability.objects.all()
     serializer_class = InstructorAvailablitySerializer
-
+    
     def list(self, request):
         """
         query by instructor_id
         """
         instructor_id = request.query_params.get("instructor_id", None)
-        queryset = self.get_queryset().filter(user__id=instructor_id)
+        queryset = self.get_queryset().filter(instructor=instructor_id)
         serializer = InstructorAvailablitySerializer(queryset, many=True)
         return Response(serializer.data)
 
