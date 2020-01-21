@@ -21,8 +21,13 @@ class SessionViewSet(viewsets.ModelViewSet):
     def list(self, request):
         time_frame = request.query_params.get("time_frame", None)
         view_option = request.query_params.get("view_option", None)
+        course_id = request.query_params.get("course_id", None)
         time_shift = int(request.query_params.get("time_shift", 0))
         queryset = self.get_queryset()
+
+        if course_id is not None:
+            queryset = queryset.filter(course = course_id)
+
         if view_option == "class":
             queryset = queryset.filter(course__course_type=Course.CLASS)
         elif view_option == "tutoring":
