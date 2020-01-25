@@ -81,6 +81,10 @@ class CourseSerializer(serializers.ModelSerializer):
         if course.start_date and course.end_date:
             current_date = arrow.get(course.start_date)
             end_date = arrow.get(course.end_date)
+
+            if course.course_type == 'small_group' or course.course_type == 'tutoring':
+                end_date = end_date.shift(weeks=+30)
+
             while current_date <= end_date:
                 start_datetime = datetime.combine(
                     current_date.date(),
@@ -104,7 +108,7 @@ class CourseSerializer(serializers.ModelSerializer):
                 )
                 course.num_sessions += 1
                 current_date = current_date.shift(weeks=+1)
-
+        
         if course.course_type == 'small_group' or course.course_type == 'tutoring':
             priceRule = PriceRule.objects.filter(
                 Q(category = course.course_category) &
