@@ -83,6 +83,7 @@ class CourseSerializer(serializers.ModelSerializer):
             end_date = arrow.get(course.end_date)
 
             if course.course_type == 'small_group' or course.course_type == 'tutoring':
+                confirmed_end_date = end_date
                 end_date = end_date.shift(weeks=+30)
 
             while current_date <= end_date:
@@ -104,7 +105,7 @@ class CourseSerializer(serializers.ModelSerializer):
                     start_datetime=start_datetime,
                     end_datetime=end_datetime,
                     instructor=course.instructor,
-                    is_confirmed=True
+                    is_confirmed= end_datetime <= confirmed_end_date
                 )
                 course.num_sessions += 1
                 current_date = current_date.shift(weeks=+1)
