@@ -52,12 +52,12 @@ class QuoteTotalView(APIView):
                 Q(academic_level = TutorJSON["academic_level"]) &
                 Q(course_type = "tutoring"))[0]
             tuition = float(tutoring_priceRules.hourly_tuition)
-            sub_total += tuition * float(TutorJSON["duration"])*float(TutorJSON["sessions"])  
+            sub_total += tuition * float(TutorJSON["duration"]) * int(TutorJSON["sessions"])  
 
         # extract course costs and discounts
         for CourseJSON in body.get("classes", []):
             course = Course.objects.filter(id = CourseJSON["course_id"])[0]
-            course_subTotal = float(course.hourly_tuition)*float(CourseJSON["sessions"])
+            course_subTotal = float(course.hourly_tuition)*int(CourseJSON["sessions"])
 
             if course.course_type == 'class':
                 course_students.add(CourseJSON["student_id"])
@@ -78,7 +78,7 @@ class QuoteTotalView(APIView):
                         usedDiscounts.append({"discount_title" : discount.name, "amount" : amount})
                 
                 # MultiCourseDiscount (sessions on course basis)            
-                multiCourse_discounts = MultiCourseDiscount.objects.filter(num_sessions__lte = float(CourseJSON["sessions"]))
+                multiCourse_discounts = MultiCourseDiscount.objects.filter(num_sessions__lte = CourseJSON["sessions"])
                 for discount in multiCourse_discounts.order_by("-num_sessions"):
                     # take highest applicable discount based on session count
                     if discount.id not in disabled_discounts and discount.active:
@@ -116,7 +116,6 @@ class QuoteTotalView(APIView):
         ResponseDict = {}
         ResponseDict["sub_total"] = sub_total
         ResponseDict["discounts"] = usedDiscounts
-        ResponseDict["discount_total"] = totalDiscountVal
         ResponseDict["price_adjustment"] = price_adjustment
         ResponseDict["total"] = sub_total-totalDiscountVal-price_adjustment      
         
