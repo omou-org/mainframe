@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 from account.models import Parent
 from course.models import Enrollment
@@ -43,6 +44,7 @@ class Registration(models.Model):
     payment = models.ForeignKey(Payment, on_delete=models.CASCADE)
     enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE)
     num_sessions = models.IntegerField()
+    attendance_start_date = models.DateTimeField(default=timezone.now)
 
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)
