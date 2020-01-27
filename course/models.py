@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from django.db import models
 from django.db.models import Q
 from account.models import Instructor, Student
@@ -125,6 +127,22 @@ class CourseNote(models.Model):
 class Enrollment(models.Model):
     student = models.ForeignKey(Student, on_delete=models.PROTECT)
     course = models.ForeignKey(Course, on_delete=models.PROTECT)
+
+    @property
+    def enrollment_balance(self):
+        balance = 0
+        for registration in self.registration_set.all():
+            balance += registration.num_sessions * self.course.hourly_tuition
+        past_sessions = self.course.session_set.filter(
+            start_datetime__gte=registration.attendance_start_date,
+            start_datetime__lte=datetime.now(timezone.utc),
+        )
+        for session in past_sessions:
+            session_length_sec = (session.end_datetime - session.start_datetime).seconds
+            session_length_hours = session_length_sec / (60 * 60)
+            balance -= session_length_hours * self.course.hourly_tuition
+
+        return balance
 
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)

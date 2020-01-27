@@ -226,8 +226,10 @@ class EnrollmentSerializer(serializers.ModelSerializer):
             'student',
             'course',
             'payment_list',
+            'enrollment_balance',
         )
 
         read_only_fields = [
             'id',
+            'enrollment_balance',
         ]
