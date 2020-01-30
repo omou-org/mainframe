@@ -101,7 +101,7 @@ class CourseSerializer(serializers.ModelSerializer):
                     start_datetime=start_datetime,
                     end_datetime=end_datetime,
                     instructor=course.instructor,
-                    is_confirmed= end_datetime <= confirmed_end_date
+                    is_confirmed= course.is_confirmed and end_datetime <= confirmed_end_date
                 )
                 course.num_sessions += 1
                 current_date = current_date.shift(weeks=+1)
