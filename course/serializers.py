@@ -74,10 +74,6 @@ class CourseSerializer(serializers.ModelSerializer):
         course.num_sessions = 0
         course.save()
 
-        # don't generate sessions if course is not confirmed
-        if not course.is_confirmed:
-            return course
-
         if course.start_date and course.end_date:
             current_date = arrow.get(course.start_date)
             end_date = arrow.get(course.end_date)
