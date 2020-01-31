@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from decimal import Decimal
 
 from django.db import models
 from django.db.models import Q
@@ -133,14 +134,16 @@ class Enrollment(models.Model):
         balance = 0
         for registration in self.registration_set.all():
             balance += registration.num_sessions * self.course.hourly_tuition
+        earliest_attendance = self.registration_set.earliest(
+            'attendance_start_date').attendance_start_date
         past_sessions = self.course.session_set.filter(
-            start_datetime__gte=registration.attendance_start_date,
+            start_datetime__gte=earliest_attendance,
             start_datetime__lte=datetime.now(timezone.utc),
         )
         for session in past_sessions:
             session_length_sec = (session.end_datetime - session.start_datetime).seconds
             session_length_hours = session_length_sec / (60 * 60)
-            balance -= session_length_hours * self.course.hourly_tuition
+            balance -= Decimal(session_length_hours) * self.course.hourly_tuition
 
         return balance
 

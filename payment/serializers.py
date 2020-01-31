@@ -33,6 +33,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
         fields = (
             'id',
+            'attendance_start_date',
             'payment',
             'enrollment',
             'num_sessions',
