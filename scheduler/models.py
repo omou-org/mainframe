@@ -5,6 +5,8 @@ from course.models import Course
 
 
 class Session(models.Model):
+    title = models.TextField(blank=True)
+
     course = models.ForeignKey(
         Course,
         on_delete=models.PROTECT,
