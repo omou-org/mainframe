@@ -228,9 +228,13 @@ class EnrollmentSerializer(serializers.ModelSerializer):
             'course',
             'payment_list',
             'enrollment_balance',
+            'sessions_left',
+            'last_paid_session_datetime',
         )
 
         read_only_fields = [
             'id',
             'enrollment_balance',
+            'sessions_left',
+            'last_paid_session_datetime',
         ]
