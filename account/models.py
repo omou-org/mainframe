@@ -163,6 +163,8 @@ class Parent(UserInfo):
     GUARDIAN_REL = "guardian"
     OTHER_REL = "other"
 
+    balance = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
+
     RELATIONSHIP_CHOICES = (
         (MOTHER_REL, "Mother"),
         (FATHER_REL, "Father"),

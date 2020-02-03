@@ -9,6 +9,8 @@ from account.views import (
     InstructorViewSet,
     InstructorAvailabilityViewSet,
     CurrentUserView,
+
+    StudentValidateViewSet,
 )
 
 router = routers.DefaultRouter()
@@ -18,6 +20,8 @@ router.register(r'parent', ParentViewSet)
 router.register(r'instructor', InstructorViewSet)
 router.register(r'instructor-availability', InstructorAvailabilityViewSet)
 router.register(r'note', NoteViewSet)
+
+router.register(r'student-course-validate', StudentValidateViewSet)
 
 urlpatterns = [
     path(r'user/', CurrentUserView.as_view()),

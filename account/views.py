@@ -4,6 +4,8 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from dateutil.parser import parse
+
 from account.models import (
     Note,
     Admin,
@@ -21,6 +23,14 @@ from account.serializers import (
     InstructorAvailablitySerializer,
     UserSerializer,
 )
+
+from scheduler.models import Session
+
+from course.modelse import (
+    Course,
+    Enrollment
+)
+
 from mainframe.permissions import ReadOnly, IsDev
 
 
@@ -116,3 +126,54 @@ class CurrentUserView(APIView):
     def get(self, request):
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
+
+
+class StudentValidateViewSet(APIView):
+    class QuoteTotalView(APIView): 
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsDev | (IsAuthenticated & (IsAdminUser | ReadOnly))]
+
+    def get(self, request):
+        user_id = request.query_params.get("user_id", None)
+        type = request.query_params.get("type", None)
+        start_time = parse(request.query_params.get("start_time", None))
+        end_time = parse(request.query_params.get("end_time", None))
+        
+        user_courses = set(Enrollment.objects.filter(student = user_id).values('course'))
+
+        
+        
+
+        if type == "course":
+            start_date = parse(request.query_params.get("start_date", None))
+            end_date = parse(request.query_params.get("end_date", None))
+
+
+
+        if type == "session":
+            date = parse(request.query_params.get("date", None))
+
+            Session.objects.filter(
+                course__in = user_courses,
+                is_confirmed = True,
+                start_datetime__date__eq = date,
+                start_datetime__time__le = end_time.time(),
+                end_datetime__time__ge = start_time.time(),
+                )
+            
+
+
+
+
+
+        '''
+        student id (required)
+        start time (required)
+        end time (required)
+        type = "course" or "session" (required)
+        a date (conditionally required if validating a session)
+        a start date (conditionally required if validating a course)
+        an end date (conditionally required if validating a course)
+        '''
+
+        

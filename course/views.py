@@ -101,3 +101,27 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(course=course_id)
         serializer = self.get_serializer_class()(queryset, many=True)
         return Response(serializer.data)
+    
+    def perform_destroy(self, instance):
+        """
+        override perform_destroy to refund balance from enrollment to parent
+        """
+
+        # refund parent remaining enrollment balance
+        if instance.student.primary_parent:
+            parent = instance.student.primary_parent
+        else:
+            parent = instance.student.secondary_parent
+        parent.balance += instance.enrollment_balance
+        parent.save()
+
+        # remove enrollment
+        instance.delete()
+
+        # remove course if this is last enrollment
+        if len(instance.course.enrollment_id_list) == 0:
+            # must remove course sessions first
+            instance.course.session_set.all().delete()
+            instance.course.delete()
+        
+        
