@@ -116,12 +116,4 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
         parent.save()
 
         # remove enrollment
-        deleted_instance = super().perform_destroy(instance)
-
-        # remove course if this is last enrollment
-        if len(instance.course.enrollment_id_list) == 0:
-            # must remove course sessions first
-            instance.course.session_set.all().delete()
-            instance.course.delete()
-
-        return deleted_instance
+        return super().perform_destroy(instance)
