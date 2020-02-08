@@ -19,10 +19,14 @@ class Payment(models.Model):
     CASH = 'cash'
     CREDIT_CARD = 'credit_card'
     COURSE_CREDIT = 'course_credit'
+    CHECK = 'check'
+    INTL_CREDIT_CARD = 'intl_credit_card'
     METHOD_CHOICES = (
         (CASH, 'Cash'),
         (COURSE_CREDIT, 'Course Credit'),
         (CREDIT_CARD, 'Credit Card'),
+        (CHECK, 'Check'),
+        (INTL_CREDIT_CARD, 'International Credit Card'),
     )
     method = models.CharField(
         max_length=20,
