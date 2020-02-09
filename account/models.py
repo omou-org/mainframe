@@ -175,6 +175,7 @@ class Parent(UserInfo):
         blank=True,
         null=True,
     )
+    balance = models.DecimalField(decimal_places=2, default=0.0, max_digits=6)
     secondary_phone_number = models.CharField(max_length=50, blank=True, null=True)
     objects = ParentManager()
 
