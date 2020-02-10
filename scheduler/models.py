@@ -1,4 +1,3 @@
-from datetime import datetime
 from dateutil.parser import parse
 
 from django.db import models
@@ -8,6 +7,7 @@ from account.models import Instructor
 from course.models import Course
 
 from account.models import Student
+
 
 class SessionManager(models.Manager):
     def search(self, query=None, qs_initial=None):
@@ -20,7 +20,7 @@ class SessionManager(models.Manager):
             try:
                 # filter by session start date / time
                 query = parse(query)
-                qs = qs.filter(Q(start_datetime__date = query) | Q(start_datetime__time = query)).distinct()
+                qs = qs.filter(Q(start_datetime__date=query) | Q(start_datetime__time=query)).distinct()
             except ValueError:
                 
                 # filter by course instructor, enrollments, title
