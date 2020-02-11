@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 
 from course.models import Course, Enrollment
-from course.serializers import CourseSerializer
+# from course.serializers import CourseSerializer
 from payment.models import Payment, Registration
 # from pricing.serializers import DiscountSerializer
 
@@ -64,14 +64,14 @@ class PaymentSerializer(serializers.ModelSerializer):
                 enrollment=registration["enrollment"],
                 num_sessions=registration["num_sessions"]
             )
-            enrollment = Enrollment.objects.get(id=registration["enrollment"])
-            if enrollment.course.course_type in (Course.TUTORING, Course.SMALL_GROUP):
-                if enrollment.sessions_left < registration["num_sessions"]:
-                    serializer = CourseSerializer()
-                    data = {
-                        "end_date": registration["new_end_date"]
-                    }
-                    serializer.update(enrollment.course, data)
+            # enrollment = Enrollment.objects.get(id=registration["enrollment"])
+            # if enrollment.course.course_type in (Course.TUTORING, Course.SMALL_GROUP):
+            #     if enrollment.sessions_left < registration["num_sessions"]:
+            #         serializer = CourseSerializer()
+            #         data = {
+            #             "end_date": registration["new_end_date"]
+            #         }
+            #         serializer.update(enrollment.course, data)
 
         return payment
 
