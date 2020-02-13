@@ -3,6 +3,8 @@ from rest_framework import generics
 from rest_framework.response import Response
 from operator import attrgetter
 
+from datetime import datetime
+
 from account.models import (
     Student,
     StudentManager,
@@ -19,10 +21,23 @@ from course.models import (
     Enrollment
 )
 
+from scheduler.models import (
+    Session
+)
+
 from search.serializers import SearchViewSerializer
 
 class AccountsSearchView(generics.ListAPIView): 
     serializer_class = SearchViewSerializer
+
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+
+        responseDict = {}
+        responseDict["count"] = request.session["count"]
+        responseDict["page"] = request.session["page"]
+        responseDict["results"] = response.data
+        return Response(responseDict)
 
     def get_queryset(self):
         searchResults = Student.objects.none()
@@ -63,13 +78,15 @@ class AccountsSearchView(generics.ListAPIView):
         # query on all models
         else:
             studentSearchResults = Student.objects.none()
+            parentSearchResults = Parent.objects.none()
             instructorSearchResults = Instructor.objects.none()
             adminSearchResults = Admin.objects.none()
             for query in queries.split():
                 studentSearchResults = Student.objects.search(query, studentSearchResults)
+                parentSearchResults = Parent.objects.search(query, parentSearchResults)
                 instructorSearchResults = Instructor.objects.search(query, instructorSearchResults)
                 adminSearchResults = Admin.objects.search(query, adminSearchResults)
-            searchResults = chain(studentSearchResults, instructorSearchResults, adminSearchResults)
+            searchResults = chain(studentSearchResults, parentSearchResults, instructorSearchResults, adminSearchResults)
 
         # sort results
         sortFilter = self.request.query_params.get('sort', None)
@@ -88,8 +105,11 @@ class AccountsSearchView(generics.ListAPIView):
                 searchResults = sorted(searchResults, key=lambda obj:obj.updated_at, reverse=True)
 
         searchResults = list(searchResults)
+        self.request.session["count"] = len(searchResults)
+
         # extract searches in page range. Out of bounds page returns nothing
         pageFilter = self.request.query_params.get('page', None)
+        self.request.session["page"] = pageFilter
         if pageFilter is not None:
             try:
                 pageNumber = int(pageFilter)
@@ -108,6 +128,15 @@ class AccountsSearchView(generics.ListAPIView):
 
 class CoursesSearchView(generics.ListAPIView):
     serializer_class = SearchViewSerializer
+
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+
+        responseDict = {}
+        responseDict["count"] = request.session["count"]
+        responseDict["page"] = request.session["page"]
+        responseDict["results"] = response.data
+        return Response(responseDict)
 
     def get_queryset(self):
         searchResults = Course.objects.none()
@@ -179,8 +208,11 @@ class CoursesSearchView(generics.ListAPIView):
                 searchResults = searchResults.order_by(sortToParameter[sortFilter])
 
         searchResults = list(searchResults)
+        self.request.session["count"] = len(searchResults)
+
         # extract searches in page range
         pageFilter = self.request.query_params.get('page', None)
+        self.request.session["page"] = pageFilter
         if pageFilter is not None:
             try:
                 pageNumber = int(pageFilter)
@@ -195,3 +227,41 @@ class CoursesSearchView(generics.ListAPIView):
                 pass
 
         return searchResults
+
+
+class SessionsSearchView(generics.ListAPIView):
+    serializer_class = SearchViewSerializer
+
+    def get_queryset(self):
+        searchResults = Session.objects.all()
+
+        query = self.request.query_params.get('query', None)
+        if query is not None:
+            for word in query.split():
+                searchResults = Session.objects.search(word, searchResults)
+        
+        # time filter
+        timeFilter = self.request.query_params.get('time', None)
+        if timeFilter is not None: # all is default
+            if timeFilter == "future":
+                searchResults = searchResults.filter(start_datetime__gte = datetime.now())
+            elif timeFilter == "past":
+                searchResults = searchResults.filter(start_datetime__lte = datetime.now())
+            elif timeFilter == "today":
+                searchResults = searchResults.filter(start_datetime__date = datetime.now().date())
+
+        # sort results
+        sortFilter = self.request.query_params.get('sort', None)
+        if sortFilter is not None:
+            sortToParameter = {
+                "timeAsc":"start_datetime",
+                "timeDesc":"-start_datetime"
+            }
+            if sortToParameter.get(sortFilter):
+                searchResults = searchResults.order_by(sortToParameter[sortFilter])
+        
+        return searchResults
+
+
+
+

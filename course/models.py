@@ -1,8 +1,10 @@
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from decimal import Decimal
+from math import floor
 
 from django.db import models
 from django.db.models import Q
+from django.utils.functional import cached_property
 from account.models import Instructor, Student
 
 
@@ -105,6 +107,13 @@ class Course(models.Model):
     objects = CourseManager()
 
     @property
+    def session_length(self):
+        duration_sec = (datetime.combine(date.min, self.end_time) -
+                        datetime.combine(date.min, self.start_time)).seconds
+        duration_hours = Decimal(duration_sec) / (60 * 60)
+        return duration_hours
+
+    @property
     def enrollment_list(self):
         return [enrollment.student.user.id for enrollment in self.enrollment_set.all()]
 
@@ -129,11 +138,13 @@ class Enrollment(models.Model):
     student = models.ForeignKey(Student, on_delete=models.PROTECT)
     course = models.ForeignKey(Course, on_delete=models.PROTECT)
 
-    @property
+    @cached_property
     def enrollment_balance(self):
         balance = 0
         for registration in self.registration_set.all():
-            balance += registration.num_sessions * self.course.hourly_tuition
+            balance += (registration.num_sessions * self.course.hourly_tuition *
+                        self.course.session_length)
+
         earliest_attendance = self.registration_set.earliest(
             'attendance_start_date').attendance_start_date
         past_sessions = self.course.session_set.filter(
@@ -142,10 +153,31 @@ class Enrollment(models.Model):
         )
         for session in past_sessions:
             session_length_sec = (session.end_datetime - session.start_datetime).seconds
-            session_length_hours = session_length_sec / (60 * 60)
+            session_length_hours = Decimal(session_length_sec) / (60 * 60)
             balance -= Decimal(session_length_hours) * self.course.hourly_tuition
 
         return balance
+
+    @property
+    def sessions_left(self):
+        return floor(self.enrollment_balance /
+                     (self.course.session_length * self.course.hourly_tuition))
+
+    @property
+    def last_paid_session_datetime(self):
+        if self.sessions_left <= 0:
+            past_sessions = self.course.session_set.filter(
+                start_datetime__lte=datetime.now(timezone.utc)
+            ).order_by('-start_datetime')
+            if abs(self.sessions_left) >= len(past_sessions):
+                return None
+            return past_sessions[abs(self.sessions_left)].start_datetime
+
+        future_sessions = self.course.session_set.filter(
+            start_datetime__gt=datetime.now(timezone.utc)
+        ).order_by('start_datetime')
+        last_index = min(self.sessions_left, len(future_sessions)) - 1
+        return future_sessions[last_index].start_datetime
 
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)
