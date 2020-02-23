@@ -215,26 +215,24 @@ class Instructor(UserInfo):
 
 
 class InstructorAvailability(models.Model):
-    instructor = models.OneToOneField(
+    instructor = models.ForeignKey(
         Instructor,
         on_delete=models.PROTECT,
-        primary_key=True
     )
 
-    monday_start_time = models.TimeField(null=True, blank=True)
-    monday_end_time = models.TimeField(null=True, blank=True)
-    tuesday_start_time = models.TimeField(null=True, blank=True)
-    tuesday_end_time = models.TimeField(null=True, blank=True)
-    wednesday_start_time = models.TimeField(null=True, blank=True)
-    wednesday_end_time = models.TimeField(null=True, blank=True)
-    thursday_start_time = models.TimeField(null=True, blank=True)
-    thursday_end_time = models.TimeField(null=True, blank=True)
-    friday_start_time = models.TimeField(null=True, blank=True)
-    friday_end_time = models.TimeField(null=True, blank=True)
-    saturday_start_time = models.TimeField(null=True, blank=True)
-    saturday_end_time = models.TimeField(null=True, blank=True)
-    sunday_start_time = models.TimeField(null=True, blank=True)
-    sunday_end_time = models.TimeField(null=True, blank=True)
+    DAYS_OF_WEEK = (
+        ('monday', 'Monday'),
+        ('tuesday', 'Tuesday'),
+        ('wednesday', 'Wednesday'),
+        ('thursday', 'Thursday'),
+        ('friday', 'Friday'),
+        ('saturday', 'Saturday'),
+        ('sunday', 'Sunday'),
+    )
+
+    day_of_week = models.CharField(max_length=9, choices=DAYS_OF_WEEK)
+    start_time = models.TimeField()
+    end_time = models.TimeField()
 
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)
