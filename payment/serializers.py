@@ -39,7 +39,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
             'enrollment',
             'num_sessions',
             'enrollment_details',
-            'new_end_date',
             'updated_at',
             'created_at',
         )

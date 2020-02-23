@@ -6,5 +6,5 @@ router = routers.DefaultRouter()
 router.register(r'session', views.SessionViewSet)
 
 urlpatterns = [
-    path('', include(router.urls))
+    path('', include(router.urls)),
 ]
