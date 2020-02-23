@@ -6,6 +6,10 @@ from pricing.models import (
     DateRangeDiscount,
     PaymentMethodDiscount,
 )
+from account.models import (
+    Parent
+)
+
 from rest_framework import viewsets
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import action
@@ -118,7 +122,13 @@ class QuoteTotalView(APIView):
         ResponseDict["discounts"] = usedDiscounts
         ResponseDict["discount_total"] = totalDiscountVal
         ResponseDict["price_adjustment"] = price_adjustment
-        ResponseDict["total"] = sub_total-totalDiscountVal-price_adjustment      
+        ResponseDict["total"] = sub_total-totalDiscountVal-price_adjustment
+
+        # parent balance adjustment
+        if body.get("apply_account_balance", False):
+            parent = Parent.objects.get(user_id=body["parent_id"])
+            ResponseDict["account_balance"] = float(parent.balance)
+            ResponseDict["total"] -= float(parent.balance)
         
         return JsonResponse(ResponseDict)
 
