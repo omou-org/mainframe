@@ -51,11 +51,8 @@ class PaymentSerializer(serializers.ModelSerializer):
     @transaction.atomic
     def create(self, validated_data):
         registrations = validated_data.pop("registration_set")
-        total_amount = (validated_data.get("base_amount") +
-                        validated_data.get("price_adjustment"))
         payment = Payment.objects.create(
             **validated_data,
-            total_amount=total_amount
         )
         for registration in registrations:
             Registration.objects.create(
@@ -80,10 +77,12 @@ class PaymentSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'parent',
-            'base_amount',
+            'sub_total',
             # 'applied_discounts',
             'price_adjustment',
-            'total_amount',
+            'total',
+            'account_balance',
+            'discount_total',
             'method',
             'registrations',
             'updated_at',
@@ -92,7 +91,6 @@ class PaymentSerializer(serializers.ModelSerializer):
 
         read_only_fields = (
             'id',
-            'total_amount',
             'updated_at',
             'created_at'
         )

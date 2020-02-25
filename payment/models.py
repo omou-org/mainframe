@@ -4,17 +4,18 @@ from django.utils import timezone
 from account.models import Parent
 from course.models import Enrollment
 
-
 class Payment(models.Model):
     parent = models.ForeignKey(Parent, on_delete=models.PROTECT)
-    base_amount = models.DecimalField(max_digits=6, decimal_places=2)
+    sub_total = models.DecimalField(max_digits=6, decimal_places=2)
     # applied_discounts = models.ManyToManyField("DiscountRule")
     price_adjustment = models.DecimalField(
         max_digits=6,
         decimal_places=2,
         default=0.00,
     )
-    total_amount = models.DecimalField(max_digits=6, decimal_places=2)
+    total = models.DecimalField(max_digits=6, decimal_places=2)
+    account_balance = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
+    discount_total = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
 
     CASH = 'cash'
     CREDIT_CARD = 'credit_card'
