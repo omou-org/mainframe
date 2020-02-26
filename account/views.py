@@ -11,6 +11,7 @@ from account.models import (
     Parent,
     Instructor,
     InstructorAvailability,
+    InstructorOutOfOffice,
 )
 from account.serializers import (
     NoteSerializer,
@@ -19,6 +20,7 @@ from account.serializers import (
     ParentSerializer,
     InstructorSerializer,
     InstructorAvailablitySerializer,
+    InstructorOutOfOfficeSerializer,
     UserSerializer,
 )
 from mainframe.permissions import ReadOnly, IsDev
@@ -97,6 +99,16 @@ class InstructorAvailabilityViewSet(viewsets.ModelViewSet):
         queryset = self.get_queryset().filter(instructor=instructor_id)
         serializer = InstructorAvailablitySerializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class InstructorOutOfOfficeViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows instructors out of office to be added and changed
+    """
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsDev | (IsAuthenticated & (IsAdminUser | ReadOnly))]
+    queryset = InstructorOutOfOffice.objects.all()
+    serializer_class = InstructorOutOfOfficeSerializer
 
 
 class AdminViewSet(viewsets.ModelViewSet):
