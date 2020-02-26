@@ -1,4 +1,6 @@
+import pytz
 import uuid
+from datetime import datetime
 
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
@@ -13,6 +15,7 @@ from account.models import (
     Parent,
     Instructor,
     InstructorAvailability,
+    InstructorOutOfOffice,
 )
 
 
@@ -39,6 +42,7 @@ class NoteSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = User
         read_only_fields = (
@@ -287,6 +291,40 @@ class InstructorAvailablitySerializer(serializers.ModelSerializer):
             'day_of_week',
             'start_time',
             'end_time',
+            'updated_at',
+            'created_at',
+        )
+
+
+class InstructorOutOfOfficeSerializer(serializers.ModelSerializer):
+
+    def create(self, validated_data):
+        instructor_id = validated_data.pop("instructor")
+        start_datetime = validated_data.pop("start_datetime").replace(tzinfo=None)
+        end_datetime = validated_data.pop("end_datetime").replace(tzinfo=None)
+        start_datetime_obj = pytz.timezone(
+            'America/Los_Angeles').localize(start_datetime).astimezone(pytz.utc)
+        end_datetime_obj = pytz.timezone(
+            'America/Los_Angeles').localize(end_datetime).astimezone(pytz.utc)
+
+        instructor_ooo = InstructorOutOfOffice.objects.create(
+            instructor=instructor_id,
+            start_datetime=start_datetime_obj,
+            end_datetime=end_datetime_obj,
+        )
+        return instructor_ooo
+
+    class Meta:
+        model = InstructorOutOfOffice
+        read_only_fields = (
+            'updated_at',
+            'created_at',
+        )
+        fields = (
+            'id',
+            'instructor',
+            'start_datetime',
+            'end_datetime',
             'updated_at',
             'created_at',
         )
