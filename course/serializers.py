@@ -92,9 +92,9 @@ class CourseSerializer(serializers.ModelSerializer):
                     course.end_time
                 )
                 start_datetime = pytz.timezone(
-                    'US/Pacific').localize(start_datetime)
+                    'America/Los_Angeles').localize(start_datetime).astimezone(pytz.utc)
                 end_datetime = pytz.timezone(
-                    'US/Pacific').localize(end_datetime)
+                    'America/Los_Angeles').localize(end_datetime).astimezone(pytz.utc)
 
                 Session.objects.create(
                     course=course,
@@ -136,9 +136,9 @@ class CourseSerializer(serializers.ModelSerializer):
                 validated_data.get('end_time', instance.end_time)
             )
             session.start_datetime = pytz.timezone(
-                'US/Pacific').localize(start_datetime)
+                'America/Los_Angeles').localize(start_datetime).astimezone(pytz.utc)
             session.end_datetime = pytz.timezone(
-                'US/Pacific').localize(end_datetime)
+                'America/Los_Angeles').localize(end_datetime).astimezone(pytz.utc)
             session.save()
 
         if 'end_date' in validated_data or validated_data.get('is_confirmed', False):
@@ -159,9 +159,9 @@ class CourseSerializer(serializers.ModelSerializer):
                     validated_data.get('end_time', instance.end_time)
                 )
                 start_datetime = pytz.timezone(
-                    'US/Pacific').localize(start_datetime)
+                    'America/Los_Angeles').localize(start_datetime).astimezone(pytz.utc)
                 end_datetime = pytz.timezone(
-                    'US/Pacific').localize(end_datetime)
+                    'America/Los_Angeles').localize(end_datetime).astimezone(pytz.utc)
 
                 Session.objects.create(
                     course=instance,
