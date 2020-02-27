@@ -96,7 +96,7 @@ class Course(models.Model):
 
     # Logistical information
     room = models.CharField(max_length=50, null=True, blank=True)
-    day_of_week = models.CharField(max_length=9, choices=DAYS_OF_WEEK)
+    day_of_week = models.CharField(max_length=9, choices=DAYS_OF_WEEK, null=True, blank=True)
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
     num_sessions = models.IntegerField(default=0)
