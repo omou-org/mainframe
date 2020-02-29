@@ -1,4 +1,5 @@
 from datetime import datetime
+import calendar
 import pytz
 
 import arrow
@@ -72,9 +73,9 @@ class CourseSerializer(serializers.ModelSerializer):
         # create course
         course = Course.objects.create(**validated_data)
         course.num_sessions = 0
-        course.save()
 
         if course.start_date and course.end_date:
+            course.day_of_week = calendar.day_name[course.start_date.weekday()].lower()
             current_date = arrow.get(course.start_date)
             end_date = arrow.get(course.end_date)
 
