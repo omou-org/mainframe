@@ -118,8 +118,12 @@ def priceQuoteTotal(body):
     # parent balance adjustment
     if body.get("parent_id"):
         parent = Parent.objects.get(user_id=body["parent_id"])
-        ResponseDict["account_balance"] = float(parent.balance)
-        ResponseDict["total"] -= float(parent.balance)
+        if parent.balance < float(ResponseDict["total"]):
+            balance = parent.balance
+        else:
+            balance = float(ResponseDict["total"])
+        ResponseDict["account_balance"] = balance
+        ResponseDict["total"] -= balance
     
     return ResponseDict
 
