@@ -102,17 +102,20 @@ class CourseSerializer(serializers.ModelSerializer):
                     start_datetime=start_datetime,
                     end_datetime=end_datetime,
                     instructor=course.instructor,
-                    is_confirmed= course.is_confirmed and current_date <= confirmed_end_date,
+                    is_confirmed=course.is_confirmed and current_date <= confirmed_end_date,
                     title=course.subject
                 )
                 course.num_sessions += 1
                 current_date = current_date.shift(weeks=+1)
-        
+
+        if course.course_type == 'class':
+            course.hourly_tuition = course.total_tuition / (course.num_sessions * course.session_length)
+
         if course.course_type == 'small_group' or course.course_type == 'tutoring':
             priceRule = PriceRule.objects.filter(
-                Q(category = course.course_category) &
-                Q(academic_level = course.academic_level) &
-                Q(course_type = course.course_type))[0]
+                Q(category=course.course_category) &
+                Q(academic_level=course.academic_level) &
+                Q(course_type=course.course_type))[0]
             course.hourly_tuition = priceRule.hourly_tuition
             course.total_tuition = course.hourly_tuition * course.num_sessions
         
