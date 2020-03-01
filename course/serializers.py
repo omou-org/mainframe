@@ -1,4 +1,5 @@
 from datetime import datetime
+import calendar
 import pytz
 
 import arrow
@@ -72,9 +73,9 @@ class CourseSerializer(serializers.ModelSerializer):
         # create course
         course = Course.objects.create(**validated_data)
         course.num_sessions = 0
-        course.save()
 
         if course.start_date and course.end_date:
+            course.day_of_week = calendar.day_name[course.start_date.weekday()].lower()
             current_date = arrow.get(course.start_date)
             end_date = arrow.get(course.end_date)
 
@@ -92,9 +93,9 @@ class CourseSerializer(serializers.ModelSerializer):
                     course.end_time
                 )
                 start_datetime = pytz.timezone(
-                    'US/Pacific').localize(start_datetime)
+                    'America/Los_Angeles').localize(start_datetime).astimezone(pytz.utc)
                 end_datetime = pytz.timezone(
-                    'US/Pacific').localize(end_datetime)
+                    'America/Los_Angeles').localize(end_datetime).astimezone(pytz.utc)
 
                 Session.objects.create(
                     course=course,
@@ -136,9 +137,9 @@ class CourseSerializer(serializers.ModelSerializer):
                 validated_data.get('end_time', instance.end_time)
             )
             session.start_datetime = pytz.timezone(
-                'US/Pacific').localize(start_datetime)
+                'America/Los_Angeles').localize(start_datetime).astimezone(pytz.utc)
             session.end_datetime = pytz.timezone(
-                'US/Pacific').localize(end_datetime)
+                'America/Los_Angeles').localize(end_datetime).astimezone(pytz.utc)
             session.save()
 
         if 'end_date' in validated_data or validated_data.get('is_confirmed', False):
@@ -159,9 +160,9 @@ class CourseSerializer(serializers.ModelSerializer):
                     validated_data.get('end_time', instance.end_time)
                 )
                 start_datetime = pytz.timezone(
-                    'US/Pacific').localize(start_datetime)
+                    'America/Los_Angeles').localize(start_datetime).astimezone(pytz.utc)
                 end_datetime = pytz.timezone(
-                    'US/Pacific').localize(end_datetime)
+                    'America/Los_Angeles').localize(end_datetime).astimezone(pytz.utc)
 
                 Session.objects.create(
                     course=instance,

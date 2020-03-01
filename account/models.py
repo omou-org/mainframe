@@ -239,6 +239,19 @@ class InstructorAvailability(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
+class InstructorOutOfOffice(models.Model):
+    instructor = models.ForeignKey(
+        Instructor,
+        on_delete=models.PROTECT,
+    )
+    start_datetime = models.DateTimeField()
+    end_datetime = models.DateTimeField()
+
+    # Timestamps
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
 class AdminManager(models.Manager):
     def search(self, query=None, qs_initial=None):
         if qs_initial is None or len(qs_initial) == 0:
