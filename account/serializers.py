@@ -287,7 +287,6 @@ class InstructorAvailablitySerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'instructor',
-            'all_day',
             'day_of_week',
             'start_time',
             'end_time',
@@ -327,7 +326,7 @@ class InstructorOutOfOfficeSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'instructor',
-            "all_day",
+            'all_day',
             'start_datetime',
             'description',
             'end_datetime',
