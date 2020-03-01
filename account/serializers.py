@@ -300,7 +300,6 @@ class InstructorOutOfOfficeSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         instructor_id = validated_data.pop("instructor")
         description = validated_data.pop("description")
-        all_day = validated_data.pop("description")
         start_datetime = validated_data.pop("start_datetime").replace(tzinfo=None)
         end_datetime = validated_data.pop("end_datetime").replace(tzinfo=None)
         start_datetime_obj = pytz.timezone(
@@ -313,7 +312,6 @@ class InstructorOutOfOfficeSerializer(serializers.ModelSerializer):
             start_datetime=start_datetime_obj,
             end_datetime=end_datetime_obj,
             description=description,
-            all_day=all_day,
         )
         return instructor_ooo
 
@@ -326,7 +324,6 @@ class InstructorOutOfOfficeSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'instructor',
-            'all_day',
             'start_datetime',
             'description',
             'end_datetime',

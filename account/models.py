@@ -247,7 +247,6 @@ class InstructorOutOfOffice(models.Model):
     start_datetime = models.DateTimeField()
     end_datetime = models.DateTimeField()
     description = models.TextField(blank=True)
-    all_day = models.BooleanField(default=False)
 
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)
