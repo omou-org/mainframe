@@ -7,7 +7,6 @@ from course.models import Enrollment
 class Payment(models.Model):
     parent = models.ForeignKey(Parent, on_delete=models.PROTECT)
     sub_total = models.DecimalField(max_digits=6, decimal_places=2)
-    # applied_discounts = models.ManyToManyField("DiscountRule")
     price_adjustment = models.DecimalField(
         max_digits=6,
         decimal_places=2,

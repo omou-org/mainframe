@@ -10,7 +10,7 @@ from mainframe.permissions import ReadOnly, IsDev
 from payment.models import Payment
 from payment.serializers import PaymentSerializer
 
-from pricing.views import priceQuoteTotal
+from pricing.views import price_quote_total
 
 class PaymentViewSet(viewsets.ModelViewSet):
     authentication_classes = [TokenAuthentication]
@@ -20,7 +20,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         data = request.data
-        data.update(priceQuoteTotal(data))
+        data.update(price_quote_total(data))
 
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
