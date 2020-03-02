@@ -94,7 +94,7 @@ class StudentManager(models.Manager):
 
 
 class Note(models.Model):
-    timestamp = models.DateTimeField(auto_now_add=True)    
+    timestamp = models.DateTimeField(auto_now_add=True)
     title = models.TextField(blank=True)
     body = models.TextField()
     user = models.ForeignKey(
@@ -246,6 +246,7 @@ class InstructorOutOfOffice(models.Model):
     )
     start_datetime = models.DateTimeField()
     end_datetime = models.DateTimeField()
+    description = models.TextField(blank=True)
 
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)

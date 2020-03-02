@@ -31,6 +31,104 @@ from course.models import Course
 from django.http import JsonResponse
 from rest_framework.views import APIView
 
+# shared pricing function
+def price_quote_total(body):
+    course_students = set()
+    sub_total = 0.0      
+
+    disabled_discounts = body.get("disabled_discounts", [])
+    used_discounts = []
+    total_discount_val = 0.0
+
+    # extract tutoring costs (assuming category/level combo exists)
+    for tutor_json in body.get("tutoring", []):
+        tutoring_price_rules = PriceRule.objects.filter(
+            Q(category = tutor_json["category_id"]) &
+            Q(academic_level = tutor_json["academic_level"]) &
+            Q(course_type = "tutoring"))[0]
+        tuition = float(tutoring_price_rules.hourly_tuition)
+        sub_total += tuition * float(tutor_json["duration"])*float(tutor_json["sessions"])  
+
+    # extract course costs and discounts
+    for course_json in body.get("classes", []):
+        course = Course.objects.filter(id = course_json["course_id"])[0]
+        course_sub_total = float(course.hourly_tuition)*float(course_json["sessions"])
+
+        if course.course_type == 'class':
+            course_students.add(course_json["student_id"])
+
+            # DateRangeDiscount
+            date_range_discounts = DateRangeDiscount.objects.filter(
+                (Q(start_date__lte = course.start_date) & Q(end_date__lte = course.end_date)) |
+                (Q(start_date__gte = course.start_date) & Q(start_date__lte = course.end_date)) |
+                (Q(end_date__gte = course.start_date) & Q(end_date__lte = course.end_date)))
+            
+            for discount in date_range_discounts:
+                if discount.id not in disabled_discounts and discount.active:
+                    if discount.amount_type == 'percent':
+                        amount = float(course.hourly_tuition)*(100.0-float(discount.amount))/100.0
+                    else:
+                        amount = float(discount.amount)
+                    total_discount_val += amount
+                    used_discounts.append({"discount_title" : discount.name, "amount" : amount})
+            
+            # MultiCourseDiscount (sessions on course basis)            
+            multicourse_discounts = MultiCourseDiscount.objects.filter(num_sessions__lte = float(course_json["sessions"]))
+            for discount in multicourse_discounts.order_by("-num_sessions"):
+                # take highest applicable discount based on session count
+                if discount.id not in disabled_discounts and discount.active:
+                    if discount.amount_type == 'percent':
+                        amount = float(course.hourly_tuition)*(100.0-float(discount.amount))/100.0
+                    else:
+                        amount = float(discount.amount)
+                    total_discount_val += amount
+                    used_discounts.append({"name" : discount.name, "amount" : amount, "id": discount.id})
+                    break
+    
+        sub_total += course_sub_total
+
+        # sibling discount
+    if len(course_students) > 1:
+        total_discount_val += 25
+        used_discounts.append(("Siblings Discount", 25))      
+    
+    # PaymentMethodDiscount
+    payment_method = body["method"]
+    payment_method_discounts = PaymentMethodDiscount.objects.filter(payment_method=payment_method)
+    for discount in payment_method_discounts:
+        if discount.id not in disabled_discounts and discount.active:
+            if discount.amount_type == 'percent':
+                amount = float(sub_total)*(100.0-float(discount.amount))/100.0
+            else:
+                amount = float(discount.amount)
+            total_discount_val += amount
+            used_discounts.append({"name" : discount.name, "amount" : amount, "id": discount.id})
+    
+    # price adjustment
+    price_adjustment = body.get("price_adjustment", 0)
+
+    # format response data
+    response_dict = {}
+    response_dict["sub_total"] = sub_total
+    response_dict["discounts"] = used_discounts
+    response_dict["discount_total"] = total_discount_val
+    response_dict["price_adjustment"] = price_adjustment
+    response_dict["total"] = sub_total-total_discount_val-price_adjustment
+
+    # parent balance adjustment
+    response_dict["account_balance"] = 0.0
+    if body.get("parent"):
+        parent = Parent.objects.get(user_id=body["parent"])
+
+        if parent.balance < response_dict["total"]:
+            balance = float(parent.balance)
+        else:
+            balance = response_dict["total"]
+        response_dict["account_balance"] = balance
+        response_dict["total"] -= balance
+    return response_dict
+
+
 # Create your views here.
 
 class QuoteTotalView(APIView): 
@@ -41,96 +139,7 @@ class QuoteTotalView(APIView):
         # load request body
         body_unicode = request.body.decode('utf-8')
         body = json.loads(body_unicode)
-        
-        course_students = set()
-        sub_total = 0.0      
-
-        disabled_discounts = body.get("disabled_discounts", [])
-        usedDiscounts = []
-        totalDiscountVal = 0.0
-
-        # extract tutoring costs (assuming category/level combo exists)
-        for TutorJSON in body.get("tutoring", []):
-            tutoring_priceRules = PriceRule.objects.filter(
-                Q(category = TutorJSON["category_id"]) &
-                Q(academic_level = TutorJSON["academic_level"]) &
-                Q(course_type = "tutoring"))[0]
-            tuition = float(tutoring_priceRules.hourly_tuition)
-            sub_total += tuition * float(TutorJSON["duration"])*float(TutorJSON["sessions"])  
-
-        # extract course costs and discounts
-        for CourseJSON in body.get("classes", []):
-            course = Course.objects.filter(id = CourseJSON["course_id"])[0]
-            course_subTotal = float(course.hourly_tuition)*float(CourseJSON["sessions"])
-
-            if course.course_type == 'class':
-                course_students.add(CourseJSON["student_id"])
-
-                # DateRangeDiscount
-                dateRange_discounts = DateRangeDiscount.objects.filter(
-                    (Q(start_date__lte = course.start_date) & Q(end_date__lte = course.end_date)) |
-                    (Q(start_date__gte = course.start_date) & Q(start_date__lte = course.end_date)) |
-                    (Q(end_date__gte = course.start_date) & Q(end_date__lte = course.end_date)))
-                
-                for discount in dateRange_discounts:
-                    if discount.id not in disabled_discounts and discount.active:
-                        if discount.amount_type == 'percent':
-                            amount = float(course.hourly_tuition)*(100.0-float(discount.amount))/100.0
-                        else:
-                            amount = float(discount.amount)
-                        totalDiscountVal += amount
-                        usedDiscounts.append({"discount_title" : discount.name, "amount" : amount})
-                
-                # MultiCourseDiscount (sessions on course basis)            
-                multiCourse_discounts = MultiCourseDiscount.objects.filter(num_sessions__lte = float(CourseJSON["sessions"]))
-                for discount in multiCourse_discounts.order_by("-num_sessions"):
-                    # take highest applicable discount based on session count
-                    if discount.id not in disabled_discounts and discount.active:
-                        if discount.amount_type == 'percent':
-                            amount = float(course.hourly_tuition)*(100.0-float(discount.amount))/100.0
-                        else:
-                            amount = float(discount.amount)
-                        totalDiscountVal += amount
-                        usedDiscounts.append({"name" : discount.name, "amount" : amount, "id": discount.id})
-                        break
-        
-            sub_total += course_subTotal
-
-         # sibling discount
-        if len(course_students) > 1:
-            totalDiscountVal += 25
-            usedDiscounts.append(("Siblings Discount", 25))      
-        
-        # PaymentMethodDiscount
-        payment_method = body["payment_method"]
-        payment_method_discounts = PaymentMethodDiscount.objects.filter(payment_method=payment_method)
-        for discount in payment_method_discounts:
-            if discount.id not in disabled_discounts and discount.active:
-                if discount.amount_type == 'percent':
-                    amount = float(sub_total)*(100.0-float(discount.amount))/100.0
-                else:
-                    amount = float(discount.amount)
-                totalDiscountVal += amount
-                usedDiscounts.append({"name" : discount.name, "amount" : amount, "id": discount.id})
-        
-        # price adjustment
-        price_adjustment = body.get("price_adjustment", 0)
-
-        # format response data
-        ResponseDict = {}
-        ResponseDict["sub_total"] = sub_total
-        ResponseDict["discounts"] = usedDiscounts
-        ResponseDict["discount_total"] = totalDiscountVal
-        ResponseDict["price_adjustment"] = price_adjustment
-        ResponseDict["total"] = sub_total-totalDiscountVal-price_adjustment
-
-        # parent balance adjustment
-        if body.get("apply_account_balance", False):
-            parent = Parent.objects.get(user_id=body["parent_id"])
-            ResponseDict["account_balance"] = float(parent.balance)
-            ResponseDict["total"] -= float(parent.balance)
-        
-        return JsonResponse(ResponseDict)
+        return JsonResponse(price_quote_total(body))
 
 
 class PriceRuleViewSet(viewsets.ModelViewSet):

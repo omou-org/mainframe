@@ -1,11 +1,9 @@
 from django.db import transaction
 from rest_framework import serializers
 
-
+from account.models import Parent
 from course.models import Course, Enrollment
-# from course.serializers import CourseSerializer
 from payment.models import Payment, Registration
-# from pricing.serializers import DiscountSerializer
 
 
 class EnrollmentSerializer(serializers.ModelSerializer):
@@ -45,33 +43,28 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
 
 class PaymentSerializer(serializers.ModelSerializer):
-    # applied_discounts = DiscountSerializer(many=True)
     registrations = RegistrationSerializer(many=True, source='registration_set')
 
     @transaction.atomic
     def create(self, validated_data):
         registrations = validated_data.pop("registration_set")
-        total_amount = (validated_data.get("base_amount") +
-                        validated_data.get("price_adjustment"))
         payment = Payment.objects.create(
             **validated_data,
-            total_amount=total_amount
         )
+
+        # deduct account_balance from parent balance
+        if validated_data["account_balance"] > 0.0:
+            parent = Parent.objects.get(user_id = validated_data["parent"])
+            parent.balance -= validated_data["account_balance"]
+            parent.save()
+
+        # create registrations
         for registration in registrations:
             Registration.objects.create(
                 payment=payment,
                 enrollment=registration["enrollment"],
                 num_sessions=registration["num_sessions"]
             )
-            # enrollment = Enrollment.objects.get(id=registration["enrollment"])
-            # if enrollment.course.course_type in (Course.TUTORING, Course.SMALL_GROUP):
-            #     if enrollment.sessions_left < registration["num_sessions"]:
-            #         serializer = CourseSerializer()
-            #         data = {
-            #             "end_date": registration["new_end_date"]
-            #         }
-            #         serializer.update(enrollment.course, data)
-
         return payment
 
     class Meta:
@@ -80,10 +73,11 @@ class PaymentSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'parent',
-            'base_amount',
-            # 'applied_discounts',
+            'sub_total',
             'price_adjustment',
-            'total_amount',
+            'total',
+            'account_balance',
+            'discount_total',
             'method',
             'registrations',
             'updated_at',
@@ -92,7 +86,6 @@ class PaymentSerializer(serializers.ModelSerializer):
 
         read_only_fields = (
             'id',
-            'total_amount',
             'updated_at',
             'created_at'
         )

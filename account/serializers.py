@@ -278,7 +278,7 @@ class InstructorSerializer(serializers.ModelSerializer):
 
 
 class InstructorAvailablitySerializer(serializers.ModelSerializer):
-    
+
     class Meta:
         model = InstructorAvailability
         read_only_fields = (
@@ -300,6 +300,7 @@ class InstructorOutOfOfficeSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         instructor_id = validated_data.pop("instructor")
+        description = validated_data.pop("description")
         start_datetime = validated_data.pop("start_datetime").replace(tzinfo=None)
         end_datetime = validated_data.pop("end_datetime").replace(tzinfo=None)
         start_datetime_obj = pytz.timezone(
@@ -311,6 +312,7 @@ class InstructorOutOfOfficeSerializer(serializers.ModelSerializer):
             instructor=instructor_id,
             start_datetime=start_datetime_obj,
             end_datetime=end_datetime_obj,
+            description=description,
         )
         return instructor_ooo
 
@@ -324,6 +326,7 @@ class InstructorOutOfOfficeSerializer(serializers.ModelSerializer):
             'id',
             'instructor',
             'start_datetime',
+            'description',
             'end_datetime',
             'updated_at',
             'created_at',
