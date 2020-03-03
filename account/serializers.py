@@ -199,6 +199,7 @@ class ParentSerializer(serializers.ModelSerializer):
             'user_uuid',
             'gender',
             'birth_date',
+            'balance',
             'address',
             'city',
             'phone_number',
