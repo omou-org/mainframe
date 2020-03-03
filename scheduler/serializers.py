@@ -14,5 +14,6 @@ class SessionSerializer(serializers.ModelSerializer):
             'details',
             'start_datetime',
             'end_datetime',
-            'is_confirmed'
+            'is_confirmed',
+            'title'
         )
