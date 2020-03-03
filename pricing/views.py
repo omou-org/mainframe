@@ -106,11 +106,10 @@ def price_quote_total(body):
     
     # price adjustment
     price_adjustment = body.get("price_adjustment", 0)
-
+    
     # format response data
     response_dict = {}
     response_dict["sub_total"] = sub_total
-    response_dict["discounts"] = used_discounts
     response_dict["discount_total"] = total_discount_val
     response_dict["price_adjustment"] = price_adjustment
     response_dict["total"] = sub_total-total_discount_val-price_adjustment
@@ -126,6 +125,12 @@ def price_quote_total(body):
             balance = response_dict["total"]
         response_dict["account_balance"] = balance
         response_dict["total"] -= balance
+    
+    # round all prices
+    for key in response_dict:
+        response_dict[key] = round(response_dict[key], 2)
+
+    response_dict["discounts"] = used_discounts
     return response_dict
 
 
