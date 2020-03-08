@@ -36,7 +36,7 @@ class SessionManager(models.Manager):
                     elif not student_qs.isdisjoint(course.enrollment_list):
                         valid_courseID.append(course_id)
                 
-                qs = qs.filter(course__id__in = valid_courseID)
+                qs = qs.filter(course__id__in=valid_courseID)
 
         return qs
 

@@ -6,5 +6,6 @@ router = routers.DefaultRouter()
 router.register(r'payment', views.PaymentViewSet)
 
 urlpatterns = [
-    path('', include(router.urls))
+    path('', include(router.urls)),
+    path('unpaid-sessions/', views.UnpaidSessionsView.as_view()),
 ]
