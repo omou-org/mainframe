@@ -58,7 +58,7 @@ class SessionScheduleValidation(APIView):
 
         if not instructor_availabilities:
             return Response({
-                'status': 'false',
+                'status': False,
                 'reason': 'The instructor is not marked for being '
                           'available at this day of week and time.'
             })
@@ -72,12 +72,12 @@ class SessionScheduleValidation(APIView):
 
         if sessions:
             return Response({
-                'status': 'false',
+                'status': False,
                 'conflicting_session': sessions[0].id,
                 'reason': f'The instructor already is teaching a session for '
                           f'course "{sessions[0].course.subject}" at that time.'
             })
-        return Response({'status': 'true'})
+        return Response({'status': True})
 
 
 class CourseScheduleValidation(APIView):
@@ -112,7 +112,7 @@ class CourseScheduleValidation(APIView):
 
         if not instructor_availabilities:
             return Response({
-                'status': 'false',
+                'status': False,
                 'reason': 'The instructor is not marked for being '
                           'available at this day of week and time.'
             })
@@ -129,12 +129,12 @@ class CourseScheduleValidation(APIView):
 
         if courses:
             return Response({
-                'status': 'false',
+                'status': False,
                 'conflicting_course': courses[0].id,
                 'reason': f'The instructor already is teaching the course '
                           f'"{courses[0].subject}" during those days and times.'
             })
-        return Response({'status': 'true'})
+        return Response({'status': True})
 
 
 class SessionViewSet(viewsets.ModelViewSet):
