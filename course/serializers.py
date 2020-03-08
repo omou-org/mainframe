@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import calendar
 import pytz
 
@@ -108,8 +108,10 @@ class CourseSerializer(serializers.ModelSerializer):
                 course.num_sessions += 1
                 current_date = current_date.shift(weeks=+1)
 
-        if course.course_type == 'class':
+        if course.course_type == 'class' and course.num_sessions and course.session_length and course.total_tuition:
             course.hourly_tuition = course.total_tuition / (course.num_sessions * course.session_length)
+        else:
+            course.hourly_tuition = 0
 
         if course.course_type == 'small_group' or course.course_type == 'tutoring':
             priceRule = PriceRule.objects.filter(
@@ -131,18 +133,19 @@ class CourseSerializer(serializers.ModelSerializer):
         )
 
         for session in sessions:
+            pacific_tz = pytz.timezone('America/Los_Angeles')
+            utc_start_datetime = session.start_datetime.replace(tzinfo=timezone.utc).astimezone(tz=pacific_tz)
+            utc_end_datetime = session.start_datetime.replace(tzinfo=timezone.utc).astimezone(tz=pacific_tz)
             start_datetime = datetime.combine(
-                session.start_datetime.date(),
+                utc_start_datetime.date(),
                 validated_data.get('start_time', instance.start_time)
             )
             end_datetime = datetime.combine(
-                session.end_datetime.date(),
+                utc_end_datetime.date(),
                 validated_data.get('end_time', instance.end_time)
             )
-            session.start_datetime = pytz.timezone(
-                'America/Los_Angeles').localize(start_datetime).astimezone(pytz.utc)
-            session.end_datetime = pytz.timezone(
-                'America/Los_Angeles').localize(end_datetime).astimezone(pytz.utc)
+            session.start_datetime = pacific_tz.localize(start_datetime).astimezone(pytz.utc)
+            session.end_datetime = pacific_tz.localize(end_datetime).astimezone(pytz.utc)
             session.save()
 
         if 'end_date' in validated_data or validated_data.get('is_confirmed', False):
