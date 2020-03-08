@@ -74,8 +74,9 @@ class SessionScheduleValidation(APIView):
             return Response({
                 'status': False,
                 'conflicting_session': sessions[0].id,
-                'reason': f'The instructor already is teaching a session for '
-                          f'course "{sessions[0].course.subject}" at that time.'
+                'reason': f'The instructor is teaching a session for the '
+                          f'following course at the selected time: '
+                          f'"{sessions[0].course.subject}"'
             })
         return Response({'status': True})
 
@@ -121,18 +122,19 @@ class CourseScheduleValidation(APIView):
         courses = Course.objects.filter(
             Q(instructor=instructor_id),
             Q(day_of_week=day_of_week),
-            (Q(start_date__gt=start_date) & Q(start_date__lt=end_date) |
-             Q(start_date__lt=start_date) & Q(end_date__gt=start_date)),
-            (Q(start_time__gt=start_time) & Q(start_time__lt=end_time) |
-             Q(start_time__lt=start_time) & Q(end_time__gt=start_time)),
+            (Q(start_date__gte=start_date) & Q(start_date__lt=end_date) |
+             Q(start_date__lte=start_date) & Q(end_date__gt=start_date)),
+            (Q(start_time__gte=start_time) & Q(start_time__lt=end_time) |
+             Q(start_time__lte=start_time) & Q(end_time__gt=start_time)),
         )
 
         if courses:
             return Response({
                 'status': False,
                 'conflicting_course': courses[0].id,
-                'reason': f'The instructor already is teaching the course '
-                          f'"{courses[0].subject}" during those days and times.'
+                'reason': f'The instructor already is teaching the following '
+                          f'course during those days and times: '
+                          f'"{courses[0].subject}"'
             })
         return Response({'status': True})
 
