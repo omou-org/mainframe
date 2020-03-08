@@ -123,6 +123,11 @@ class Course(models.Model):
         return duration_hours
 
     @property
+    def hourly_tutition(self):
+        if self.num_sessions > 0 and self.session_length > 0:
+            return self.total_tuition / (self.num_sessions * self.session_length)
+
+    @property
     def enrollment_list(self):
         return [enrollment.student.user.id for enrollment in self.enrollment_set.all()]
 
@@ -169,8 +174,11 @@ class Enrollment(models.Model):
 
     @property
     def sessions_left(self):
-        return floor(self.enrollment_balance /
-                     (self.course.session_length * self.course.hourly_tuition))
+        if self.course.hourly_tuition:
+            return floor(self.enrollment_balance /
+                         (self.course.session_length * self.course.hourly_tuition))
+        else:
+            return 0
 
     @property
     def last_paid_session_datetime(self):
