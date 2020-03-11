@@ -9,7 +9,7 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from account.models import InstructorAvailability
+from account.models import InstructorAvailability, InstructorOutOfOffice
 from course.models import Course
 from mainframe.permissions import ReadOnly, IsDev
 from scheduler.models import Session
@@ -78,6 +78,22 @@ class SessionScheduleValidation(APIView):
                           f'following course at the selected time: '
                           f'"{sessions[0].course.subject}"'
             })
+
+        # Check out of office
+        out_of_office = InstructorOutOfOffice.objects.filter(
+            Q(instructor=instructor_id),
+            (Q(start_datetime__gte=start_datetime) & Q(start_datetime__lt=end_datetime)) |
+            (Q(start_datetime__lte=start_datetime) & Q(end_datetime__gt=start_datetime)),
+        )
+
+        if out_of_office:
+            return Response({
+                'status': False,
+                'conflicting_out_of_office_start': out_of_office[0].start_datetime,
+                'conflicting_out_of_office_end': out_of_office[0].end_datetime,
+                'reason': f'The instructor is marked out of office at that time.'
+            })
+
         return Response({'status': True})
 
 
@@ -136,6 +152,7 @@ class CourseScheduleValidation(APIView):
                           f'course during those days and times: '
                           f'"{courses[0].subject}"'
             })
+
         return Response({'status': True})
 
 
