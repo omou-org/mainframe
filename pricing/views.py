@@ -70,7 +70,7 @@ def price_quote_total(body):
                     else:
                         amount = float(discount.amount)
                     total_discount_val += amount
-                    used_discounts.append({"discount_title" : discount.name, "amount" : amount})
+                    used_discounts.append({"discount_id" : discount.id, "discount_title" : discount.name, "amount" : amount})
             
             # MultiCourseDiscount (sessions on course basis)            
             multicourse_discounts = MultiCourseDiscount.objects.filter(num_sessions__lte = float(course_json["sessions"]))
@@ -82,12 +82,12 @@ def price_quote_total(body):
                     else:
                         amount = float(discount.amount)
                     total_discount_val += amount
-                    used_discounts.append({"name" : discount.name, "amount" : amount, "id": discount.id})
+                    used_discounts.append({"discount_id" : discount.id, "name" : discount.name, "amount" : amount, "id": discount.id})
                     break
     
         sub_total += course_sub_total
 
-        # sibling discount
+    # sibling discount
     if len(course_students) > 1:
         total_discount_val += 25
         used_discounts.append(("Siblings Discount", 25))      
