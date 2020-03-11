@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import arrow
 import calendar
 import pytz
 
@@ -196,6 +197,7 @@ class SessionViewSet(viewsets.ModelViewSet):
             )
         elif time_frame == 'month':
             start_of_month = base.replace(day=1)
+            start_of_month = arrow.get(start_of_month).shift(months=time_shift).datetime
             if start_of_month.month == 12:
                 end_of_month = start_of_month.replace(
                     year=start_of_month.year + 1,
