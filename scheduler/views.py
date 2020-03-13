@@ -176,7 +176,10 @@ class SessionViewSet(viewsets.ModelViewSet):
         if view_option == 'class':
             queryset = queryset.filter(course__course_type=Course.CLASS)
         elif view_option == 'tutoring':
-            queryset = queryset.filter(course__course_type=Course.TUTORING)
+            queryset = queryset.filter(
+                Q(course__course_type=Course.TUTORING) |
+                Q(course__course_type=Course.SMALL_GROUP)
+            )
 
         now = datetime.now(tz=pytz.timezone('America/Los_Angeles'))
         base = now.replace(hour=0, minute=0, second=0, microsecond=0)
