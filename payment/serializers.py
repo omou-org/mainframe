@@ -3,7 +3,9 @@ from rest_framework import serializers
 
 from account.models import Parent
 from course.models import Course, Enrollment
-from payment.models import Payment, Registration
+from payment.models import Payment, Registration, Deduction
+
+from pricing.serializers import DiscountSerializer
 
 
 class EnrollmentSerializer(serializers.ModelSerializer):
@@ -42,12 +44,39 @@ class RegistrationSerializer(serializers.ModelSerializer):
         )
 
 
+class DeductionSerializer(serializers.ModelSerializer):
+    discount_details = DiscountSerializer(read_only=True, source='Discount')
+
+    class Meta:
+        model = Deduction
+
+        read_only_fields = (
+            'id',
+            'payment',
+            'updated_at',
+            'created_at',
+        )
+
+        fields = (
+            'id',
+            'payment',
+            'discount',
+            'amount',
+            'discount_details',
+            'updated_at',
+            'created_at',
+        )
+
+
 class PaymentSerializer(serializers.ModelSerializer):
     registrations = RegistrationSerializer(many=True, source='registration_set')
+    deductions = DeductionSerializer(many=True, source='deduction_set')
 
     @transaction.atomic
     def create(self, validated_data):
         registrations = validated_data.pop("registration_set")
+        deductions = validated_data.pop("deduction_set")
+
         payment = Payment.objects.create(
             **validated_data,
         )
@@ -58,6 +87,14 @@ class PaymentSerializer(serializers.ModelSerializer):
             parent.balance -= validated_data["account_balance"]
             parent.save()
 
+        # create deductions
+        for deduction in deductions:
+            Deduction.objects.create(
+                payment=payment,
+                discount=deduction["discount"],
+                amount=deduction["amount"]
+            )
+
         # create registrations
         for registration in registrations:
             Registration.objects.create(
@@ -65,6 +102,7 @@ class PaymentSerializer(serializers.ModelSerializer):
                 enrollment=registration["enrollment"],
                 num_sessions=registration["num_sessions"]
             )
+        
         return payment
 
     class Meta:
@@ -80,6 +118,7 @@ class PaymentSerializer(serializers.ModelSerializer):
             'discount_total',
             'method',
             'registrations',
+            'deductions',
             'updated_at',
             'created_at'
         )

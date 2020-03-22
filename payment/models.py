@@ -3,6 +3,7 @@ from django.utils import timezone
 
 from account.models import Parent
 from course.models import Enrollment
+from pricing.models import Discount
 
 class Payment(models.Model):
     parent = models.ForeignKey(Parent, on_delete=models.PROTECT)
@@ -37,6 +38,17 @@ class Payment(models.Model):
         through='Registration',
         related_name='payment_list',
     )
+
+    # Timestamps
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+# Deduction associates a Payment with a Discount
+class Deduction(models.Model):
+    payment = models.ForeignKey(Payment, on_delete=models.CASCADE)
+    discount = models.ForeignKey(Discount, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
 
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)
