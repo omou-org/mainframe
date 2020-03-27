@@ -21,6 +21,16 @@ class PaymentViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         data = request.data
         data.update(price_quote_total(data))
+        
+        discounts = data.pop("discounts")
+        data["deductions"] = []
+        for discount in discounts:
+            data["deductions"].append(
+                {
+                    "discount":discount["id"],
+                    "amount":discount["amount"]
+                }
+            )
 
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
