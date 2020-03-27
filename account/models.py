@@ -211,7 +211,7 @@ class Instructor(UserInfo):
     biography = models.CharField(max_length=2000, null=True, blank=True)
     experience = models.CharField(max_length=2000, null=True, blank=True)
     language = models.CharField(max_length=2000, null=True, blank=True)
-    subjects = models.CharField(max_length=2000, null=True, blank=True)
+    subjects = models.ManyToManyField('course.CourseCategory', blank=True)
 
 
 class InstructorAvailability(models.Model):

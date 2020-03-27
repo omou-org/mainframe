@@ -1,12 +1,11 @@
 import pytz
 import uuid
-from datetime import datetime
-
-from rest_framework import serializers
-from rest_framework.authtoken.models import Token
 
 from django.db import transaction
 from django.contrib.auth.models import User
+from rest_framework import serializers
+from rest_framework.authtoken.models import Token
+
 
 from account.models import (
     Note,
@@ -222,9 +221,12 @@ class InstructorSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         with transaction.atomic():
-            if "user" in validated_data:
+            if 'user' in validated_data:
                 user_info = validated_data.pop('user')
                 User.objects.filter(id=instance.user.id).update(**user_info)
+            if 'subjects' in validated_data:
+                subjects = validated_data.pop('subjects')
+                instance.subjects.set(subjects)
             Instructor.objects.filter(user__id=instance.user.id).update(**validated_data)
             instance.refresh_from_db()
             instance.save()
@@ -241,6 +243,7 @@ class InstructorSerializer(serializers.ModelSerializer):
                 last_name=user_info['last_name'],
             )
             Token.objects.get_or_create(user=user)
+            subjects = validated_data.pop('subjects')
 
             # create account
             instructor = Instructor.objects.create(
@@ -248,6 +251,8 @@ class InstructorSerializer(serializers.ModelSerializer):
                 account_type='instructor',
                 **validated_data,
             )
+            instructor.subjects.set(subjects)
+            instructor.save()
             return instructor
 
     class Meta:

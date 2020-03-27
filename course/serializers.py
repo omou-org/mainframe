@@ -9,9 +9,8 @@ from rest_framework import serializers
 
 from course.models import EnrollmentNote, CourseNote, Course, CourseCategory, Enrollment
 from payment.serializers import PaymentSerializer
-from scheduler.models import Session
-
 from pricing.models import PriceRule
+from scheduler.models import Session
 
 
 class EnrollmentNoteSerializer(serializers.ModelSerializer):
