@@ -96,12 +96,12 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
         course_id = request.query_params.get("course_id", None)
         queryset = self.get_queryset()
         if student_id:
-            queryset = queryset.filter(student__user_uuid=student_id)
-        elif course_id:
+            queryset = queryset.filter(student=student_id)
+        if course_id:
             queryset = queryset.filter(course=course_id)
         serializer = self.get_serializer_class()(queryset, many=True)
         return Response(serializer.data)
-    
+
     def perform_destroy(self, instance):
         """
         override perform_destroy to refund balance from enrollment to parent
