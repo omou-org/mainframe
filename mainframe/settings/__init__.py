@@ -64,6 +64,7 @@ COMMON_APPS = (
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_filters",
+    "graphene_django",
     "rest_framework.authtoken",
     "rest_framework",
     "corsheaders",
@@ -164,3 +165,7 @@ CORS_ORIGIN_WHITELIST = (
     "https://www.omoulearning.com",
 )
 
+# GraphQL
+GRAPHENE = {
+    'SCHEMA': 'mainframe.schema.schema'
+}

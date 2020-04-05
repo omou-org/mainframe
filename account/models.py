@@ -105,6 +105,12 @@ class Note(models.Model):
     complete = models.BooleanField(default=False)
 
 
+class School(models.Model):
+    name = models.CharField(max_length=100)
+    zipcode = models.CharField(max_length=10)
+    district = models.CharField(max_length=100, blank=True, null=True)
+
+
 class Student(UserInfo):
     # 0 is preschool/kindergarten, 13 is graduated
     grade = models.IntegerField(
@@ -112,7 +118,12 @@ class Student(UserInfo):
         null=True,
         blank=True,
     )
-    school = models.CharField(max_length=64, null=True, blank=True)
+    school = models.ForeignKey(
+        School,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True
+    )
 
     primary_parent = models.ForeignKey(
         "Parent",
