@@ -232,6 +232,15 @@ class CoursesSearchView(generics.ListAPIView):
 class SessionsSearchView(generics.ListAPIView):
     serializer_class = SearchViewSerializer
 
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+
+        responseDict = {}
+        responseDict["count"] = request.session["count"]
+        responseDict["page"] = request.session["page"]
+        responseDict["results"] = response.data
+        return Response(responseDict)
+
     def get_queryset(self):
         searchResults = Session.objects.all()
 
@@ -259,6 +268,25 @@ class SessionsSearchView(generics.ListAPIView):
             }
             if sortToParameter.get(sortFilter):
                 searchResults = searchResults.order_by(sortToParameter[sortFilter])
+        
+        searchResults = list(searchResults)
+        self.request.session["count"] = len(searchResults)
+
+        # extract searches in page range
+        pageFilter = self.request.query_params.get('page', None)
+        self.request.session["page"] = pageFilter
+        if pageFilter is not None:
+            try:
+                pageNumber = int(pageFilter)
+                pageSize = 8
+                resultLen = len(searchResults)
+                rangeEnd = pageSize*pageNumber
+                if pageNumber > 0 and rangeEnd-pageSize < resultLen:
+                    searchResults = searchResults[rangeEnd-pageSize : resultLen if resultLen <= rangeEnd else rangeEnd]
+                else:
+                    searchResults = Course.objects.none()
+            except ValueError:
+                pass
         
         return searchResults
 
