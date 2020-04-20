@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from operator import attrgetter
 
 from datetime import datetime
+import pytz
 
 from account.models import (
     Student,
@@ -253,11 +254,11 @@ class SessionsSearchView(generics.ListAPIView):
         timeFilter = self.request.query_params.get('time', None)
         if timeFilter is not None: # all is default
             if timeFilter == "future":
-                searchResults = searchResults.filter(start_datetime__gte = datetime.now())
+                searchResults = searchResults.filter(start_datetime__gte = datetime.now(tz=pytz.timezone('America/Los_Angeles')))
             elif timeFilter == "past":
-                searchResults = searchResults.filter(start_datetime__lte = datetime.now())
+                searchResults = searchResults.filter(start_datetime__lte = datetime.now(tz=pytz.timezone('America/Los_Angeles')))
             elif timeFilter == "today":
-                searchResults = searchResults.filter(start_datetime__date = datetime.now().date())
+                searchResults = searchResults.filter(start_datetime__date = datetime.now(tz=pytz.timezone('America/Los_Angeles')).date())
 
         # sort results
         sortFilter = self.request.query_params.get('sort', None)
