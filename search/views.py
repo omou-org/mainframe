@@ -28,6 +28,7 @@ from scheduler.models import (
 
 from search.serializers import SearchViewSerializer
 
+
 class AccountsSearchView(generics.ListAPIView): 
     serializer_class = SearchViewSerializer
 
@@ -108,19 +109,20 @@ class AccountsSearchView(generics.ListAPIView):
         searchResults = list(searchResults)
         self.request.session["count"] = len(searchResults)
 
-        # extract searches in page range. Out of bounds page returns nothing
+        # extract searches in page range
         pageFilter = self.request.query_params.get('page', None)
+        pageSize = self.request.query_params.get('size', None)
         self.request.session["page"] = pageFilter
-        if pageFilter is not None:
+        if pageFilter is not None and pageSize is not None:
             try:
+                pageSize = int(pageSize)
                 pageNumber = int(pageFilter)
-                pageSize = 8
                 resultLen = len(searchResults)
                 rangeEnd = pageSize*pageNumber
                 if pageNumber > 0 and rangeEnd-pageSize < resultLen:
                     searchResults = searchResults[rangeEnd-pageSize : resultLen if resultLen <= rangeEnd else rangeEnd]
                 else:
-                    searchResults = Student.objects.none()
+                    searchResults = Course.objects.none()
             except ValueError:
                 pass
 
@@ -213,11 +215,12 @@ class CoursesSearchView(generics.ListAPIView):
 
         # extract searches in page range
         pageFilter = self.request.query_params.get('page', None)
+        pageSize = self.request.query_params.get('size', None)
         self.request.session["page"] = pageFilter
-        if pageFilter is not None:
+        if pageFilter is not None and pageSize is not None:
             try:
+                pageSize = int(pageSize)
                 pageNumber = int(pageFilter)
-                pageSize = 8
                 resultLen = len(searchResults)
                 rangeEnd = pageSize*pageNumber
                 if pageNumber > 0 and rangeEnd-pageSize < resultLen:
@@ -275,11 +278,12 @@ class SessionsSearchView(generics.ListAPIView):
 
         # extract searches in page range
         pageFilter = self.request.query_params.get('page', None)
+        pageSize = self.request.query_params.get('size', None)
         self.request.session["page"] = pageFilter
-        if pageFilter is not None:
+        if pageFilter is not None and pageSize is not None:
             try:
+                pageSize = int(pageSize)
                 pageNumber = int(pageFilter)
-                pageSize = 8
                 resultLen = len(searchResults)
                 rangeEnd = pageSize*pageNumber
                 if pageNumber > 0 and rangeEnd-pageSize < resultLen:
@@ -290,7 +294,4 @@ class SessionsSearchView(generics.ListAPIView):
                 pass
         
         return searchResults
-
-
-
 
