@@ -5,6 +5,7 @@ from django.urls import include, path
 
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from graphene_django.views import GraphQLView
 from rest_framework.authtoken import views as auth_views
 from rest_framework import permissions
 
@@ -30,6 +31,7 @@ urlpatterns = [
     path('account/', include('account.urls')),
     path('payment/', include('payment.urls')),
     path('admin/', admin.site.urls),
+    path('graphql', GraphQLView.as_view(graphiql=True)),
     url(r'^$', views.api_root, name='api_root'),
     url(r'^auth_token/', auth_views.obtain_auth_token),
     url(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
