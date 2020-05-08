@@ -169,3 +169,4 @@ CORS_ORIGIN_WHITELIST = (
 GRAPHENE = {
     'SCHEMA': 'mainframe.schema.schema'
 }
+SENDGRID_API_KEY = "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"
