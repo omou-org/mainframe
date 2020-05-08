@@ -169,3 +169,4 @@ CORS_ORIGIN_WHITELIST = (
 GRAPHENE = {
     'SCHEMA': 'mainframe.schema.schema'
 }
+SENDGRID_API_KEY = "***REMOVED***"
