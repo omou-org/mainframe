@@ -37,7 +37,7 @@ class NoteViewSet(viewsets.ModelViewSet):
         override list to return notes for specific user
         """
         user_id = request.query_params.get("user_id", None)
-        queryset = self.get_queryset().filter(user__id = user_id)
+        queryset = self.get_queryset().filter(user__id=user_id)
         serializer = NoteSerializer(queryset, many=True)
         return Response(serializer.data)
 

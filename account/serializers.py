@@ -11,6 +11,7 @@ from account.models import (
     Note,
     Admin,
     Student,
+    School,
     Parent,
     Instructor,
     InstructorAvailability,
@@ -63,6 +64,21 @@ class UserSerializer(serializers.ModelSerializer):
 class NonUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
+        read_only_fields = (
+            'id',
+            'timestamp',
+        )
+        fields = (
+            'id',
+            'email',
+            'first_name',
+            'last_name',
+        )
+
+
+class SchoolSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = School
         read_only_fields = (
             'id',
             'timestamp',
