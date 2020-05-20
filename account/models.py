@@ -79,7 +79,7 @@ class StudentManager(models.Manager):
                 Q(phone_number__icontains=query) |
                 Q(state__icontains=query) |
                 Q(zipcode__icontains=query) |
-                Q(school__icontains=query) |
+                Q(school__name__icontains=query) |
                 Q(primary_parent__user__first_name__icontains=query) |
                 Q(primary_parent__user__last_name__icontains=query) |
                 Q(secondary_parent__user__first_name__icontains=query) |
