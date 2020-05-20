@@ -1,18 +1,29 @@
-import graphene
-
+from graphene import Field, Int, List, String
 from graphene_django.types import DjangoObjectType
+from django.contrib.auth import get_user_model
 
-from account.models import Student, School
+from account.models import (
+    Note,
+    School,
+    Student,
+    Parent,
+    Instructor,
+    InstructorAvailability,
+    InstructorOutOfOffice,
+    Admin,
+)
+
+User = get_user_model()
 
 
-# class UserType(DjangoObjectType):
-#     class Meta:
-#         model = User
-
-
-class StudentType(DjangoObjectType):
+class UserType(DjangoObjectType):
     class Meta:
-        model = Student
+        model = User
+
+
+class NoteType(DjangoObjectType):
+    class Meta:
+        model = Note
 
 
 class SchoolType(DjangoObjectType):
@@ -20,18 +31,73 @@ class SchoolType(DjangoObjectType):
         model = School
 
 
+class StudentType(DjangoObjectType):
+    class Meta:
+        model = Student
+
+
+class ParentType(DjangoObjectType):
+    class Meta:
+        model = Parent
+
+
+class InstructorType(DjangoObjectType):
+    class Meta:
+        model = Instructor
+
+
+class InstructorAvailabilityType(DjangoObjectType):
+    class Meta:
+        model = InstructorAvailability
+
+
+class InstructorOutOfOfficeType(DjangoObjectType):
+    class Meta:
+        model = InstructorOutOfOffice
+
+
+class AdminType(DjangoObjectType):
+    class Meta:
+        model = Admin
+
+
 class Query(object):
-    student = graphene.Field(StudentType, user=graphene.Int(), email=graphene.String())
-    school = graphene.Field(SchoolType, id=graphene.Int(), name=graphene.String())
-    all_students = graphene.List(StudentType, grade=graphene.Int())
-    all_schools = graphene.List(SchoolType, district=graphene.String())
+    note = Field(NoteType, note_id=Int())
+    student = Field(StudentType, user_id=Int(), email=String())
+    school = Field(SchoolType, school_id=Int(), name=String())
+    parent = Field(ParentType, user_id=Int(), email=String())
+    instructor = Field(InstructorType, user_id=Int(), email=String())
+    admin = Field(AdminType, user_id=Int(), email=String())
+
+    notes_for_user = List(NoteType, user_id=Int(required=True))
+    all_schools = List(SchoolType, district=String())
+    all_students = List(StudentType, grade=Int())
+    all_parents = List(ParentType)
+    all_instructors = List(InstructorType, subject=String())
+    instructor_ooo = List(
+        InstructorOutOfOfficeType,
+        instructor_id=Int(required=True)
+    )
+    instructor_availability = List(
+        InstructorAvailabilityType,
+        instructor_id=Int(required=True)
+    )
+    all_admins = List(AdminType, admin_type=String())
+
+    def resolve_note(self, info, **kwargs):
+        note_id = kwargs.get('note_id')
+
+        if id:
+            return Note.objects.get(id=id)
+
+        return None
 
     def resolve_student(self, info, **kwargs):
-        user = kwargs.get('user')
+        user_id = kwargs.get('user_id')
         email = kwargs.get('email')
 
-        if user:
-            return Student.objects.get(user=user)
+        if user_id:
+            return Student.objects.get(user=user_id)
 
         if email:
             return Student.objects.get(user__email=email)
@@ -39,16 +105,71 @@ class Query(object):
         return None
 
     def resolve_school(self, info, **kwargs):
-        id = kwargs.get('id')
+        school_id = kwargs.get('school_id')
         name = kwargs.get('name')
 
-        if id:
-            return School.objects.get(id=id)
+        if school_id:
+            return School.objects.get(id=school_id)
 
         if name:
             return School.objects.get(name=name)
 
         return None
+
+    def resolve_parent(self, info, **kwargs):
+        user_id = kwargs.get('user_id')
+        email = kwargs.get('email')
+
+        if user_id:
+            return Parent.objects.get(id=user_id)
+
+        if email:
+            return Parent.objects.get(user__email=email)
+
+        return None
+
+    def resolve_instructor(self, info, **kwargs):
+        user_id = kwargs.get('user_id')
+        email = kwargs.get('email')
+
+        if user_id:
+            return Instructor.objects.get(id=user_id)
+
+        if email:
+            return Instructor.objects.get(user__email=email)
+
+        return None
+
+    def resolve_instructor_out_of_office(self, info, **kwargs):
+        instructor_id = kwargs.get('instructor_id')
+
+        return InstructorOutOfOffice.objects.filter(
+            instructor=instructor_id
+        )
+
+    def resolve_instructor_availability(self, info, **kwargs):
+        instructor_id = kwargs.get('instructor_id')
+
+        return InstructorAvailability.objects.filter(
+            instructor=instructor_id
+        )
+
+    def resolve_admin(self, info, **kwargs):
+        user_id = kwargs.get('user_id')
+        email = kwargs.get('email')
+
+        if user_id:
+            return Admin.objects.get(id=user_id)
+
+        if email:
+            return Admin.objects.get(user__email=email)
+
+        return None
+
+    def resolve_notes_for_user(self, info, **kwargs):
+        user_id = kwargs.get('user_id')
+
+        return Note.objects.filter(user__id=user_id)
 
     def resolve_all_students(self, info, **kwargs):
         grade = kwargs.get('grade')
@@ -56,6 +177,12 @@ class Query(object):
         if grade:
             return Student.objects.filter(grade=grade)
         return Student.objects.all()
+
+    def resolve_all_parents(self, info, **kwargs):
+        return Parent.objects.all()
+
+    def resolve_all_instructors(self, info, **kwargs):
+        return Instructor.objects.all()
 
     def resolve_all_schools(self, info, **kwargs):
         district = kwargs.get('district')

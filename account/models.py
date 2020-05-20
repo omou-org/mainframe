@@ -104,11 +104,19 @@ class Note(models.Model):
     important = models.BooleanField(default=False)
     complete = models.BooleanField(default=False)
 
+    # Timestamps
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
 
 class School(models.Model):
     name = models.CharField(max_length=100)
     zipcode = models.CharField(max_length=10)
     district = models.CharField(max_length=100, blank=True, null=True)
+
+    # Timestamps
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class Student(UserInfo):
