@@ -161,7 +161,7 @@ class StudentSerializer(serializers.ModelSerializer):
 
 
 class ParentSerializer(serializers.ModelSerializer):
-    user = NonUserSerializer()
+    user = UserSerializer()
     student_list = serializers.SerializerMethodField()
 
     def get_student_list(self, obj):
@@ -187,9 +187,9 @@ class ParentSerializer(serializers.ModelSerializer):
             user = User.objects.create_user(
                 username=user_info.get("email", uuid.uuid4()),
                 email=user_info.get("email", None),
-                password="password",
                 first_name=user_info['first_name'],
                 last_name=user_info['last_name'],
+                password=user_info['password'],
             )
             Token.objects.get_or_create(user=user)
 
@@ -230,7 +230,7 @@ class ParentSerializer(serializers.ModelSerializer):
 
 
 class InstructorSerializer(serializers.ModelSerializer):
-    user = NonUserSerializer()
+    user = UserSerializer()
 
     def get_token(self, obj):
         return obj.user.auth_token.key
@@ -252,11 +252,13 @@ class InstructorSerializer(serializers.ModelSerializer):
         with transaction.atomic():
             # create user and token
             user_info = validated_data.pop('user')
+
             user = User.objects.create_user(
                 username=user_info.get("email", uuid.uuid4()),
                 email=user_info.get("email", None),
                 first_name=user_info['first_name'],
                 last_name=user_info['last_name'],
+                password=user_info['password'],
             )
             Token.objects.get_or_create(user=user)
             subjects = validated_data.pop('subjects')
