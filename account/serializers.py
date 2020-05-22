@@ -1,14 +1,12 @@
 import pytz
-import os
 import uuid
 
 from django.db import transaction
-from django.conf import settings
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
+
+from email_service.models import Email
 
 
 from account.models import (
@@ -20,9 +18,6 @@ from account.models import (
     InstructorAvailability,
     InstructorOutOfOffice,
 )
-
-
-sg = SendGridAPIClient(api_key=settings.SENDGRID_API_KEY)
 
 
 class NoteSerializer(serializers.ModelSerializer):
@@ -383,22 +378,13 @@ class AdminSerializer(serializers.ModelSerializer):
                 account_type='admin',
                 **validated_data
             )
-            message = Mail(
-                to_emails=user_info['email'],
-                from_email='omoudev@gmail.com',
-            )
-            message.template_id = 'd-0eb3d306560e440fb16229a551416a23'
-            message.dynamic_template_data = {
-                'first_name': user_info['first_name'],
-            }
 
-            try:
-                response = sg.send(message)
-                print(response.status_code)
-                print(response.body)
-                print(response.headers)
-            except Exception as e:
-                print(e.message)
+            # send welcome email
+            Email.objects.create(
+                template_id='d-0eb3d306560e440fb16229a551416a23',
+                recipient=user_info['email'],
+                data={'first_name': user_info['first_name']}
+            )
             return admin
 
     class Meta:
