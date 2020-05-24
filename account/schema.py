@@ -122,7 +122,7 @@ class Query(object):
         email = kwargs.get('email')
 
         if user_id:
-            return Parent.objects.get(id=user_id)
+            return Parent.objects.get(user=user_id)
 
         if email:
             return Parent.objects.get(user__email=email)
@@ -134,7 +134,7 @@ class Query(object):
         email = kwargs.get('email')
 
         if user_id:
-            return Instructor.objects.get(id=user_id)
+            return Instructor.objects.get(user=user_id)
 
         if email:
             return Instructor.objects.get(user__email=email)
@@ -146,7 +146,7 @@ class Query(object):
         email = kwargs.get('email')
 
         if user_id:
-            return Admin.objects.get(id=user_id)
+            return Admin.objects.get(user=user_id)
 
         if email:
             return Admin.objects.get(user__email=email)
@@ -156,7 +156,7 @@ class Query(object):
     def resolve_notes(self, info, **kwargs):
         user_id = kwargs.get('user_id')
 
-        return Note.objects.filter(user__id=user_id)
+        return Note.objects.filter(user=user_id)
 
     def resolve_students(self, info, **kwargs):
         grade = kwargs.get('grade')
