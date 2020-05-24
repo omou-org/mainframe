@@ -69,11 +69,13 @@ class Query(object):
     instructor = Field(InstructorType, user_id=Int(), email=String())
     admin = Field(AdminType, user_id=Int(), email=String())
 
-    notes_for_user = List(NoteType, user_id=Int(required=True))
-    all_schools = List(SchoolType, district=String())
-    all_students = List(StudentType, grade=Int())
-    all_parents = List(ParentType)
-    all_instructors = List(InstructorType, subject=String())
+    notes = List(NoteType, user_id=Int(required=True))
+    students = List(StudentType, grade=Int())
+    schools = List(SchoolType, district=String())
+    parents = List(ParentType)
+    instructors = List(InstructorType, subject=String())
+    admins = List(AdminType, admin_type=String())
+
     instructor_ooo = List(
         InstructorOutOfOfficeType,
         instructor_id=Int(required=True)
@@ -82,13 +84,12 @@ class Query(object):
         InstructorAvailabilityType,
         instructor_id=Int(required=True)
     )
-    all_admins = List(AdminType, admin_type=String())
 
     def resolve_note(self, info, **kwargs):
         note_id = kwargs.get('note_id')
 
-        if id:
-            return Note.objects.get(id=id)
+        if note_id:
+            return Note.objects.get(id=note_id)
 
         return None
 
@@ -140,20 +141,6 @@ class Query(object):
 
         return None
 
-    def resolve_instructor_out_of_office(self, info, **kwargs):
-        instructor_id = kwargs.get('instructor_id')
-
-        return InstructorOutOfOffice.objects.filter(
-            instructor=instructor_id
-        )
-
-    def resolve_instructor_availability(self, info, **kwargs):
-        instructor_id = kwargs.get('instructor_id')
-
-        return InstructorAvailability.objects.filter(
-            instructor=instructor_id
-        )
-
     def resolve_admin(self, info, **kwargs):
         user_id = kwargs.get('user_id')
         email = kwargs.get('email')
@@ -166,25 +153,19 @@ class Query(object):
 
         return None
 
-    def resolve_notes_for_user(self, info, **kwargs):
+    def resolve_notes(self, info, **kwargs):
         user_id = kwargs.get('user_id')
 
         return Note.objects.filter(user__id=user_id)
 
-    def resolve_all_students(self, info, **kwargs):
+    def resolve_students(self, info, **kwargs):
         grade = kwargs.get('grade')
 
         if grade:
             return Student.objects.filter(grade=grade)
         return Student.objects.all()
 
-    def resolve_all_parents(self, info, **kwargs):
-        return Parent.objects.all()
-
-    def resolve_all_instructors(self, info, **kwargs):
-        return Instructor.objects.all()
-
-    def resolve_all_schools(self, info, **kwargs):
+    def resolve_schools(self, info, **kwargs):
         district = kwargs.get('district')
         queryset = School.objects
 
@@ -192,3 +173,19 @@ class Query(object):
             queryset = queryset.filter(district=district)
 
         return queryset.all()
+
+    def resolve_parents(self, info, **kwargs):
+        return Parent.objects.all()
+
+    def resolve_instructors(self, info, **kwargs):
+        return Instructor.objects.all()
+
+    def resolve_instructor_out_of_office(self, info, **kwargs):
+        instructor_id = kwargs.get('instructor_id')
+
+        return InstructorOutOfOffice.objects.filter(instructor=instructor_id)
+
+    def resolve_instructor_availability(self, info, **kwargs):
+        instructor_id = kwargs.get('instructor_id')
+
+        return InstructorAvailability.objects.filter(instructor=instructor_id)
