@@ -1,4 +1,4 @@
-from graphene import Field, Int, List, String
+from graphene import Field, ID, Int, List, String, Union
 from graphene_django.types import DjangoObjectType
 from django.contrib.auth import get_user_model
 
@@ -61,16 +61,22 @@ class AdminType(DjangoObjectType):
         model = Admin
 
 
-class Query(object):
-    note = Field(NoteType, note_id=Int())
-    student = Field(StudentType, user_id=Int(), email=String())
-    school = Field(SchoolType, school_id=Int(), name=String())
-    parent = Field(ParentType, user_id=Int(), email=String())
-    instructor = Field(InstructorType, user_id=Int(), email=String())
-    admin = Field(AdminType, user_id=Int(), email=String())
+class UserInfoType(Union):
+    class Meta:
+        types = (StudentType, ParentType, InstructorType, AdminType)
 
-    notes = List(NoteType, user_id=Int(required=True))
-    students = List(StudentType, grade=Int())
+
+class Query(object):
+    note = Field(NoteType, note_id=ID())
+    student = Field(StudentType, user_id=ID(), email=String())
+    school = Field(SchoolType, school_id=ID(), name=String())
+    parent = Field(ParentType, user_id=ID(), email=String())
+    instructor = Field(InstructorType, user_id=ID(), email=String())
+    admin = Field(AdminType, user_id=ID(), email=String())
+    user_info = Field(UserInfoType, user_id=ID())
+
+    notes = List(NoteType, user_id=ID(required=True))
+    students = List(StudentType, grade=ID())
     schools = List(SchoolType, district=String())
     parents = List(ParentType)
     instructors = List(InstructorType, subject=String())
@@ -78,11 +84,11 @@ class Query(object):
 
     instructor_ooo = List(
         InstructorOutOfOfficeType,
-        instructor_id=Int(required=True)
+        instructor_id=ID(required=True)
     )
     instructor_availability = List(
         InstructorAvailabilityType,
-        instructor_id=Int(required=True)
+        instructor_id=ID(required=True)
     )
 
     def resolve_note(self, info, **kwargs):
@@ -150,6 +156,11 @@ class Query(object):
 
         if email:
             return Admin.objects.get(user__email=email)
+
+        return None
+
+    def resolve_user_info(self, info, **kwargs):
+        user_id = kwargs.get('user_id')
 
         return None
 

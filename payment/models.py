@@ -5,6 +5,7 @@ from account.models import Parent
 from course.models import Enrollment
 from pricing.models import Discount
 
+
 class Payment(models.Model):
     parent = models.ForeignKey(Parent, on_delete=models.PROTECT)
     sub_total = models.DecimalField(max_digits=6, decimal_places=2)

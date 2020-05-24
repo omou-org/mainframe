@@ -1,4 +1,4 @@
-from graphene import Field, Int, List, String
+from graphene import Field, Int, List, ID
 from graphene_django.types import DjangoObjectType
 
 from course.models import (
@@ -36,17 +36,17 @@ class EnrollmentNoteType(DjangoObjectType):
 
 
 class Query(object):
-    course = Field(CourseType, course_id=Int())
-    course_category = Field(CourseCategoryType, category_id=Int())
-    course_note = Field(CourseNoteType, note_id=Int())
-    enrollment = Field(EnrollmentType, enrollment_id=Int())
-    enrollment_note = Field(EnrollmentNoteType, note_id=Int())
+    course = Field(CourseType, course_id=ID())
+    course_category = Field(CourseCategoryType, category_id=ID())
+    course_note = Field(CourseNoteType, note_id=ID())
+    enrollment = Field(EnrollmentType, enrollment_id=ID())
+    enrollment_note = Field(EnrollmentNoteType, note_id=ID())
 
-    courses = List(CourseType, category_id=Int())
+    courses = List(CourseType, category_id=ID())
     course_categories = List(CourseCategoryType)
-    course_notes = List(CourseNoteType, course_id=Int(required=True))
-    enrollments = List(EnrollmentType, student_id=Int(), course_id=Int())
-    enrollment_notes = List(EnrollmentNoteType, enrollment_id=Int(required=True))
+    course_notes = List(CourseNoteType, course_id=ID(required=True))
+    enrollments = List(EnrollmentType, student_id=ID(), course_id=ID())
+    enrollment_notes = List(EnrollmentNoteType, enrollment_id=ID(required=True))
 
     def resolve_course(self, info, **kwargs):
         course_id = kwargs.get('course_id')
