@@ -65,6 +65,7 @@ COMMON_APPS = (
     "django.contrib.staticfiles",
     "django_filters",
     "graphene_django",
+    "graphene_graphiql_explorer",
     "rest_framework.authtoken",
     "rest_framework",
     "corsheaders",
@@ -166,5 +167,6 @@ CORS_ORIGIN_WHITELIST = (
 
 # GraphQL
 GRAPHENE = {
-    'SCHEMA': 'mainframe.schema.schema'
+    'SCHEMA': 'mainframe.schema.schema',
+    'DJANGO_CHOICE_FIELD_ENUM_V3_NAMING': True
 }

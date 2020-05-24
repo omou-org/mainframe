@@ -1,13 +1,14 @@
 import graphene
 
-from account import schema, mutations
+from account import schema as account_schema, mutations as account_mutations
+from course import schema as course_schema
 
 
-class Query(schema.Query, graphene.ObjectType):
+class Query(account_schema.Query, course_schema.Query, graphene.ObjectType):
     pass
 
 
-class Mutation(mutations.Mutation, graphene.ObjectType):
+class Mutation(account_mutations.Mutation, graphene.ObjectType):
     pass
 
 

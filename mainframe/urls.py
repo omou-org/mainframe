@@ -11,6 +11,7 @@ from rest_framework import permissions
 
 from mainframe.api_root import views
 
+GraphQLView.graphiql_template = "graphene_graphiql_explorer/graphiql.html"
 
 schema_view = get_schema_view(
    openapi.Info(
