@@ -9,10 +9,7 @@ from datetime import datetime
 import pytz
 
 from account.schema import (
-    StudentType,
-    InstructorType,
-    ParentType,
-    AdminType,
+    UserInfoType
 )
 from account.models import (
     Student,
@@ -59,13 +56,8 @@ def paginate(results, page, size):
     return results
 
 
-class AccountResult(graphene.Union):
-    class Meta:
-        types = (StudentType, InstructorType, ParentType, AdminType)
-
-
 class Query(object):
-    accountSearch = List(AccountResult,
+    accountSearch = List(UserInfoType,
                         query=String(required=True),
                         profile=String(),
                         grade=Int(),
