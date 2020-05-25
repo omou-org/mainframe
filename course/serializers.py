@@ -102,7 +102,7 @@ class CourseSerializer(serializers.ModelSerializer):
                     end_datetime=end_datetime,
                     instructor=course.instructor,
                     is_confirmed=course.is_confirmed and current_date <= confirmed_end_date,
-                    title=course.subject
+                    title=course.title
                 )
                 course.num_sessions += 1
                 current_date = current_date.shift(weeks=+1)
@@ -190,7 +190,7 @@ class CourseSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'course_id',
-            'subject',
+            'title',
             'course_type',
             'academic_level',
             'description',

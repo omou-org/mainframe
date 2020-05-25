@@ -1,4 +1,4 @@
-from graphene import Field, Int, List, String
+from graphene import Field, Int, List, String, Interface
 from graphene_django.types import DjangoObjectType
 from django.contrib.auth import get_user_model
 

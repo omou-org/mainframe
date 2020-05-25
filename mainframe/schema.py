@@ -2,9 +2,10 @@ import graphene
 
 from account import schema as account_schema, mutations as account_mutations
 from course import schema as course_schema
+from search import schema as search_schema
 
 
-class Query(account_schema.Query, course_schema.Query, graphene.ObjectType):
+class Query(account_schema.Query, course_schema.Query, search_schema.Query, graphene.ObjectType):
     pass
 
 
