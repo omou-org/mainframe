@@ -56,8 +56,23 @@ def paginate(results, page, size):
     return results
 
 
+class AccountSearchResults(graphene.ObjectType):
+    results = List(UserInfoType, required=True)
+    total = Int()
+ 
+
+class CourseSearchResults(graphene.ObjectType):
+    results = List(CourseType, required=True)
+    total = Int()   
+
+
+class SessionSearchResults(graphene.ObjectType):
+    results = List(SessionType, required=True)
+    total = Int()
+
+
 class Query(object):
-    accountSearch = List(UserInfoType,
+    accountSearch = Field(AccountSearchResults,
                         query=String(required=True),
                         profile=String(),
                         grade=Int(),
@@ -66,7 +81,7 @@ class Query(object):
                         page_size=Int()
                         )
 
-    courseSearch = List(CourseType,
+    courseSearch = Field(CourseSearchResults,
                         query=String(required=True),
                         course_type=String(),
                         course_size=Int(),
@@ -76,7 +91,7 @@ class Query(object):
                         page_size=Int()
                         )
     
-    sessionSearch = List(SessionType,
+    sessionSearch = Field(SessionSearchResults,
                         query=String(required=True),
                         time=String(),
                         sort=String(),
@@ -144,10 +159,15 @@ class Query(object):
                 results = sorted(results, key=lambda obj:obj.updated_at)
             elif sort == "updateDesc":
                 results = sorted(results, key=lambda obj:obj.updated_at, reverse=True)
-       
+
+        total = len(results)
         results = list(results)
         results = paginate(results, kwargs.get('page', None), kwargs.get('page_size', None))
-        return results
+
+        return AccountSearchResults(
+            results = results,
+            total = total
+        )
     
 
     def resolve_courseSearch(self, info, **kwargs):
@@ -215,9 +235,14 @@ class Query(object):
             if sortToParameter.get(sort):
                 results = results.order_by(sortToParameter[sort])
 
+        total = len(results)
         results = list(results)
         results = paginate(results, kwargs.get('page', None), kwargs.get('page_size', None))
-        return results
+
+        return CourseSearchResults(
+            results = results,
+            total = total
+        )
 
 
     def resolve_sessionSearch(self, info, **kwargs):
@@ -248,6 +273,11 @@ class Query(object):
             if sortToParameter.get(sort):
                 results = results.order_by(sortToParameter[sort])
         
+        total = len(results)
         results = list(results)
         results = paginate(results, kwargs.get('page', None), kwargs.get('page_size', None))
-        return results
+
+        return SessionSearchResults(
+            results = results,
+            total = total
+        )
