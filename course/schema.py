@@ -1,4 +1,4 @@
-from graphene import Field, Int, List, ID
+from graphene import Field, Int, List, ID, Decimal, DateTime
 from graphene_django.types import DjangoObjectType
 
 from course.models import (
@@ -26,6 +26,10 @@ class CourseNoteType(DjangoObjectType):
 
 
 class EnrollmentType(DjangoObjectType):
+    enrollment_balance = Decimal(source='enrollment_balance')
+    sessions_left = Int(source='sessions_left')
+    last_paid_session_datetime = DateTime(source='last_paid_session_datetime')
+
     class Meta:
         model = Enrollment
 
