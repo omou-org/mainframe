@@ -55,6 +55,7 @@ API_APPS = (
     "search.apps.SearchConfig",
     "pricing.apps.PricingConfig",
     "payment.apps.PaymentConfig",
+    "email_service.apps.EmailServiceConfig"
 )
 COMMON_APPS = (
     "django.contrib.admin",
@@ -170,3 +171,6 @@ GRAPHENE = {
     'SCHEMA': 'mainframe.schema.schema',
     'DJANGO_CHOICE_FIELD_ENUM_V3_NAMING': True
 }
+SENDGRID_API_KEY = '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'
+TWILIO_ACCOUNT_SID = 'AC15f77fe5bfc54f963cc29d4b869eab0c'
+TWILIO_AUTH_TOKEN = '56e3020d3cec9fbb029af16fb717e064'

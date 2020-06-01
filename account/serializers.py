@@ -6,6 +6,8 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 
+from email_service.models import Email
+
 
 from account.models import (
     Note,
@@ -393,6 +395,13 @@ class AdminSerializer(serializers.ModelSerializer):
                 user=user,
                 account_type='admin',
                 **validated_data
+            )
+
+            # send welcome email
+            Email.objects.create(
+                template_id='d-0eb3d306560e440fb16229a551416a23',
+                recipient=user_info['email'],
+                data={'first_name': user_info['first_name']}
             )
             return admin
 
