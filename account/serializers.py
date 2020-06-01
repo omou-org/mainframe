@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 
-from email_service.models import Email
+from comms.models import Email
 
 
 from account.models import (
