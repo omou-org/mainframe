@@ -42,8 +42,7 @@ class Email(models.Model):
             self.response_status = response.status_code
             self.response_body = response.body
         except Exception as e:
-            self.response_status = e.message
-
+            print(e)
         super().save(*args, **kwargs)
 
 
