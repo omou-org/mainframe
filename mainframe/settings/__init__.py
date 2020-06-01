@@ -55,7 +55,7 @@ API_APPS = (
     "search.apps.SearchConfig",
     "pricing.apps.PricingConfig",
     "payment.apps.PaymentConfig",
-    "email_service.apps.EmailServiceConfig"
+    "comms.apps.CommsConfig"
 )
 COMMON_APPS = (
     "django.contrib.admin",

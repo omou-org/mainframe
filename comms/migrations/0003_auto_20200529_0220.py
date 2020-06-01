@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('email_service', '0002_smsnotification'),
+        ('comms', '0002_smsnotification'),
     ]
 
     operations = [
