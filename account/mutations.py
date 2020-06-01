@@ -25,9 +25,11 @@ class CreateSchool(graphene.Mutation):
         return CreateSchool(school=school, ok=ok)
 
 
-class CreateStudent(SerializerMutation):
+class CreateStudent(graphene.Mutation):
+    class Arg
     class Meta:
         serializer_class = StudentSerializer
+        convert_choices_to_enum = False
 
 
 class CreateAdmin(SerializerMutation):
@@ -37,3 +39,4 @@ class CreateAdmin(SerializerMutation):
 
 class Mutation(graphene.ObjectType):
     create_school = CreateSchool.Field()
+    create_student = CreateStudent.Field()
