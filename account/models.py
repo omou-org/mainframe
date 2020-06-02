@@ -6,6 +6,7 @@ from django.conf import settings
 
 from account.managers import StudentManager, ParentManager, InstructorManager, AdminManager
 
+
 class UserInfo(models.Model):
     # Account type
     STUDENT_TYPE = 'student'
