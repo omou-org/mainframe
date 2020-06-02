@@ -205,12 +205,12 @@ class InstructorOutOfOffice(models.Model):
 class Admin(UserInfo):
     OWNER_TYPE = "owner"
     RECEPTIONIST_TYPE = "receptionist"
-    ASSISSTANT_TYPE = "assisstant"
+    ASSISTANT_TYPE = "assistant"
 
     TYPE_CHOICES = (
         (OWNER_TYPE, "Owner"),
         (RECEPTIONIST_TYPE, "Receptionist"),
-        (ASSISSTANT_TYPE, "Assisstant"),
+        (ASSISTANT_TYPE, "Assistant"),
     )
     admin_type = models.CharField(
         max_length=20,
