@@ -186,6 +186,13 @@ class Query(object):
 
         return queryset.all()
 
+    def resolve_admins(self, info, **kwargs):
+        admin_type = kwargs.get('admin_type')
+
+        if admin_type:
+            return Admin.objects.filter(admin_type=admin_type)
+        return Admin.objects.all()
+
     def resolve_parents(self, info, **kwargs):
         return Parent.objects.all()
 
