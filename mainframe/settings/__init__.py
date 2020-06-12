@@ -169,8 +169,15 @@ CORS_ORIGIN_WHITELIST = (
 # GraphQL
 GRAPHENE = {
     'SCHEMA': 'mainframe.schema.schema',
-    'DJANGO_CHOICE_FIELD_ENUM_V3_NAMING': True
+    'DJANGO_CHOICE_FIELD_ENUM_V3_NAMING': True,
+    'MIDDLEWARE': [
+        'graphql_jwt.middleware.JSONWebTokenMiddleware',
+    ],
 }
+AUTHENTICATION_BACKENDS = [
+    'graphql_jwt.backends.JSONWebTokenBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
 SENDGRID_API_KEY = 'test'
 TWILIO_ACCOUNT_SID = 'test'
 TWILIO_AUTH_TOKEN = 'test'

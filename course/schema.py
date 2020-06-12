@@ -1,5 +1,6 @@
 from graphene import Field, Int, List, ID, Decimal, DateTime
 from graphene_django.types import DjangoObjectType
+from graphql_jwt.decorators import login_required
 
 from course.models import (
     Course,
@@ -52,6 +53,7 @@ class Query(object):
     enrollments = List(EnrollmentType, student_id=ID(), course_id=ID())
     enrollment_notes = List(EnrollmentNoteType, enrollment_id=ID(required=True))
 
+    @login_required
     def resolve_course(self, info, **kwargs):
         course_id = kwargs.get('course_id')
 
@@ -60,6 +62,7 @@ class Query(object):
 
         return None
 
+    @login_required
     def resolve_course_category(self, info, **kwargs):
         category_id = kwargs.get('category_id')
 
@@ -68,6 +71,7 @@ class Query(object):
 
         return None
 
+    @login_required
     def resolve_course_note(self, info, **kwargs):
         note_id = kwargs.get('course_note')
 
@@ -76,6 +80,7 @@ class Query(object):
 
         return None
 
+    @login_required
     def resolve_enrollment_note(self, info, **kwargs):
         note_id = kwargs.get('note_id')
 
@@ -84,6 +89,7 @@ class Query(object):
 
         return None
 
+    @login_required
     def resolve_courses(self, info, **kwargs):
         category_id = kwargs.get('category_id')
 
@@ -91,14 +97,17 @@ class Query(object):
             return Course.objects.filter(course_category=category_id)
         return Course.objects.all()
 
+    @login_required
     def resolve_course_categories(self, info, **kwargs):
         return CourseCategory.objects.all()
 
+    @login_required
     def resolve_course_notes(self, info, **kwargs):
         course_id = kwargs.get('course_id')
 
         return CourseNote.objects.filter(course__id=course_id)
 
+    @login_required
     def resolve_enrollments(self, info, **kwargs):
         student_id = kwargs.get('student_id')
         course_id = kwargs.get('course_id')
@@ -111,6 +120,7 @@ class Query(object):
             queryset = queryset.filter(course=course_id)
         return queryset.all()
 
+    @login_required
     def resolve_enrollment_notes(self, info, **kwargs):
         enrollment_id = kwargs.get('enrollment_id')
 
