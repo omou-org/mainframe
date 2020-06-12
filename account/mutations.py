@@ -1,5 +1,4 @@
 import graphene
-import pytz
 import uuid
 
 from account.models import (
@@ -21,6 +20,7 @@ from account.schema import (
 
 from django.db import transaction
 from django.contrib.auth.models import User
+from graphql_jwt.decorators import login_required, staff_member_required
 from rest_framework.authtoken.models import Token
 
 
@@ -44,7 +44,9 @@ class CreateSchool(graphene.Mutation):
 
     school = graphene.Field(SchoolType)
 
-    def mutate(self, info, name, zipcode, district):
+    @staticmethod
+    @staff_member_required
+    def mutate(root, info, name, zipcode, district):
         school = School.objects.create(name=name, zipcode=zipcode, district=district)
         return CreateSchool(school=school)
 
@@ -77,6 +79,7 @@ class CreateStudent(graphene.Mutation):
     student = graphene.Field(StudentType)
 
     @staticmethod
+    @staff_member_required
     def mutate(root, info, user, **validated_data):
         with transaction.atomic():
             # create user and token
@@ -116,6 +119,7 @@ class CreateParent(graphene.Mutation):
     parent = graphene.Field(ParentType)
 
     @staticmethod
+    @staff_member_required
     def mutate(root, info, user, **validated_data):
         with transaction.atomic():
             # create user and token
@@ -162,6 +166,7 @@ class CreateInstructor(graphene.Mutation):
     instructor = graphene.Field(InstructorType)
 
     @staticmethod
+    @staff_member_required
     def mutate(root, info, user, **validated_data):
         with transaction.atomic():
             # create user and token
@@ -199,7 +204,7 @@ class CreateAdmin(graphene.Mutation):
         zipcode = graphene.String()
 
         # Admin fields
-        admin_type = AdminTypeEnum()
+        admin_type = AdminTypeEnum(required=True)
 
     admin = graphene.Field(AdminType)
 
@@ -215,8 +220,8 @@ class CreateAdmin(graphene.Mutation):
                 last_name=user['last_name'],
             )
             if validated_data['admin_type'] == Admin.OWNER_TYPE:
-                user.is_staff = True
-                user.save()
+                user_object.is_staff = True
+                user_object.save()
             Token.objects.get_or_create(user=user_object)
 
             # create account
@@ -239,6 +244,7 @@ class CreateNote(graphene.Mutation):
     note = graphene.Field(NoteType)
 
     @staticmethod
+    @staff_member_required
     def mutate(root, info, **validated_data):
         note = Note.objects.create(**validated_data)
         return CreateNote(note=note)

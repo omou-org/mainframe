@@ -1,6 +1,6 @@
-
-from graphene import Field, ID, Int, List, String, Union
+from graphene import Field, ID, List, String, Union
 from graphene_django.types import DjangoObjectType
+from graphql_jwt.decorators import login_required
 from django.contrib.auth import get_user_model
 
 from account.models import (
@@ -92,6 +92,7 @@ class Query(object):
         instructor_id=ID(required=True)
     )
 
+    @login_required
     def resolve_note(self, info, **kwargs):
         note_id = kwargs.get('note_id')
 
@@ -100,6 +101,7 @@ class Query(object):
 
         return None
 
+    @login_required
     def resolve_student(self, info, **kwargs):
         user_id = kwargs.get('user_id')
         email = kwargs.get('email')
@@ -112,6 +114,7 @@ class Query(object):
 
         return None
 
+    @login_required
     def resolve_school(self, info, **kwargs):
         school_id = kwargs.get('school_id')
         name = kwargs.get('name')
@@ -124,6 +127,7 @@ class Query(object):
 
         return None
 
+    @login_required
     def resolve_parent(self, info, **kwargs):
         user_id = kwargs.get('user_id')
         email = kwargs.get('email')
@@ -136,6 +140,7 @@ class Query(object):
 
         return None
 
+    @login_required
     def resolve_instructor(self, info, **kwargs):
         user_id = kwargs.get('user_id')
         email = kwargs.get('email')
@@ -148,6 +153,7 @@ class Query(object):
 
         return None
 
+    @login_required
     def resolve_admin(self, info, **kwargs):
         user_id = kwargs.get('user_id')
         email = kwargs.get('email')
@@ -160,16 +166,19 @@ class Query(object):
 
         return None
 
+    @login_required
     def resolve_user_info(self, info, **kwargs):
         user_id = kwargs.get('user_id')
 
         return None
 
+    @login_required
     def resolve_notes(self, info, **kwargs):
         user_id = kwargs.get('user_id')
 
         return Note.objects.filter(user=user_id)
 
+    @login_required
     def resolve_students(self, info, **kwargs):
         grade = kwargs.get('grade')
 
@@ -177,6 +186,7 @@ class Query(object):
             return Student.objects.filter(grade=grade)
         return Student.objects.all()
 
+    @login_required
     def resolve_schools(self, info, **kwargs):
         district = kwargs.get('district')
         queryset = School.objects
@@ -186,6 +196,7 @@ class Query(object):
 
         return queryset.all()
 
+    @login_required
     def resolve_admins(self, info, **kwargs):
         admin_type = kwargs.get('admin_type')
 
@@ -193,17 +204,21 @@ class Query(object):
             return Admin.objects.filter(admin_type=admin_type)
         return Admin.objects.all()
 
+    @login_required
     def resolve_parents(self, info, **kwargs):
         return Parent.objects.all()
 
+    @login_required
     def resolve_instructors(self, info, **kwargs):
         return Instructor.objects.all()
 
+    @login_required
     def resolve_instructor_out_of_office(self, info, **kwargs):
         instructor_id = kwargs.get('instructor_id')
 
         return InstructorOutOfOffice.objects.filter(instructor=instructor_id)
 
+    @login_required
     def resolve_instructor_availability(self, info, **kwargs):
         instructor_id = kwargs.get('instructor_id')
 
