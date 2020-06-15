@@ -1,5 +1,7 @@
-from graphene import Field, Int, List, ID, Decimal, DateTime
-from graphene_django.types import DjangoObjectType
+import arrow
+
+from graphene import Enum, Field, Int, List, ID, Decimal, DateTime, String
+from graphene_django.types import ObjectType, DjangoObjectType
 from graphql_jwt.decorators import login_required
 
 from course.models import (
@@ -9,6 +11,7 @@ from course.models import (
     Enrollment,
     EnrollmentNote,
 )
+from scheduler.models import Session
 
 
 class CourseType(DjangoObjectType):
@@ -40,6 +43,18 @@ class EnrollmentNoteType(DjangoObjectType):
         model = EnrollmentNote
 
 
+class LookbackTimeframe(Enum):
+    YESTERDAY = 1
+    LAST_WEEK = 2
+    LAST_MONTH = 3
+    ALL_TIME = 4
+
+
+class PopularCategoryType(ObjectType):
+    category = Field(CourseCategoryType)
+    num_sessions = Int()
+
+
 class Query(object):
     course = Field(CourseType, course_id=ID())
     course_category = Field(CourseCategoryType, category_id=ID())
@@ -52,6 +67,10 @@ class Query(object):
     course_notes = List(CourseNoteType, course_id=ID(required=True))
     enrollments = List(EnrollmentType, student_id=ID(), course_id=ID())
     enrollment_notes = List(EnrollmentNoteType, enrollment_id=ID(required=True))
+
+    # custom methods
+    num_recent_sessions = Int(timeframe=LookbackTimeframe(required=True))
+    popular_categories = List(PopularCategoryType, timeframe=LookbackTimeframe(required=True))
 
     @login_required
     def resolve_course(self, info, **kwargs):
@@ -125,3 +144,70 @@ class Query(object):
         enrollment_id = kwargs.get('enrollment_id')
 
         return EnrollmentNote.objects.filter(enrollment_id=enrollment_id)
+
+    def resolve_num_recent_sessions(self, info, timeframe, **kwargs):
+        now = arrow.now()
+
+        if timeframe == LookbackTimeframe.YESTERDAY:
+            return Session.objects.filter(
+                start_datetime__gte=now.shift(days=-1).datetime,
+                start_datetime__lte=now.datetime
+            ).count()
+        elif timeframe == LookbackTimeframe.LAST_WEEK:
+            return Session.objects.filter(
+                start_datetime__gte=now.shift(weeks=-1).datetime,
+                start_datetime__lte=now.datetime
+            ).count()
+        elif timeframe == LookbackTimeframe.LAST_MONTH:
+            return Session.objects.filter(
+                start_datetime__gte=now.shift(months=-1).datetime,
+                start_datetime__lte=now.datetime
+            ).count()
+        elif timeframe == LookbackTimeframe.ALL_TIME:
+            return Session.objects.filter(
+                start_datetime__lte=now.datetime
+            ).count()
+
+        return None
+
+    def resolve_popular_categories(self, info, timeframe, **kwargs):
+        category_counts = []
+        categories = CourseCategory.objects.all()
+
+        for category in categories:
+            courses = category.course_set.all()
+            num_sessions = 0
+            now = arrow.now()
+
+            for course in courses:
+                if timeframe == LookbackTimeframe.YESTERDAY:
+                    num_sessions += course.session_set.filter(
+                        start_datetime__gte=now.shift(days=-1).datetime,
+                        start_datetime__lte=now.datetime
+                    ).count()
+                elif timeframe == LookbackTimeframe.LAST_WEEK:
+                    num_sessions += course.session_set.filter(
+                        start_datetime__gte=now.shift(weeks=-1).datetime,
+                        start_datetime__lte=now.datetime
+                    ).count()
+                elif timeframe == LookbackTimeframe.LAST_MONTH:
+                    num_sessions += course.session_set.filter(
+                        start_datetime__gte=now.shift(months=-1).datetime,
+                        start_datetime__lte=now.datetime
+                    ).count()
+                elif timeframe == LookbackTimeframe.ALL_TIME:
+                    num_sessions += course.session_set.filter(
+                        start_datetime__lte=now.datetime
+                    ).count()
+
+            category_counts.append({'category': category, 'num_sessions': num_sessions})
+
+        top_5_categories = sorted(
+            category_counts,
+            key=lambda item: item['num_sessions'],
+            reverse=True
+        )[:5]
+
+        return top_5_categories
+
+
