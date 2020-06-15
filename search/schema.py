@@ -160,8 +160,9 @@ class Query(object):
             elif sort == "updateDesc":
                 results = sorted(results, key=lambda obj:obj.updated_at, reverse=True)
 
-        total = len(results)
+
         results = list(results)
+        total = len(results)
         results = paginate(results, kwargs.get('page', None), kwargs.get('page_size', None))
 
         return AccountSearchResults(
@@ -235,8 +236,8 @@ class Query(object):
             if sortToParameter.get(sort):
                 results = results.order_by(sortToParameter[sort])
 
-        total = len(results)
         results = list(results)
+        total = len(results)
         results = paginate(results, kwargs.get('page', None), kwargs.get('page_size', None))
 
         return CourseSearchResults(
@@ -273,8 +274,8 @@ class Query(object):
             if sortToParameter.get(sort):
                 results = results.order_by(sortToParameter[sort])
         
-        total = len(results)
         results = list(results)
+        total = len(results)
         results = paginate(results, kwargs.get('page', None), kwargs.get('page_size', None))
 
         return SessionSearchResults(
