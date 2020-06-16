@@ -2,6 +2,7 @@ import graphene
 from graphene import Field, Int, List, String
 from graphene_django.types import DjangoObjectType
 from django.contrib.auth import get_user_model
+from graphql_jwt.decorators import login_required
 
 from itertools import chain
 from operator import attrgetter
@@ -99,6 +100,7 @@ class Query(object):
                         page_size=Int()
                         )
     
+    @login_required
     def resolve_accountSearch(self, info, **kwargs):        
         results = Student.objects.none()
         query = kwargs.get('query')
@@ -171,6 +173,7 @@ class Query(object):
         )
     
 
+    @login_required
     def resolve_courseSearch(self, info, **kwargs):
         results = Course.objects.none()
         query = kwargs.get('query') 
@@ -246,6 +249,7 @@ class Query(object):
         )
 
 
+    @login_required
     def resolve_sessionSearch(self, info, **kwargs):
         results = Session.objects.all()
 
