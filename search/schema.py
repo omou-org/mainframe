@@ -2,6 +2,7 @@ import graphene
 from graphene import Field, Int, List, String
 from graphene_django.types import DjangoObjectType
 from django.contrib.auth import get_user_model
+from graphql_jwt.decorators import login_required
 
 from itertools import chain
 from operator import attrgetter
@@ -99,31 +100,43 @@ class Query(object):
                         page_size=Int()
                         )
     
+    @login_required
     def resolve_accountSearch(self, info, **kwargs):        
         results = Student.objects.none()
         query = kwargs.get('query')
 
-        # query with profile filter
+        # query on profile filter
         profile = kwargs.get('profile', None)
         if profile is not None:
             filterToSearch = {
-                "student" : getattr(StudentManager, "search"),
-                "instructor" : getattr(InstructorManager, "search"),
-                "parent" : getattr(ParentManager, "search"),
-                "admin" : getattr(AdminManager, "search"),
+                "STUDENT" : getattr(StudentManager, "search"),
+                "INSTRUCTOR" : getattr(InstructorManager, "search"),
+                "PARENT" : getattr(ParentManager, "search"),
+                "ADMIN" : getattr(AdminManager, "search"),
             }
             filterToModel = {
-                "student" : Student.objects,
-                "instructor" : Instructor.objects,
-                "parent" : Parent.objects,
-                "admin" : Admin.objects
+                "STUDENT" : Student.objects,
+                "INSTRUCTOR" : Instructor.objects,
+                "PARENT" : Parent.objects,
+                "ADMIN" : Admin.objects
             }
+
+            # filter for ADMIN if profile is admin type
+            admin_profile = None
+            if profile.lower() in [t[0] for t in Admin.TYPE_CHOICES]:
+                admin_profile = profile.lower()
+                profile = "ADMIN"
 
             for token in query.split():
                 if filterToSearch.get(profile):
                     results = filterToSearch[profile](filterToModel[profile], token, results)
             
-            if profile == "student":
+            # filter for admin types
+            if admin_profile is not None:
+                results = results.filter(admin_type = admin_profile)
+
+            # filter for grade if STUDENT
+            if profile == "STUDENT":
                 try:
                     grade = int(kwargs.get('grade', None))
                     if 1 <= grade and grade <= 13:
@@ -160,7 +173,6 @@ class Query(object):
             elif sort == "updateDesc":
                 results = sorted(results, key=lambda obj:obj.updated_at, reverse=True)
 
-
         results = list(results)
         total = len(results)
         results = paginate(results, kwargs.get('page', None), kwargs.get('page_size', None))
@@ -171,6 +183,7 @@ class Query(object):
         )
     
 
+    @login_required
     def resolve_courseSearch(self, info, **kwargs):
         results = Course.objects.none()
         query = kwargs.get('query') 
@@ -246,6 +259,7 @@ class Query(object):
         )
 
 
+    @login_required
     def resolve_sessionSearch(self, info, **kwargs):
         results = Session.objects.all()
 
