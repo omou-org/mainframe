@@ -74,7 +74,7 @@ class Query(object):
     parent = Field(ParentType, user_id=ID(), email=String())
     instructor = Field(InstructorType, user_id=ID(), email=String())
     admin = Field(AdminType, user_id=ID(), email=String())
-    user_info = Field(UserInfoType, user_id=ID())
+    user_info = Field(UserInfoType, user_id=ID(), user_name=String())
 
     notes = List(NoteType, user_id=ID(required=True))
     students = List(StudentType, grade=ID())
@@ -169,6 +169,27 @@ class Query(object):
     @login_required
     def resolve_user_info(self, info, **kwargs):
         user_id = kwargs.get('user_id')
+        user_name = kwargs.get('user_name')
+
+        if user_name:
+            if Student.objects.filter(user__email=user_name).exists():
+                return Student.objects.get(user__email=user_name)
+            if Instructor.objects.filter(user__email=user_name).exists():
+                return Instructor.objects.get(user__email=user_name)
+            if Parent.objects.filter(user__email=user_name).exists():
+                return Parent.objects.get(user__email=user_name)
+            if Admin.objects.filter(user__email=user_name).exists():
+                return Admin.objects.get(user__email=user_name)
+
+        if user_id:
+            if Student.objects.filter(user=user_id).exists():
+                return Student.objects.get(user=user_id)
+            if Instructor.objects.filter(user=user_id).exists():
+                return Instructor.objects.get(user=user_id)
+            if Parent.objects.filter(user=user_id).exists():
+                return Parent.objects.get(user=user_id)
+            if Admin.objects.filter(user=user_id).exists():
+                return Admin.objects.get(user=user_id)
 
         return None
 
