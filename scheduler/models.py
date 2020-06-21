@@ -1,13 +1,10 @@
-from dateutil.parser import parse
-
 from django.db import models
 
 from account.models import Instructor
 from course.models import Course
 
-from account.models import Student
-
 from scheduler.managers import SessionManager
+
 
 class Session(models.Model):
     title = models.TextField(blank=True)

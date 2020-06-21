@@ -171,7 +171,7 @@ class SessionViewSet(viewsets.ModelViewSet):
         queryset = self.get_queryset()
 
         if course_id is not None:
-            queryset = queryset.filter(course = course_id)
+            queryset = queryset.filter(course=course_id)
 
         if view_option == 'class':
             queryset = queryset.filter(course__course_type=Course.CLASS)

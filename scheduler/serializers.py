@@ -1,5 +1,4 @@
 from scheduler.models import Session
-from course.models import Course
 from rest_framework import serializers
 
 
