@@ -22,7 +22,7 @@ class Email(models.Model):
     sender = models.EmailField(default="omoudev@gmail.com")
     recipient = models.EmailField()
     data = JSONField()
-    response_status = models.CharField(max_length=10)
+    status = models.CharField(max_length=10)
     response_body = models.CharField(max_length=1000)
 
     # Timestamps
@@ -36,13 +36,12 @@ class Email(models.Model):
         )
         message.template_id = self.template_id
         message.dynamic_template_data = self.data
-
         try:
             response = sg.send(message)
-            self.response_status = response.status_code
             self.response_body = response.body
+            self.status = self.STATUS_SENT
         except Exception as e:
-            print(e)
+            self.status = self.STATUS_FAILED
         super().save(*args, **kwargs)
 
 

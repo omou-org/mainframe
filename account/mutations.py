@@ -1,4 +1,5 @@
 import graphene
+import jwt
 import uuid
 
 from account.models import (
@@ -17,9 +18,12 @@ from account.schema import (
     SchoolType,
     StudentType,
 )
+from comms.models import Email
+from comms.templates import RESET_PASSWORD_TEMPLATE
 
 from django.db import transaction
 from django.contrib.auth.models import User
+from django.conf import settings
 from graphql_jwt.decorators import login_required, staff_member_required
 from rest_framework.authtoken.models import Token
 
@@ -250,6 +254,52 @@ class CreateNote(graphene.Mutation):
         return CreateNote(note=note)
 
 
+class RequestPasswordReset(graphene.Mutation):
+    class Arguments:
+        email = graphene.String(required=True)
+
+    status = graphene.String()
+    error_message = graphene.String()
+
+    @staticmethod
+    def mutate(root, info, email):
+        try:
+            user = User.objects.get(email=email)
+        except Exception:
+            return RequestPasswordReset(status="failed", error_message="No such user exists.")
+
+        token = jwt.encode({'email': email}, settings.SECRET_KEY, algorithm='HS256').decode('utf-8')
+
+        email = Email(
+            template_id=RESET_PASSWORD_TEMPLATE,
+            recipient=email,
+            data={"username": user.first_name, "token": token}
+        )
+        email.save()
+
+        return RequestPasswordReset(status=email.status, error_message=email.response_body)
+
+
+class ResetPassword(graphene.Mutation):
+    class Arguments:
+        token = graphene.String(required=True)
+        new_password = graphene.String(required=True)
+
+    status = graphene.String()
+
+    @staticmethod
+    def mutate(root, info, token, new_password):
+        try:
+            email = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])["email"]
+            user = User.objects.get(email=email)
+            user.set_password(new_password)
+            user.save()
+        except Exception:
+            return ResetPassword(status="failed")
+
+        return ResetPassword(status="success")
+
+
 class Mutation(graphene.ObjectType):
     create_school = CreateSchool.Field()
     create_student = CreateStudent.Field()
@@ -257,3 +307,7 @@ class Mutation(graphene.ObjectType):
     create_instructor = CreateInstructor.Field()
     create_admin = CreateAdmin.Field()
     create_note = CreateNote.Field()
+
+    # Auth endpoints
+    request_password_reset = RequestPasswordReset.Field()
+    reset_password = ResetPassword.Field()

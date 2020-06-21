@@ -178,6 +178,6 @@ AUTHENTICATION_BACKENDS = [
     'graphql_jwt.backends.JSONWebTokenBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
-SENDGRID_API_KEY = 'test'
+SENDGRID_API_KEY = env.SENDGRID_API_KEY
 TWILIO_ACCOUNT_SID = 'test'
 TWILIO_AUTH_TOKEN = 'test'
