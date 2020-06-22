@@ -17,21 +17,9 @@ from pricing.schema import (
 from course.models import (
     CourseCategory
 )
+from course.mutations import AcademicLevelEnum, CourseTypeEnum
 
 from graphql_jwt.decorators import login_required, staff_member_required
-
-
-class AcademicLevelEnum(graphene.Enum):
-    ELEMENTARY_LVL = "elementary_lvl"
-    MIDDLE_LVL = "middle_lvl"
-    HIGH_LVL = "high_lvl"
-    COLLEGE_LVL = "college_lvl"
-
-
-class CourseTypeEnum(graphene.Enum):
-    TUTORING = "tutoring"
-    SMALL_GROUP = "small_group"
-    CLASS = "class"
 
 
 class AmountTypeEnum(graphene.Enum):
