@@ -38,6 +38,8 @@ class StudentType(DjangoObjectType):
 
 
 class ParentType(DjangoObjectType):
+    student_list = List(ID, source='student_list')
+
     class Meta:
         model = Parent
 
