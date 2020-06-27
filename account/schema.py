@@ -83,6 +83,7 @@ class Query(object):
     parents = List(ParentType)
     instructors = List(InstructorType, subject=String())
     admins = List(AdminType, admin_type=String())
+    user_infos = List(UserInfoType, user_ids=List(ID))
 
     instructor_ooo = List(
         InstructorOutOfOfficeType,
@@ -261,3 +262,18 @@ class Query(object):
         instructor_id = kwargs.get('instructor_id')
 
         return InstructorAvailability.objects.filter(instructor=instructor_id)
+
+    def resolve_user_infos(self, info, user_ids):
+        user_list = []
+
+        for user_id in user_ids:
+            if Student.objects.filter(user=user_id).exists():
+                user_list.append(Student.objects.get(user=user_id))
+            if Instructor.objects.filter(user=user_id).exists():
+                user_list.append(Instructor.objects.get(user=user_id))
+            if Parent.objects.filter(user=user_id).exists():
+                user_list.append(Parent.objects.get(user=user_id))
+            if Admin.objects.filter(user=user_id).exists():
+                user_list.append(Admin.objects.get(user=user_id))
+
+        return user_list
