@@ -46,7 +46,7 @@ class CreateCourse(graphene.Mutation):
         instructor_id = ID(name='instructor')
         hourly_tuition = Decimal()
         total_tuition = Decimal()
-        course_category_id = ID(name='course_category')
+        course_category_id = ID(name='courseCategory')
 
         # Logistical information
         room = String()

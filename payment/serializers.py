@@ -2,9 +2,10 @@ from django.db import transaction
 from rest_framework import serializers
 
 from account.models import Parent
-from course.models import Course, Enrollment
+from comms.models import Email
+from comms.templates import PAYMENT_CONFIRM_TEMPLATE
+from course.models import Enrollment
 from payment.models import Payment, Registration, Deduction
-
 from pricing.serializers import DiscountSerializer
 
 
@@ -96,13 +97,43 @@ class PaymentSerializer(serializers.ModelSerializer):
             )
 
         # create registrations
+        registration_objs = []
         for registration in registrations:
-            Registration.objects.create(
+            registration_obj = Registration.objects.create(
                 payment=payment,
                 enrollment=registration["enrollment"],
                 num_sessions=registration["num_sessions"]
             )
-        
+            registration_objs.append(registration_obj)
+
+        payment_data = {
+            "first_name": payment.parent.user.first_name,
+            "receipt_text": f"You've paid {payment.total} for {len(registrations)} classes",
+            "enrollment": {
+                "course": [{
+                    "title": registration.enrollment.course.title,
+                    "start_date": registration.attendance_start_date.strftime("%Y-%m-%d"),
+                    "end_date": registration.enrollment.course.end_date.strftime("%Y-%m-%d"),
+                    "start_time": registration.enrollment.course.start_time.strftime("%H:%M"),
+                    "end_time": registration.enrollment.course.end_time.strftime("%H:%M"),
+                    "instructor": {
+                        "user": {
+                            "first_name": registration.enrollment.course.instructor.user.first_name,
+                            "last_name": registration.enrollment.course.instructor.user.last_name
+                        }
+                    }
+                } for registration in registration_objs]
+            }
+        }
+
+        email = Email(
+            template_id=PAYMENT_CONFIRM_TEMPLATE,
+            recipient=payment.parent.user.email,
+            data=payment_data
+        )
+        email.save()
+        print(email.__dict__)
+
         return payment
 
     class Meta:
