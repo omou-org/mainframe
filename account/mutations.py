@@ -165,7 +165,7 @@ class CreateInstructor(graphene.Mutation):
         biography = graphene.String()
         experience = graphene.String()
         language = graphene.String()
-        subjects = graphene.List(graphene.Int)
+        subjects = graphene.List(graphene.ID)
 
     instructor = graphene.Field(InstructorType)
 
