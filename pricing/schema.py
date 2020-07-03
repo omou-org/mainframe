@@ -34,13 +34,20 @@ class PaymentMethodDiscountType(DjangoObjectType):
         model = PaymentMethodDiscount
 
 
+class DiscountQuoteType(graphene.ObjectType):
+    id = Int()
+    name = String()
+    amount = Float()
+
+
 class PriceQuoteType(graphene.ObjectType):
     subTotal = Float()
     discountTotal = Float()
     priceAdjustment = Float()
     accountBalance = Float()
     total = Float()
-    discounts = List(DiscountType)
+    discounts = List(DiscountQuoteType)
+    parent = Int()
 
 
 # shared pricing function
@@ -82,8 +89,8 @@ def price_quote_total(body):
                     else:
                         amount = float(discount.amount)
                     total_discount_val += amount
-                    used_discounts.append(Discount.objects.get(id=discount.id))
-
+                    used_discounts.append({"id" : discount.id, "name" : discount.name, "amount" : amount})
+            
             # MultiCourseDiscount (sessions on course basis)            
             multicourse_discounts = MultiCourseDiscount.objects.filter(num_sessions__lte = float(course_json["sessions"]))
             for discount in multicourse_discounts.order_by("-num_sessions"):
@@ -94,7 +101,7 @@ def price_quote_total(body):
                     else:
                         amount = float(discount.amount)
                     total_discount_val += amount
-                    used_discounts.append(Discount.objects.get(id=discount.id))
+                    used_discounts.append({"id" : discount.id, "name" : discount.name, "amount" : amount})
                     break
     
         sub_total += course_sub_total
@@ -102,6 +109,7 @@ def price_quote_total(body):
     # sibling discount
     if len(course_students) > 1:
         total_discount_val += 25
+        used_discounts.append(("Siblings Discount", 25))      
     
     # PaymentMethodDiscount
     payment_method = body["method"]
@@ -113,8 +121,8 @@ def price_quote_total(body):
             else:
                 amount = float(discount.amount)
             total_discount_val += amount
-            used_discounts.append(Discount.objects.get(id=discount.id))
-
+            used_discounts.append({"id" : discount.id, "name" : discount.name, "amount" : amount})
+    
     # price adjustment
     price_adjustment = body.get("price_adjustment", 0)
     
@@ -163,7 +171,8 @@ class Query(object):
                     disabled_discounts=List(Int),
                     price_adjustment=Float(),
                     classes=List(JSONString),
-                    tutoring=List(JSONString)
+                    tutoring=List(JSONString),
+                    parent=Int(required=True)
                     )
 
 
@@ -175,7 +184,8 @@ class Query(object):
             priceAdjustment = quote["price_adjustment"],
             accountBalance = quote["account_balance"],
             total = quote["total"],
-            discounts = quote["discounts"]
+            discounts = quote["discounts"],
+            parent = kwargs["parent"]
         )
 
 

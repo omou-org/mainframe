@@ -1,4 +1,5 @@
 import graphene
+from graphql import GraphQLError
 
 from pricing.models import (
     PriceRule,
@@ -20,6 +21,7 @@ from course.models import (
 from course.mutations import AcademicLevelEnum, CourseTypeEnum
 
 from graphql_jwt.decorators import login_required, staff_member_required
+from django.db.models import Q
 
 
 class AmountTypeEnum(graphene.Enum):
@@ -39,7 +41,14 @@ class CreatePriceRule(graphene.Mutation):
 
     @staticmethod
     @staff_member_required
-    def mutate(root, info, **validated_data):
+    def mutate(root, info, **validated_data):        
+        existing_rules = PriceRule.objects.filter(
+            Q(category=validated_data['category_id']) &
+            Q(academic_level=validated_data['academic_level']) &
+            Q(course_type=validated_data['course_type']))
+        if existing_rules.count() > 0:
+            raise GraphQLError('Failed Mutation. PriceRule already exists.')
+
         priceRule = PriceRule.objects.create(**validated_data)
         return CreatePriceRule(priceRule=priceRule)
 
@@ -53,7 +62,7 @@ class CreateDiscount(graphene.Mutation):
         active = graphene.Boolean(required=True)
 
     discount = graphene.Field(DiscountType)
-
+    
     @staticmethod
     @staff_member_required
     def mutate(root, info, **validated_data):
