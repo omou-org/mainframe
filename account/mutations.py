@@ -77,8 +77,8 @@ class CreateStudent(graphene.Mutation):
         # Student fields
         grade = graphene.Int()
         school = graphene.Int()
-        primary_parent = graphene.Int()
-        secondary_parent = graphene.Int()
+        primary_parent = graphene.ID()
+        secondary_parent = graphene.ID()
 
     student = graphene.Field(StudentType)
 
@@ -239,9 +239,9 @@ class CreateAdmin(graphene.Mutation):
 
 class CreateNote(graphene.Mutation):
     class Arguments:
-        user_id = graphene.Int(required=True)
-        title = graphene.String(required=True)
-        body = graphene.String()
+        user_id = graphene.ID(required=True)
+        title = graphene.String()
+        body = graphene.String(required=True)
         important = graphene.Boolean()
         complete = graphene.Boolean()
 
