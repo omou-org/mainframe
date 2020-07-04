@@ -27,6 +27,7 @@ class Session(models.Model):
     start_datetime = models.DateTimeField()
     end_datetime = models.DateTimeField()
     is_confirmed = models.BooleanField(default=False)
+    sent_reminder = models.BooleanField(default=False)
 
     objects = SessionManager()
 
