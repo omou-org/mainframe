@@ -77,8 +77,8 @@ class CreateStudent(graphene.Mutation):
         # Student fields
         grade = graphene.Int()
         school = graphene.Int()
-        primary_parent = graphene.Int()
-        secondary_parent = graphene.Int()
+        primary_parent = graphene.ID()
+        secondary_parent = graphene.ID()
 
     student = graphene.Field(StudentType)
 
