@@ -138,7 +138,6 @@ class CreateParent(graphene.Mutation):
     parent = graphene.Field(ParentType)
 
     @staticmethod
-    @staff_member_required
     def mutate(root, info, user, **validated_data):
         with transaction.atomic():
             # create user and token

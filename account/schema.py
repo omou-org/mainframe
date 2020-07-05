@@ -1,6 +1,9 @@
+import jwt
+
 from graphene import Field, ID, List, String, Union
 from graphene_django.types import DjangoObjectType
 from graphql_jwt.decorators import login_required
+from django.conf import settings
 from django.contrib.auth import get_user_model
 
 from account.models import (
@@ -78,6 +81,7 @@ class Query(object):
     admin = Field(AdminType, user_id=ID(), email=String())
     user_info = Field(UserInfoType, user_id=ID(), user_name=String())
     user_type = Field(String, user_name=String())
+    email_from_token = Field(String, token=String())
 
     notes = List(NoteType, user_id=ID(required=True))
     students = List(StudentType, grade=ID())
@@ -279,3 +283,6 @@ class Query(object):
                 user_list.append(Admin.objects.get(user=user_id))
 
         return user_list
+
+    def resolve_email_from_token(self, info, token):
+        return jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])["email"]
