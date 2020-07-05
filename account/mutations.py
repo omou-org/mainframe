@@ -225,7 +225,7 @@ class CreateAdmin(graphene.Mutation):
             )
             if validated_data['admin_type'] == Admin.OWNER_TYPE:
                 user_object.is_staff = True
-                user_object.save()
+            user_object.save()
             Token.objects.get_or_create(user=user_object)
 
             # create account
