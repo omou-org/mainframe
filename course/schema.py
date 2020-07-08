@@ -116,9 +116,10 @@ class Query(object):
 
         if category_id:
             return Course.objects.filter(course_category=category_id)
-        for course_id in course_ids:
-            if Course.objects.filter(id=course_id).exists():
-                course_list.append(Course.objects.get(id=course_id))
+        if course_ids:
+            for course_id in course_ids:
+                if Course.objects.filter(id=course_id).exists():
+                    course_list.append(Course.objects.get(id=course_id))
 
         return course_list or Course.objects.all()
 
