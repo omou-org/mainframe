@@ -62,7 +62,7 @@ class Query(object):
     enrollment = Field(EnrollmentType, enrollment_id=ID())
     enrollment_note = Field(EnrollmentNoteType, note_id=ID())
 
-    courses = List(CourseType, category_id=ID())
+    courses = List(CourseType, category_id=ID(), course_ids=List(ID))
     course_categories = List(CourseCategoryType)
     course_notes = List(CourseNoteType, course_id=ID(required=True))
     enrollments = List(EnrollmentType, student_id=ID(), course_id=ID())
@@ -111,10 +111,16 @@ class Query(object):
     @login_required
     def resolve_courses(self, info, **kwargs):
         category_id = kwargs.get('category_id')
+        course_ids = kwargs.get('course_ids')
+        course_list = []
 
         if category_id:
             return Course.objects.filter(course_category=category_id)
-        return Course.objects.all()
+        for course_id in course_ids:
+            if Course.objects.filter(id=course_id).exists():
+                course_list.append(Course.objects.get(id=course_id))
+
+        return course_list or Course.objects.all()
 
     @login_required
     def resolve_course_categories(self, info, **kwargs):
