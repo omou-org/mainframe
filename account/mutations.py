@@ -1,5 +1,6 @@
 import graphene
 import jwt
+import pytz
 import uuid
 
 from account.models import (
@@ -9,14 +10,18 @@ from account.models import (
     School,
     Parent,
     Instructor,
+    InstructorAvailability,
+    InstructorOutOfOffice,
 )
 from account.schema import (
     NoteType,
     AdminType,
-    InstructorType,
     ParentType,
     SchoolType,
     StudentType,
+    InstructorType,
+    InstructorAvailabilityType,
+    InstructorOutOfOfficeType,
 )
 from comms.models import Email
 from comms.templates import RESET_PASSWORD_TEMPLATE
@@ -38,6 +43,16 @@ class AdminTypeEnum(graphene.Enum):
     OWNER = 'owner'
     RECEPTIONIST = 'receptionist'
     ASSISTANT = 'assistant'
+
+
+class DayOfWeekEnum(graphene.Enum):
+    MONDAY = 'monday'
+    TUESDAY = 'tuesday'
+    WEDNESDAY = 'wednesday'
+    THURSDAY = 'thursday'
+    FRIDAY = 'friday'
+    SATURDAY = 'saturday'
+    SUNDAY = 'sunday'
 
 
 class CreateSchool(graphene.Mutation):
@@ -77,8 +92,8 @@ class CreateStudent(graphene.Mutation):
         # Student fields
         grade = graphene.Int()
         school = graphene.Int()
-        primary_parent = graphene.Int()
-        secondary_parent = graphene.Int()
+        primary_parent = graphene.ID()
+        secondary_parent = graphene.ID()
 
     student = graphene.Field(StudentType)
 
@@ -123,7 +138,6 @@ class CreateParent(graphene.Mutation):
     parent = graphene.Field(ParentType)
 
     @staticmethod
-    @staff_member_required
     def mutate(root, info, user, **validated_data):
         with transaction.atomic():
             # create user and token
@@ -195,6 +209,47 @@ class CreateInstructor(graphene.Mutation):
             return CreateInstructor(instructor=instructor)
 
 
+class CreateInstructorAvailability(graphene.Mutation):
+    class Arguments:
+        instructor_id = graphene.ID(name='instructor')
+        day_of_week = DayOfWeekEnum(required=True)
+        start_time = graphene.Time(required=True)
+        end_time = graphene.Time(required=True)
+
+    instructor_availability = graphene.Field(InstructorAvailabilityType)
+
+    @staticmethod
+    def mutate(root, info, **validated_data):
+        instructor_avail = InstructorAvailability.objects.create(**validated_data)
+        return CreateInstructorAvailability(instructor_availability=instructor_avail)
+
+
+class CreateInstructorOOO(graphene.Mutation):
+    class Arguments:
+        instructor_id = graphene.ID(name='instructor')
+        start_datetime = graphene.DateTime(required=True)
+        end_datetime = graphene.DateTime(required=True)
+        description = graphene.String()
+
+    instructor_ooo = graphene.Field(InstructorOutOfOfficeType)
+
+    @staticmethod
+    def mutate(root, info, instructor_id, start_datetime, end_datetime, description=""):
+        start_datetime = start_datetime.replace(tzinfo=None)
+        end_datetime = end_datetime.replace(tzinfo=None)
+        start_datetime_obj = pytz.timezone(
+            'America/Los_Angeles').localize(start_datetime).astimezone(pytz.utc)
+        end_datetime_obj = pytz.timezone(
+            'America/Los_Angeles').localize(end_datetime).astimezone(pytz.utc)
+        instructor_ooo = InstructorOutOfOffice.objects.create(
+            instructor_id=instructor_id,
+            start_datetime=start_datetime_obj,
+            end_datetime=end_datetime_obj,
+            description=description,
+        )
+        return CreateInstructorOOO(instructor_ooo=instructor_ooo)
+
+
 class CreateAdmin(graphene.Mutation):
     class Arguments:
         # User fields
@@ -225,7 +280,7 @@ class CreateAdmin(graphene.Mutation):
             )
             if validated_data['admin_type'] == Admin.OWNER_TYPE:
                 user_object.is_staff = True
-                user_object.save()
+            user_object.save()
             Token.objects.get_or_create(user=user_object)
 
             # create account
@@ -239,9 +294,9 @@ class CreateAdmin(graphene.Mutation):
 
 class CreateNote(graphene.Mutation):
     class Arguments:
-        user_id = graphene.Int(required=True)
-        title = graphene.String(required=True)
-        body = graphene.String()
+        user_id = graphene.ID(required=True)
+        title = graphene.String()
+        body = graphene.String(required=True)
         important = graphene.Boolean()
         complete = graphene.Boolean()
 
@@ -307,6 +362,9 @@ class Mutation(graphene.ObjectType):
     create_instructor = CreateInstructor.Field()
     create_admin = CreateAdmin.Field()
     create_note = CreateNote.Field()
+
+    create_instructor_availability = CreateInstructorAvailability.Field()
+    create_instructor_ooo = CreateInstructorOOO.Field()
 
     # Auth endpoints
     request_password_reset = RequestPasswordReset.Field()

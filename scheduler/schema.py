@@ -4,7 +4,7 @@ import calendar
 import pytz
 
 from django.db.models import Q
-from graphene import Boolean, Field, ID, Int, List, String
+from graphene import Boolean, Field, ID, Int, List, String, DateTime
 from graphene_django.types import DjangoObjectType, ObjectType
 from graphql_jwt.decorators import login_required
 
@@ -26,7 +26,8 @@ class ValidateScheduleType(ObjectType):
 class Query(object):
     session = Field(SessionType, session_id=ID(required=True))
     sessions = List(SessionType, time_frame=String(), view_option=String(),
-                    course_id=ID(), time_shift=Int(default_value=0))
+                    course_id=ID(), time_shift=Int(default_value=0), instructor_id=ID(),
+                    start_date=String(), end_date=String())
 
     # Schedule validators
     validate_session_schedule = Field(
@@ -45,11 +46,15 @@ class Query(object):
         return Session.objects.get(id=session_id)
 
     def resolve_sessions(self, info, time_frame=None, view_option=None,
-                         course_id=None, time_shift=0):
+                         course_id=None, time_shift=0, instructor_id=None,
+                         start_date=None, end_date=None):
         queryset = Session.objects.all()
 
         if course_id is not None:
             queryset = queryset.filter(course=course_id)
+
+        if instructor_id is not None:
+            queryset = queryset.filter(instructor=instructor_id)
 
         if view_option == 'class':
             queryset = queryset.filter(course__course_type=Course.CLASS)
@@ -90,6 +95,14 @@ class Query(object):
                 start_datetime__gte=start_of_month,
                 end_datetime__lt=end_of_month
             )
+
+        # TODO: fix these filters to filter by start and end date
+        if start_date is not None and end_date is not None:
+            queryset = queryset.filter(
+                start_datetime__gte=arrow.get(start_date).datetime,
+                end_datetime__lt=arrow.get(end_date).datetime
+            )
+
         return queryset
 
     def resolve_validate_session_schedule(self, info, instructor_id, start_time, end_time, date):

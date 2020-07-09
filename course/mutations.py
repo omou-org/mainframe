@@ -8,8 +8,15 @@ from django.db.models import Q
 from graphene import Boolean, DateTime, Decimal, Field, ID, Int, String, Time
 from graphql_jwt.decorators import staff_member_required
 
+from account.mutations import DayOfWeekEnum
 from course.models import Course, CourseNote, CourseCategory, Enrollment, EnrollmentNote
-from course.schema import CourseType, CourseNoteType, CourseCategoryType, EnrollmentType, EnrollmentNoteType
+from course.schema import (
+    CourseType,
+    CourseNoteType,
+    CourseCategoryType,
+    EnrollmentType,
+    EnrollmentNoteType,
+)
 from scheduler.models import Session
 from pricing.models import PriceRule
 
@@ -25,16 +32,6 @@ class AcademicLevelEnum(graphene.Enum):
     MIDDLE_LVL = 'middle_lvl'
     HIGH_LVL = 'high_lvl'
     COLLEGE_LVL = 'college_lvl'
-
-
-class DayOfWeekEnum(graphene.Enum):
-    MONDAY = 'monday'
-    TUESDAY = 'tuesday'
-    WEDNESDAY = 'wednesday'
-    THURSDAY = 'thursday'
-    FRIDAY = 'friday'
-    SATURDAY = 'saturday'
-    SUNDAY = 'sunday'
 
 
 class CreateCourse(graphene.Mutation):

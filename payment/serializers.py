@@ -132,7 +132,6 @@ class PaymentSerializer(serializers.ModelSerializer):
             data=payment_data
         )
         email.save()
-        print(email.__dict__)
 
         return payment
 
