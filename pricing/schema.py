@@ -180,7 +180,7 @@ class Query(object):
                     price_adjustment=Float(),
                     classes=List(ClassQuote),
                     tutoring=List(TutoringQuoe),
-                    parent=ID(name='parent')
+                    parent=ID(name='parent', required=True)
                     )
 
 
