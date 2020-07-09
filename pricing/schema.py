@@ -9,6 +9,9 @@ from pricing.models import PriceRule, Discount, MultiCourseDiscount, DateRangeDi
 from course.models import Course
 from account.models import Parent
 
+from course.mutations import AcademicLevelEnum
+
+
 class PriceRuleType(DjangoObjectType):
     class Meta:
         model = PriceRule
@@ -158,12 +161,26 @@ class Query(object):
     dataRangeDiscounts = List(DateRangeDiscountType)
     paymentMethodDiscounts = List(PaymentMethodDiscountType)
 
+    class ClassQuote(graphene.InputObjectType):     
+        course_id=ID(name='course')
+        sessions=Int()
+        student_id=ID(name='student')
+
+
+    class TutoringQuoe(graphene.InputObjectType):
+        category_id=ID(name='category')
+        academic_level=AcademicLevelEnum()
+        duration=Float()
+        sessions=Int()
+
+
     priceQuote = Field(PriceQuoteType,
                     method=String(required=True),
                     disabled_discounts=List(Int),
                     price_adjustment=Float(),
-                    classes=List(JSONString),
-                    tutoring=List(JSONString)
+                    classes=List(ClassQuote),
+                    tutoring=List(TutoringQuoe),
+                    parent=ID(name='parent', required=True)
                     )
 
 
