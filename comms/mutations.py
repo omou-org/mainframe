@@ -21,7 +21,7 @@ class CreateParentNotificationSettings(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, parent_id, **validated_data):
-        settings, created = ParentNotificationSettings.objects.get_or_create(parent_id)
+        settings, created = ParentNotificationSettings.objects.get_or_create(validated_data)
         return CreateParentNotificationSettings(settings=settings)
 
 
