@@ -7,7 +7,7 @@ from graphene import Boolean, DateTime, ID, String
 from graphql_jwt.decorators import staff_member_required
 
 
-class CreateParentNotificationSettings(graphene.Mutation):
+class MutateParentNotificationSettings(graphene.Mutation):
     class Arguments:
         parent_id = ID(name="parent", required=True)
         session_reminder_email = Boolean()
@@ -21,9 +21,12 @@ class CreateParentNotificationSettings(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, parent_id, **validated_data):
-        settings, created = ParentNotificationSettings.objects.get_or_create(validated_data)
-        return CreateParentNotificationSettings(settings=settings)
+        settings, created = ParentNotificationSettings.objects.update_or_create(
+            parent=parent_id,
+            defaults=validated_data
+        )
+        return MutateParentNotificationSettings(settings=settings)
 
 
 class Mutation(graphene.ObjectType):
-    create_parent_notification_setting = CreateParentNotificationSettings.Field()
+    create_parent_notification_setting = MutateParentNotificationSettings.Field()

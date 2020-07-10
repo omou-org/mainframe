@@ -23,7 +23,7 @@ from account.schema import (
     InstructorAvailabilityType,
     InstructorOutOfOfficeType,
 )
-from comms.models import Email
+from comms.models import Email, ParentNotificationSettings
 from comms.templates import RESET_PASSWORD_TEMPLATE
 
 from django.db import transaction
@@ -156,6 +156,7 @@ class CreateParent(graphene.Mutation):
                 account_type='parent',
                 **validated_data
             )
+            ParentNotificationSettings.objects.create(parent=parent)
             return CreateParent(parent=parent)
 
 
