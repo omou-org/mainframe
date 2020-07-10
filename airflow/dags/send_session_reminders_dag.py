@@ -24,7 +24,11 @@ dag = DAG(
 
 send_session_reminders = BashOperator(
     task_id='send_session_reminders',
-    bash_command='python manage.py send_session_reminders',
+    bash_command="""
+    export DJANGO_ENV_MODULE="mainframe.settings.local"; 
+    cd /Users/jerry/robinhood/mainframe;
+    python manage.py send_session_reminders; 
+    """,
     dag=dag,
 )
 

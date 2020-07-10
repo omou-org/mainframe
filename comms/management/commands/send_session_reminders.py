@@ -44,4 +44,4 @@ class Command(BaseCommand):
             email.save()
             session.sent_reminder = True
             session.save()
-            print(session.__dict__)
+            print(email.__dict__)
