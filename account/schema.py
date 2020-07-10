@@ -189,7 +189,6 @@ class Query(object):
         
         return None
 
-
     @login_required
     def resolve_user_info(self, info, **kwargs):
         user_id = kwargs.get('user_id')
