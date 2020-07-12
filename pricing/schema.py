@@ -156,6 +156,19 @@ def price_quote_total(body):
     return response_dict
 
 
+class ClassQuote(graphene.InputObjectType):     
+    course_id=ID(name='course')
+    sessions=Int()
+    student_id=ID(name='student')
+
+
+class TutoringQuote(graphene.InputObjectType):
+    category_id=ID(name='category')
+    academic_level=AcademicLevelEnum()
+    duration=Float()
+    sessions=Int()
+
+
 class Query(object):
     priceRule = Field(PriceRuleType, priceRule_id=ID())
     discount = Field(DiscountType, discount_id=ID())
@@ -169,25 +182,12 @@ class Query(object):
     dataRangeDiscounts = List(DateRangeDiscountType)
     paymentMethodDiscounts = List(PaymentMethodDiscountType)
 
-    class ClassQuote(graphene.InputObjectType):     
-        course_id=ID(name='course')
-        sessions=Int()
-        student_id=ID(name='student')
-
-
-    class TutoringQuoe(graphene.InputObjectType):
-        category_id=ID(name='category')
-        academic_level=AcademicLevelEnum()
-        duration=Float()
-        sessions=Int()
-
-
     priceQuote = Field(PriceQuoteType,
                     method=String(required=True),
                     disabled_discounts=List(Int),
                     price_adjustment=Float(),
                     classes=List(ClassQuote),
-                    tutoring=List(TutoringQuoe),
+                    tutoring=List(TutoringQuote),
                     parent=ID(name='parent', required=True)
                     )
 
