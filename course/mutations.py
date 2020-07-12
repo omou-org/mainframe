@@ -36,9 +36,10 @@ class AcademicLevelEnum(graphene.Enum):
 
 class CreateCourse(graphene.Mutation):
     class Arguments:
+        course_id = ID(name='id')
         course_type = CourseTypeEnum()
         academic_level = AcademicLevelEnum()
-        title = String(required=True)
+        title = String()
         description = String()
         instructor_id = ID(name='instructor')
         hourly_tuition = Decimal()
@@ -50,15 +51,78 @@ class CreateCourse(graphene.Mutation):
         day_of_week = DayOfWeekEnum()
         start_date = DateTime()
         end_date = DateTime()
-        start_time = Time(required=True)
-        end_time = Time(required=True)
+        start_time = Time()
+        end_time = Time()
         max_capacity = Int()
         is_confirmed = Boolean()
 
     course = Field(CourseType)
+    created = Boolean()
 
     @staticmethod
     def mutate(root, info, **validated_data):
+        # update course
+        if validated_data.get('id'):
+            course = Course.objects.get(id=validated_data.get('id'))
+            now = datetime.now()
+            sessions = Session.objects.filter(
+                course=course,
+                start_datetime__gte=now
+            )
+
+            for session in sessions:
+                pacific_tz = pytz.timezone('America/Los_Angeles')
+                utc_start_datetime = session.start_datetime.replace(tzinfo=timezone.utc).astimezone(tz=pacific_tz)
+                utc_end_datetime = session.start_datetime.replace(tzinfo=timezone.utc).astimezone(tz=pacific_tz)
+                start_datetime = datetime.combine(
+                    utc_start_datetime.date(),
+                    validated_data.get('start_time', course.start_time)
+                )
+                end_datetime = datetime.combine(
+                    utc_end_datetime.date(),
+                    validated_data.get('end_time', course.end_time)
+                )
+                session.start_datetime = pacific_tz.localize(start_datetime).astimezone(pytz.utc)
+                session.end_datetime = pacific_tz.localize(end_datetime).astimezone(pytz.utc)
+                session.save()
+
+            if 'end_date' in validated_data or validated_data.get('is_confirmed', False):
+                latest_session = sessions.latest('start_datetime')
+                if len(sessions) == 0 and validated_data.get('is_confirmed', False):
+                    current_date = arrow.get(validated_data['start_date'])
+                else:
+                    current_date = arrow.get(
+                        latest_session.start_datetime.date()).shift(weeks=+1)
+                end_date = arrow.get(validated_data['end_date'])
+                while current_date <= end_date:
+                    start_datetime = datetime.combine(
+                        current_date.date(),
+                        validated_data.get('start_time', course.start_time)
+                    )
+                    end_datetime = datetime.combine(
+                        current_date.date(),
+                        validated_data.get('end_time', course.end_time)
+                    )
+                    start_datetime = pytz.timezone(
+                        'America/Los_Angeles').localize(start_datetime).astimezone(pytz.utc)
+                    end_datetime = pytz.timezone(
+                        'America/Los_Angeles').localize(end_datetime).astimezone(pytz.utc)
+
+                    Session.objects.create(
+                        course=course,
+                        start_datetime=start_datetime,
+                        end_datetime=end_datetime,
+                        instructor=validated_data.get('instructor', course.instructor),
+                        is_confirmed=True
+                    )
+                    course.num_sessions += 1
+                    current_date = current_date.shift(weeks=+1)
+
+            course.save()
+            Course.objects.filter(id=course.id).update(**validated_data)
+            course.refresh_from_db()
+            return CreateCourse(course=course, created=False)
+
         # create course
         course = Course.objects.create(**validated_data)
         course.num_sessions = 0
@@ -111,24 +175,30 @@ class CreateCourse(graphene.Mutation):
             course.total_tuition = course.hourly_tuition * course.num_sessions
 
         course.save()
-        return CreateCourse(course=course)
+        return CreateCourse(course=course, created=True)
 
 
 class CreateCourseCategory(graphene.Mutation):
     class Arguments:
+        category_id = ID(name='id')
         name = String(required=True)
         description = String()
 
     course_category = Field(CourseCategoryType)
+    created = Boolean()
 
     @staticmethod
     def mutate(root, info, **validated_data):
-        course_category = CourseCategory.objects.create(**validated_data)
-        return CreateCourseCategory(course_category=course_category)
+        course_category, created = CourseCategory.objects.update_or_create(
+            id=validated_data.pop('id', None),
+            defaults=validated_data
+        )
+        return CreateCourseCategory(course_category=course_category, created=created)
 
 
 class CreateCourseNote(graphene.Mutation):
     class Arguments:
+        note_id = ID(name='id')
         title = String()
         body = String(required=True)
         course_id = ID(name='course', required=True)
@@ -136,11 +206,15 @@ class CreateCourseNote(graphene.Mutation):
         complete = Boolean()
 
     course_note = graphene.Field(CourseNoteType)
+    created = Boolean()
 
     @staticmethod
     def mutate(root, info, **validated_data):
-        course_note = CourseNote.objects.create(**validated_data)
-        return CreateCourseNote(course_note=course_note)
+        course_note, created = CourseNote.objects.update_or_create(
+            id=validated_data.pop('id', None),
+            defaults=validated_data
+        )
+        return CreateCourseNote(course_note=course_note, created=created)
 
 
 class CreateEnrollment(graphene.Mutation):
@@ -158,6 +232,7 @@ class CreateEnrollment(graphene.Mutation):
 
 class CreateEnrollmentNote(graphene.Mutation):
     class Arguments:
+        note_id = ID(name='id')
         title = String()
         body = String(required=True)
         enrollment_id = ID(name='enrollment', required=True)
@@ -165,11 +240,15 @@ class CreateEnrollmentNote(graphene.Mutation):
         complete = Boolean()
 
     enrollment_note = graphene.Field(EnrollmentNoteType)
+    created = Boolean()
 
     @staticmethod
     def mutate(root, info, **validated_data):
-        enrollment_note = EnrollmentNote.objects.create(**validated_data)
-        return CreateEnrollmentNote(enrollment_note=enrollment_note)
+        enrollment_note, created = EnrollmentNote.objects.create(
+            id=validated_data.pop('id', None),
+            defaults=validated_data
+        )
+        return CreateEnrollmentNote(enrollment_note=enrollment_note, created=created)
 
 
 class Mutation(graphene.ObjectType):
