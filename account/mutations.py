@@ -371,7 +371,7 @@ class CreateNote(graphene.Mutation):
     @staff_member_required
     def mutate(root, info, **validated_data):
         note, created = Note.objects.update_or_create(
-            id=validated_data.pop('id', None),
+            id=validated_data.pop('note_id', None),
             defaults=validated_data
         )
         return CreateNote(note=note, created=created)

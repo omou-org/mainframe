@@ -181,7 +181,7 @@ class CreateCourse(graphene.Mutation):
 class CreateCourseCategory(graphene.Mutation):
     class Arguments:
         category_id = ID(name='id')
-        name = String(required=True)
+        name = String()
         description = String()
 
     course_category = Field(CourseCategoryType)
@@ -190,7 +190,7 @@ class CreateCourseCategory(graphene.Mutation):
     @staticmethod
     def mutate(root, info, **validated_data):
         course_category, created = CourseCategory.objects.update_or_create(
-            id=validated_data.pop('id', None),
+            id=validated_data.pop('category_id', None),
             defaults=validated_data
         )
         return CreateCourseCategory(course_category=course_category, created=created)
@@ -200,8 +200,8 @@ class CreateCourseNote(graphene.Mutation):
     class Arguments:
         note_id = ID(name='id')
         title = String()
-        body = String(required=True)
-        course_id = ID(name='course', required=True)
+        body = String()
+        course_id = ID(name='course')
         important = Boolean()
         complete = Boolean()
 
@@ -211,7 +211,7 @@ class CreateCourseNote(graphene.Mutation):
     @staticmethod
     def mutate(root, info, **validated_data):
         course_note, created = CourseNote.objects.update_or_create(
-            id=validated_data.pop('id', None),
+            id=validated_data.pop('note_id', None),
             defaults=validated_data
         )
         return CreateCourseNote(course_note=course_note, created=created)
@@ -234,8 +234,8 @@ class CreateEnrollmentNote(graphene.Mutation):
     class Arguments:
         note_id = ID(name='id')
         title = String()
-        body = String(required=True)
-        enrollment_id = ID(name='enrollment', required=True)
+        body = String()
+        enrollment_id = ID(name='enrollment')
         important = Boolean()
         complete = Boolean()
 
@@ -244,8 +244,8 @@ class CreateEnrollmentNote(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, **validated_data):
-        enrollment_note, created = EnrollmentNote.objects.create(
-            id=validated_data.pop('id', None),
+        enrollment_note, created = EnrollmentNote.objects.update_or_create(
+            id=validated_data.pop('note_id', None),
             defaults=validated_data
         )
         return CreateEnrollmentNote(enrollment_note=enrollment_note, created=created)
