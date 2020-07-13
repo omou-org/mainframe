@@ -11,7 +11,7 @@ from course.managers import CourseManager
 
 class CourseCategory(models.Model):
     name = models.CharField(max_length=100)
-    description = models.CharField(max_length=1000, null=True, blank=True)
+    description = models.CharField(max_length=1000, blank=True)
 
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)
@@ -19,7 +19,7 @@ class CourseCategory(models.Model):
 
     def __str__(self):
         return self.name
-    
+
 
 class Course(models.Model):
     TUTORING = "tutoring"
@@ -112,7 +112,7 @@ class Course(models.Model):
 
 
 class CourseNote(models.Model):
-    timestamp = models.DateTimeField(auto_now_add=True)    
+    timestamp = models.DateTimeField(auto_now_add=True)
     title = models.TextField(blank=True)
     body = models.TextField()
     course = models.ForeignKey(
@@ -177,7 +177,7 @@ class Enrollment(models.Model):
 
 
 class EnrollmentNote(models.Model):
-    timestamp = models.DateTimeField(auto_now_add=True)    
+    timestamp = models.DateTimeField(auto_now_add=True)
     title = models.TextField(blank=True)
     body = models.TextField()
     enrollment = models.ForeignKey(
