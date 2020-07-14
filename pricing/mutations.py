@@ -53,6 +53,19 @@ class CreatePriceRule(graphene.Mutation):
         return CreatePriceRule(priceRule=priceRule)
 
 
+class DeletePriceRule(graphene.Mutation):
+    ok = graphene.Boolean()
+    class Arguments:
+        id = graphene.ID()
+    
+    @staticmethod
+    @staff_member_required
+    def mutate(root, info, **validated_data):    
+        priceRuleObj = PriceRule.objects.get(id=validated_data["id"])
+        priceRuleObj.delete()
+        return DeletePriceRule(ok=True)
+
+
 class CreateDiscount(graphene.Mutation):
     class Arguments:
         name = graphene.String(required=True)
@@ -127,6 +140,7 @@ class CreatePaymentMethodDiscount(graphene.Mutation):
 
 class Mutation(graphene.ObjectType):
     create_pricerule = CreatePriceRule.Field()
+    delete_pricerule = DeletePriceRule.Field()
     create_discount = CreateDiscount.Field()
     create_multicoursediscount = CreateMultiCourseDiscount.Field()
     create_daterangediscount = CreateDateRangeDiscount.Field()
