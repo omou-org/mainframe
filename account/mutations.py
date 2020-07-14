@@ -30,6 +30,7 @@ from django.db import transaction
 from django.contrib.auth.models import User
 from django.conf import settings
 from graphql_jwt.decorators import login_required, staff_member_required
+from graphene import List
 from rest_framework.authtoken.models import Token
 
 
@@ -272,6 +273,29 @@ class CreateInstructorAvailability(graphene.Mutation):
         )
 
 
+class InstructorAvailabilityInput(graphene.InputObjectType):
+    id = graphene.ID()
+    instructor_id = graphene.ID(name='instructor')
+    day_of_week = DayOfWeekEnum()
+    start_time = graphene.Time()
+    end_time = graphene.Time()
+
+
+class CreateInstructorAvailabilities(graphene.Mutation):
+    class Arguments:
+        availabilities = List(InstructorAvailabilityInput)
+    
+    instructor_availabilities = List(InstructorAvailabilityType)
+
+    @staticmethod
+    def mutate(root, info, **validated_data):
+        objs = [InstructorAvailability(**data) for data in validated_data['availabilities']]
+        instructor_availabilities = InstructorAvailability.objects.bulk_create(objs)
+        return CreateInstructorAvailabilities(
+            instructor_availabilities=instructor_availabilities
+        )
+
+
 class CreateInstructorOOO(graphene.Mutation):
     class Arguments:
         instructor_id = graphene.ID(name='instructor')
@@ -432,6 +456,7 @@ class Mutation(graphene.ObjectType):
     create_note = CreateNote.Field()
 
     create_instructor_availability = CreateInstructorAvailability.Field()
+    create_instructor_availabilities = CreateInstructorAvailabilities.Field()
     create_instructor_ooo = CreateInstructorOOO.Field()
 
     # Auth endpoints
