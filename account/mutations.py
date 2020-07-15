@@ -323,6 +323,22 @@ class CreateInstructorOOO(graphene.Mutation):
         return CreateInstructorOOO(instructor_ooo=instructor_ooo)
 
 
+class DeleteInstructorOOO(graphene.Mutation):
+    class Arguments:
+        id = graphene.ID()
+
+    deleted = graphene.Boolean()
+
+    @staticmethod
+    def mutate(root, info, **validated_data):
+        try:
+            ooo_obj = InstructorOutOfOffice.objects.get(id=validated_data.get('id'))
+        except ObjectDoesNotExist:
+            raise GraphQLError('Failed delete mutation. InstructorOOO does not exist.')
+        ooo_obj.delete()
+        return DeleteInstructorOOO(deleted=True)
+
+
 class CreateAdmin(graphene.Mutation):
     class Arguments:
         # User fields
@@ -477,6 +493,7 @@ class Mutation(graphene.ObjectType):
     create_instructor_ooo = CreateInstructorOOO.Field()
 
     # delete endpoints
+    delete_instructor_ooo = DeleteInstructorOOO.Field()
     delete_note = DeleteNote.Field()
 
     # Auth endpoints
