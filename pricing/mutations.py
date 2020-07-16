@@ -122,7 +122,7 @@ class CreateDateRangeDiscount(graphene.Mutation):
         start_date = graphene.types.datetime.Date(required=True)
         end_date = graphene.types.datetime.Date(required=True)
 
-        date_range_discount = graphene.Field(DateRangeDiscountType)
+    date_range_discount = graphene.Field(DateRangeDiscountType)
 
     @staticmethod
     @staff_member_required
