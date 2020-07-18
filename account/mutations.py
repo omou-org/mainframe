@@ -284,7 +284,7 @@ class InstructorAvailabilityInput(graphene.InputObjectType):
 
 class CreateInstructorAvailabilities(graphene.Mutation):
     class Arguments:
-        availabilities = graphene.List(InstructorAvailabilityInput)
+        availabilities = graphene.List(InstructorAvailabilityInput, required=True)
     
     instructor_availabilities = graphene.List(InstructorAvailabilityType)
 
@@ -296,6 +296,20 @@ class CreateInstructorAvailabilities(graphene.Mutation):
             instructor_availabilities=instructor_availabilities
         )
 
+
+class DeleteInstructorAvailabilities(graphene.Mutation):
+    class Arguments:
+        availabilities = graphene.List(graphene.ID, required=True)
+    
+    deleted = graphene.Boolean()
+
+    @staticmethod
+    def mutate(root, info, **validated_data):
+        price_rule_objs = InstructorAvailability.objects.filter(
+            id__in=validated_data['availabilities']
+            )
+        price_rule_objs.delete()
+        return DeleteInstructorAvailabilities(deleted=True)
 
 class CreateInstructorOOO(graphene.Mutation):
     class Arguments:
@@ -490,6 +504,7 @@ class Mutation(graphene.ObjectType):
 
     create_instructor_availability = CreateInstructorAvailability.Field()
     create_instructor_availabilities = CreateInstructorAvailabilities.Field()
+    delete_instructor_availabilities = DeleteInstructorAvailabilities.Field()
     create_instructor_ooo = CreateInstructorOOO.Field()
 
     # delete endpoints
