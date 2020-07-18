@@ -21,6 +21,8 @@ from course.models import (
 from course.mutations import AcademicLevelEnum, CourseTypeEnum
 
 from graphql_jwt.decorators import login_required, staff_member_required
+from django.contrib.admin.models import LogEntry, ADDITION
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 
 
@@ -50,6 +52,13 @@ class CreatePriceRule(graphene.Mutation):
             raise GraphQLError('Failed Mutation. PriceRule already exists.')
 
         priceRule = PriceRule.objects.create(**validated_data)
+        LogEntry.objects.log_action(
+            user_id = info.context.user.id, 
+            content_type_id = ContentType.objects.get_for_model(object).pk,
+            object_id = priceRule.id,
+            object_repr = "{} {} {}".format(str(priceRule.category), str(priceRule.academic_level), str(priceRule.course_type)),
+            action_flag = ADDITION 
+        )
         return CreatePriceRule(priceRule=priceRule)
 
 
