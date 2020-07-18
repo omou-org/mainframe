@@ -1,6 +1,7 @@
 import jwt
+from datetime import datetime, date
 
-from graphene import Field, ID, List, String, Union
+from graphene import Field, ID, List, String, Union, DateTime
 from graphene_django.types import DjangoObjectType
 from graphql_jwt.decorators import login_required
 from django.conf import settings
@@ -53,8 +54,16 @@ class InstructorType(DjangoObjectType):
 
 
 class InstructorAvailabilityType(DjangoObjectType):
+    start_datetime = DateTime()
+    end_datetime = DateTime()
     class Meta:
         model = InstructorAvailability
+    
+    def resolve_start_datetime(self, info):
+        return datetime.combine(date.today(), self.start_time)
+    
+    def resolve_end_datetime(self, info):
+        return datetime.combine(date.today(), self.end_time)
 
 
 class InstructorOutOfOfficeType(DjangoObjectType):
@@ -266,7 +275,14 @@ class Query(object):
     def resolve_instructor_availability(self, info, **kwargs):
         instructor_id = kwargs.get('instructor_id')
 
-        return InstructorAvailability.objects.filter(instructor=instructor_id)
+        return [
+            InstructorAvailabilityType(
+                model = availability,
+                start_datetime = availability.start_time,
+                end_datetime = availability.end_time
+            )
+            for availability
+            in InstructorAvailability.objects.filter(instructor=instructor_id)]
 
     def resolve_user_infos(self, info, user_ids):
         user_list = []
