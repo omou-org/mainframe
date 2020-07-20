@@ -1,9 +1,11 @@
+import os
+
 # ===============
 # Django Settings
 # ===============
 
 # much secure
-DATABASE_PASSWORD = "a22jAxkqPfv6"
+DATABASE_PASSWORD = os.environ.get("DATABASE_PASSWORD")
 
 DEBUG = False
 
@@ -25,4 +27,5 @@ DATABASES = {
         "PORT": "5432",
     },
 }
-SECRET_KEY = "%wd5++=an&!tao#t)sc%cp@x3k6wmsbcrtsw7st*83908z255+"
+SECRET_KEY = os.environ.get("SECRET_KEY")
+SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY")
