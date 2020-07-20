@@ -7,7 +7,7 @@ import os
 # much secure
 DATABASE_PASSWORD = os.environ.get("DATABASE_PASSWORD")
 
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     "ip-172-31-18-22.us-west-2.compute.internal",
