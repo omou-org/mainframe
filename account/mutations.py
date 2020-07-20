@@ -1,7 +1,15 @@
-import graphene
 import jwt
 import pytz
 import uuid
+
+import graphene
+from django.db import transaction
+from django.contrib.auth.models import User
+from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
+from graphql import GraphQLError
+from graphql_jwt.decorators import login_required, staff_member_required
+from rest_framework.authtoken.models import Token
 
 from account.models import (
     Note,
@@ -25,13 +33,6 @@ from account.schema import (
 )
 from comms.models import Email, ParentNotificationSettings
 from comms.templates import RESET_PASSWORD_TEMPLATE
-
-from django.db import transaction
-from django.contrib.auth.models import User
-from django.conf import settings
-from graphql_jwt.decorators import login_required, staff_member_required
-from graphene import List
-from rest_framework.authtoken.models import Token
 
 
 class GenderEnum(graphene.Enum):
@@ -283,9 +284,9 @@ class InstructorAvailabilityInput(graphene.InputObjectType):
 
 class CreateInstructorAvailabilities(graphene.Mutation):
     class Arguments:
-        availabilities = List(InstructorAvailabilityInput)
+        availabilities = graphene.List(InstructorAvailabilityInput, required=True)
     
-    instructor_availabilities = List(InstructorAvailabilityType)
+    instructor_availabilities = graphene.List(InstructorAvailabilityType)
 
     @staticmethod
     def mutate(root, info, **validated_data):
@@ -295,6 +296,20 @@ class CreateInstructorAvailabilities(graphene.Mutation):
             instructor_availabilities=instructor_availabilities
         )
 
+
+class DeleteInstructorAvailabilities(graphene.Mutation):
+    class Arguments:
+        availabilities = graphene.List(graphene.ID, required=True)
+    
+    deleted = graphene.Boolean()
+
+    @staticmethod
+    def mutate(root, info, **validated_data):
+        price_rule_objs = InstructorAvailability.objects.filter(
+            id__in=validated_data['availabilities']
+            )
+        price_rule_objs.delete()
+        return DeleteInstructorAvailabilities(deleted=True)
 
 class CreateInstructorOOO(graphene.Mutation):
     class Arguments:
@@ -320,6 +335,22 @@ class CreateInstructorOOO(graphene.Mutation):
             description=description,
         )
         return CreateInstructorOOO(instructor_ooo=instructor_ooo)
+
+
+class DeleteInstructorOOO(graphene.Mutation):
+    class Arguments:
+        id = graphene.ID()
+
+    deleted = graphene.Boolean()
+
+    @staticmethod
+    def mutate(root, info, **validated_data):
+        try:
+            ooo_obj = InstructorOutOfOffice.objects.get(id=validated_data.get('id'))
+        except ObjectDoesNotExist:
+            raise GraphQLError('Failed delete mutation. InstructorOOO does not exist.')
+        ooo_obj.delete()
+        return DeleteInstructorOOO(deleted=True)
 
 
 class CreateAdmin(graphene.Mutation):
@@ -401,6 +432,22 @@ class CreateNote(graphene.Mutation):
         return CreateNote(note=note, created=created)
 
 
+class DeleteNote(graphene.Mutation):
+    class Arguments:
+        note_id = graphene.ID(name='id')
+
+    deleted = graphene.Boolean()
+
+    @staticmethod
+    def mutate(root, info, **validated_data):
+        try:
+            note_obj = Note.objects.get(id=validated_data.get('note_id'))
+        except ObjectDoesNotExist:
+            raise GraphQLError('Failed delete mutation. PriceRule does not exist.')
+        note_obj.delete()
+        return DeleteNote(deleted=True)
+
+
 class RequestPasswordReset(graphene.Mutation):
     class Arguments:
         email = graphene.String(required=True)
@@ -457,7 +504,12 @@ class Mutation(graphene.ObjectType):
 
     create_instructor_availability = CreateInstructorAvailability.Field()
     create_instructor_availabilities = CreateInstructorAvailabilities.Field()
+    delete_instructor_availabilities = DeleteInstructorAvailabilities.Field()
     create_instructor_ooo = CreateInstructorOOO.Field()
+
+    # delete endpoints
+    delete_instructor_ooo = DeleteInstructorOOO.Field()
+    delete_note = DeleteNote.Field()
 
     # Auth endpoints
     request_password_reset = RequestPasswordReset.Field()

@@ -1,11 +1,13 @@
 import arrow
 import calendar
-import graphene
 import pytz
 from datetime import datetime, timezone
 
+import graphene
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from graphene import Boolean, DateTime, Decimal, Field, ID, Int, String, Time
+from graphql import GraphQLError
 from graphql_jwt.decorators import staff_member_required
 
 from account.mutations import DayOfWeekEnum
@@ -217,6 +219,22 @@ class CreateCourseNote(graphene.Mutation):
         return CreateCourseNote(course_note=course_note, created=created)
 
 
+class DeleteCourseNote(graphene.Mutation):
+    class Arguments:
+        note_id = graphene.ID(name='id')
+
+    deleted = graphene.Boolean()
+
+    @staticmethod
+    def mutate(root, info, **validated_data):
+        try:
+            note_obj = CourseNote.objects.get(id=validated_data.get('note_id'))
+        except ObjectDoesNotExist:
+            raise GraphQLError('Failed delete mutation. CourseNote does not exist.')
+        note_obj.delete()
+        return DeleteCourseNote(deleted=True)
+
+
 class CreateEnrollment(graphene.Mutation):
     class Arguments:
         student_id = ID(name='student', required=True)
@@ -251,9 +269,28 @@ class CreateEnrollmentNote(graphene.Mutation):
         return CreateEnrollmentNote(enrollment_note=enrollment_note, created=created)
 
 
+class DeleteEnrollmentNote(graphene.Mutation):
+    class Arguments:
+        note_id = graphene.ID(name='id')
+
+    deleted = graphene.Boolean()
+
+    @staticmethod
+    def mutate(root, info, **validated_data):
+        try:
+            note_obj = EnrollmentNote.objects.get(id=validated_data.get('note_id'))
+        except ObjectDoesNotExist:
+            raise GraphQLError('Failed delete mutation. EnrollmentNote does not exist.')
+        note_obj.delete()
+        return DeleteEnrollmentNote(deleted=True)
+
+
 class Mutation(graphene.ObjectType):
     create_course = CreateCourse.Field()
     create_course_category = CreateCourseCategory.Field()
     create_course_note = CreateCourseNote.Field()
     create_enrollment = CreateEnrollment.Field()
     create_enrollment_note = CreateEnrollmentNote.Field()
+
+    delete_course_note = DeleteCourseNote.Field()
+    delete_enrollment_note = DeleteEnrollmentNote.Field()
