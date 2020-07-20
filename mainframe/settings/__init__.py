@@ -70,7 +70,6 @@ COMMON_APPS = (
     "rest_framework.authtoken",
     "rest_framework",
     "corsheaders",
-    "drf_yasg",
 )
 INSTALLED_APPS = API_APPS + COMMON_APPS
 
