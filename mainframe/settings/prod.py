@@ -10,6 +10,7 @@ ALLOWED_HOSTS = [
     "mainframe-dev.us-west-1.elasticbeanstalk.com",
     "api.omoulearning.net",
     "localhost",
+    "172.31.13.236",
 ]
 
 DATABASES = {
