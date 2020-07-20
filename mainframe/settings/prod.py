@@ -8,7 +8,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     "mainframe-dev.us-west-1.elasticbeanstalk.com",
-    "api.omoulearning.net",
+    "api.omoulearning.com",
     "localhost",
     "172.31.13.236",
 ]
