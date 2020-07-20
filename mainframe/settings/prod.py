@@ -10,10 +10,8 @@ DATABASE_PASSWORD = os.environ.get("DATABASE_PASSWORD")
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "ip-172-31-18-22.us-west-2.compute.internal",
+    "mainframe-dev.us-west-1.elasticbeanstalk.com",
     "api.omoulearning.net",
-    "loadbalancer-fd2287fde68b401a.elb.us-west-2.amazonaws.com",
-    "3.19.70.245",
     "localhost",
 ]
 
