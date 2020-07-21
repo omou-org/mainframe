@@ -9,6 +9,7 @@ from pricing.models import (
     PaymentMethodDiscount
 )
 from pricing.schema import (
+    AmountTypeEnum,
     PriceRuleType,
     DiscountType,
     MultiCourseDiscountType,
@@ -22,11 +23,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
 
-class AmountTypeEnum(graphene.Enum):
-    PERCENT = "percent"
-    FIXED = "fixed"
-
-
 class CreatePriceRule(graphene.Mutation):
     class Arguments:
         rule_id = graphene.ID(name='id')
@@ -35,7 +31,7 @@ class CreatePriceRule(graphene.Mutation):
         category_id = graphene.Int(name="category", required=True)
         academic_level = AcademicLevelEnum(required=True)
         course_type = CourseTypeEnum(required=True)
-    
+
     price_rule = graphene.Field(PriceRuleType)
     created = graphene.Boolean()
 
@@ -79,80 +75,100 @@ class DeletePriceRule(graphene.Mutation):
 
 class CreateDiscount(graphene.Mutation):
     class Arguments:
-        name = graphene.String(required=True)
-        description = graphene.String(required=True)
-        amount = graphene.Float(required=True)
-        amount_type = AmountTypeEnum(required=True)
-        active = graphene.Boolean(required=True)
+        discountId = graphene.ID()
+        name = graphene.String()
+        description = graphene.String()
+        amount = graphene.Float()
+        amount_type = AmountTypeEnum()
+        active = graphene.Boolean()
 
     discount = graphene.Field(DiscountType)
-    
+    created = graphene.Boolean()
+
     @staticmethod
     @staff_member_required
     def mutate(root, info, **validated_data):
-        discount = Discount.objects.create(**validated_data)
-        return CreateDiscount(discount=discount)
+        discount, created = Discount.objects.update_or_create(
+            id=validated_data.pop('discountId', None),
+            defaults=validated_data
+        )
+        return CreateDiscount(discount=discount, created=created)
 
 
 class CreateMultiCourseDiscount(graphene.Mutation):
     class Arguments:
-        name = graphene.String(required=True)
-        description = graphene.String(required=True)
-        amount = graphene.Float(required=True)
-        amount_type = AmountTypeEnum(required=True)
-        active = graphene.Boolean(required=True)
-        num_sessions = graphene.Int(required=True)
+        discountId = graphene.ID()
+        name = graphene.String()
+        description = graphene.String()
+        amount = graphene.Float()
+        amount_type = AmountTypeEnum()
+        active = graphene.Boolean()
+        num_sessions = graphene.Int()
 
     multi_course_discount = graphene.Field(MultiCourseDiscountType)
+    created = graphene.Boolean()
 
     @staticmethod
     @staff_member_required
     def mutate(root, info, **validated_data):
-        multi_course_discount = MultiCourseDiscount.objects.create(**validated_data)
-        return CreateMultiCourseDiscount(multi_course_discount=multi_course_discount)
+        multi_course_discount, created = MultiCourseDiscount.objects.update_or_create(
+            id=validated_data.pop('discountId', None),
+            defaults=validated_data
+        )
+        return CreateMultiCourseDiscount(multi_course_discount=multi_course_discount, created=created)
 
 
 class CreateDateRangeDiscount(graphene.Mutation):
     class Arguments:
-        name = graphene.String(required=True)
-        description = graphene.String(required=True)
-        amount = graphene.Float(required=True)
-        amount_type = AmountTypeEnum(required=True)
-        active = graphene.Boolean(required=True)
-        start_date = graphene.types.datetime.Date(required=True)
-        end_date = graphene.types.datetime.Date(required=True)
+        discountId = graphene.ID()
+        name = graphene.String()
+        description = graphene.String()
+        amount = graphene.Float()
+        amount_type = AmountTypeEnum()
+        active = graphene.Boolean()
+        start_date = graphene.types.datetime.Date()
+        end_date = graphene.types.datetime.Date()
 
     date_range_discount = graphene.Field(DateRangeDiscountType)
+    created = graphene.Boolean()
 
     @staticmethod
     @staff_member_required
     def mutate(root, info, **validated_data):
-        date_range_discount = DateRangeDiscount.objects.create(**validated_data)
-        return CreateDateRangeDiscount(date_range_discount=date_range_discount)
+        date_range_discount, created = DateRangeDiscount.objects.update_or_create(
+            id=validated_data.pop('discountId', None),
+            defaults=validated_data
+        )
+        return CreateDateRangeDiscount(date_range_discount=date_range_discount, created=created)
 
 
 class CreatePaymentMethodDiscount(graphene.Mutation):
     class Arguments:
-        name = graphene.String(required=True)
-        description = graphene.String(required=True)
-        amount = graphene.Float(required=True)
-        amount_type = AmountTypeEnum(required=True)
-        active = graphene.Boolean(required=True)
-        payment_method =graphene.String(required=True)
-    
+        discountId = graphene.ID()
+        name = graphene.String()
+        description = graphene.String()
+        amount = graphene.Float()
+        amount_type = AmountTypeEnum()
+        active = graphene.Boolean()
+        payment_method = graphene.String()
+
     payment_method_discount = graphene.Field(PaymentMethodDiscountType)
+    created = graphene.Boolean()
 
     @staticmethod
     @staff_member_required
     def mutate(root, info, **validated_data):
-        payment_method_discount = PaymentMethodDiscount.objects.create(**validated_data)
-        return CreatePaymentMethodDiscount(payment_method_discount=payment_method_discount)
+        payment_method_discount, created = PaymentMethodDiscount.objects.update_or_create(
+            id=validated_data.pop('discountId', None),
+            defaults=validated_data
+        )
+        return CreatePaymentMethodDiscount(payment_method_discount=payment_method_discount, created=created)
 
 
 class Mutation(graphene.ObjectType):
-    create_pricerule = CreatePriceRule.Field()
-    delete_pricerule = DeletePriceRule.Field()
+    create_price_rule = CreatePriceRule.Field()
+    delete_price_rule = DeletePriceRule.Field()
     create_discount = CreateDiscount.Field()
-    create_multicoursediscount = CreateMultiCourseDiscount.Field()
-    create_daterangediscount = CreateDateRangeDiscount.Field()
-    create_paymentmethoddiscount = CreatePaymentMethodDiscount.Field()
+    create_multi_course_discount = CreateMultiCourseDiscount.Field()
+    create_date_range_discount = CreateDateRangeDiscount.Field()
+    create_payment_method_discount = CreatePaymentMethodDiscount.Field()
