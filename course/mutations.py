@@ -248,6 +248,26 @@ class CreateEnrollment(graphene.Mutation):
         return CreateEnrollment(enrollment=enrollment)
 
 
+class EnrollmentInput(graphene.InputObjectType):
+    id = graphene.ID()
+    student_id = graphene.ID(name='student')
+    course_id = graphene.ID(name='course')
+
+
+class CreateEnrollments(graphene.Mutation):
+    class Arguments:
+        enrollments = graphene.List(EnrollmentInput, required=True)
+
+    enrollments = graphene.List(EnrollmentType)
+
+    @staticmethod
+    def mutate(root, info, **validated_data):
+        objs = [Enrollment(**data) for data in validated_data['enrollments']]
+        enrollments = Enrollment.objects.bulk_create(objs)
+        return CreateEnrollments(
+            enrollments=enrollments
+        )
+
 class CreateEnrollmentNote(graphene.Mutation):
     class Arguments:
         note_id = ID(name='id')
@@ -290,6 +310,7 @@ class Mutation(graphene.ObjectType):
     create_course_category = CreateCourseCategory.Field()
     create_course_note = CreateCourseNote.Field()
     create_enrollment = CreateEnrollment.Field()
+    create_enrollments = CreateEnrollments.Field()
     create_enrollment_note = CreateEnrollmentNote.Field()
 
     delete_course_note = DeleteCourseNote.Field()
