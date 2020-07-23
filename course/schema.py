@@ -62,10 +62,10 @@ class Query(object):
     enrollment = Field(EnrollmentType, enrollment_id=ID())
     enrollment_note = Field(EnrollmentNoteType, note_id=ID())
 
-    courses = List(CourseType, category_id=ID(), course_ids=List(ID))
+    courses = List(CourseType, category_id=ID(), course_ids=List(ID), instructor_id=ID())
     course_categories = List(CourseCategoryType)
     course_notes = List(CourseNoteType, course_id=ID(required=True))
-    enrollments = List(EnrollmentType, student_id=ID(), course_id=ID())
+    enrollments = List(EnrollmentType, student_id=ID(), course_id=ID(), student_ids=List(ID))
     enrollment_notes = List(EnrollmentNoteType, enrollment_id=ID(required=True))
 
     # custom methods
@@ -112,6 +112,7 @@ class Query(object):
     def resolve_courses(self, info, **kwargs):
         category_id = kwargs.get('category_id')
         course_ids = kwargs.get('course_ids')
+        instructor_id = kwargs.get('instructor_id')
         course_list = []
 
         if category_id:
@@ -120,6 +121,8 @@ class Query(object):
             for course_id in course_ids:
                 if Course.objects.filter(id=course_id).exists():
                     course_list.append(Course.objects.get(id=course_id))
+        if instructor_id:
+            return Course.objects.filter(instructor_id=instructor_id)
 
         return course_list or Course.objects.all()
 
@@ -137,6 +140,8 @@ class Query(object):
     def resolve_enrollments(self, info, **kwargs):
         student_id = kwargs.get('student_id')
         course_id = kwargs.get('course_id')
+        student_ids = kwargs.get('student_ids')
+        enrollment_list = []
 
         queryset = Enrollment.objects
 
@@ -144,7 +149,11 @@ class Query(object):
             queryset = queryset.filter(student=student_id)
         if course_id:
             queryset = queryset.filter(course=course_id)
-        return queryset.all()
+        if student_ids:
+            for student_id in student_ids:
+                if Enrollment.objects.filter(student_id=student_id).exists():
+                    enrollment_list.append(Enrollment.objects.get(student_id=student_id))
+        return enrollment_list or queryset.all()
 
     @login_required
     def resolve_enrollment_notes(self, info, **kwargs):

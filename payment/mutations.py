@@ -18,9 +18,8 @@ class EnrollmentQuote(graphene.InputObjectType):
 class CreatePayment(graphene.Mutation):
     class Arguments:
         method = String(required=True)
-        disabled_discounts = List(Int)
+        disabled_discounts = List(ID)
         price_adjustment = Float()
-        base_amount = Float()
         classes = List(ClassQuote)
         tutoring = List(TutoringQuote)
         parent = ID(name='parent', required=True)
