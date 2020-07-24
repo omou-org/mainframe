@@ -184,7 +184,7 @@ class Query(object):
 
     priceQuote = Field(PriceQuoteType,
                     method=String(required=True),
-                    disabled_discounts=List(Int),
+                    disabled_discounts=List(ID),
                     price_adjustment=Float(),
                     classes=List(ClassQuote),
                     tutoring=List(TutoringQuote),

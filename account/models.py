@@ -82,7 +82,7 @@ class Note(models.Model):
 class School(models.Model):
     name = models.CharField(max_length=100)
     zipcode = models.CharField(max_length=10)
-    district = models.CharField(max_length=100, blank=True, null=True)
+    district = models.CharField(max_length=100, blank=True)
 
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)
