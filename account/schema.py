@@ -266,7 +266,7 @@ class Query(object):
         return Instructor.objects.all()
 
     @login_required
-    def resolve_instructor_out_of_office(self, info, **kwargs):
+    def resolve_instructor_ooo(self, info, **kwargs):
         instructor_id = kwargs.get('instructor_id')
 
         return InstructorOutOfOffice.objects.filter(instructor=instructor_id)
