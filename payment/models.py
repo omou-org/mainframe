@@ -66,3 +66,9 @@ class Registration(models.Model):
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+# Saves parent's enrollment preferences
+class RegistrationCart(models.Model):
+    parent = models.ForeignKey(Parent, on_delete=models.CASCADE)
+    registration_preferences = models.TextField()

@@ -1,28 +1,27 @@
+import os
+
 # ===============
 # Django Settings
 # ===============
 
-# much secure
-DATABASE_PASSWORD = "a22jAxkqPfv6"
-
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
-    "ip-172-31-18-22.us-west-2.compute.internal",
-    "api.omoulearning.net",
-    "loadbalancer-fd2287fde68b401a.elb.us-west-2.amazonaws.com",
-    "3.19.70.245",
+    "mainframe-dev.us-west-1.elasticbeanstalk.com",
+    "api.omoulearning.com",
     "localhost",
+    "172.31.13.236",
 ]
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "mainframe",
-        "USER": "postgres",
-        "PASSWORD": DATABASE_PASSWORD,
-        "HOST": "mainframe.crjrqgmavbsy.us-west-2.rds.amazonaws.com",
-        "PORT": "5432",
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.environ['RDS_DB_NAME'],
+        'USER': os.environ['RDS_USERNAME'],
+        'PASSWORD': os.environ['RDS_PASSWORD'],
+        'HOST': os.environ['RDS_HOSTNAME'],
+        'PORT': os.environ['RDS_PORT'],
     },
 }
-SECRET_KEY = "%wd5++=an&!tao#t)sc%cp@x3k6wmsbcrtsw7st*83908z255+"
+SECRET_KEY = os.environ.get("SECRET_KEY")
+SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY")

@@ -274,15 +274,7 @@ class Query(object):
     @login_required
     def resolve_instructor_availability(self, info, **kwargs):
         instructor_id = kwargs.get('instructor_id')
-
-        return [
-            InstructorAvailabilityType(
-                model = availability,
-                start_datetime = availability.start_time,
-                end_datetime = availability.end_time
-            )
-            for availability
-            in InstructorAvailability.objects.filter(instructor=instructor_id)]
+        return InstructorAvailability.objects.filter(instructor=instructor_id)
 
     def resolve_user_infos(self, info, user_ids):
         user_list = []

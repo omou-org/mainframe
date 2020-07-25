@@ -71,7 +71,6 @@ COMMON_APPS = (
     "rest_framework.authtoken",
     "rest_framework",
     "corsheaders",
-    "drf_yasg",
 )
 INSTALLED_APPS = API_APPS + COMMON_APPS
 
@@ -130,9 +129,6 @@ AUTH_PASSWORD_VALIDATORS = [
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.TokenAuthentication",
-    ],
-    "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.IsAuthenticated",
     ],
     "TEST_REQUEST_DEFAULT_FORMAT": "json",
     "UNAUTHENTICATED_USER": None,
