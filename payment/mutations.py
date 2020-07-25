@@ -54,7 +54,7 @@ class CreatePayment(graphene.Mutation):
 class CreateRegistrationCart(graphene.Mutation):
     class Arguments:
         parent = ID(required=True)
-        preferences = String()
+        registration_preferences = String()
     
     registrationCart = Field(CartType)
 
@@ -66,7 +66,7 @@ class CreateRegistrationCart(graphene.Mutation):
             raise GraphQLError('Failed mutation. Parent does not exist.')
         validated_data.update({"parent":parent_queryset[0]})    
 
-        cart_queryset = RegistrationCart.objects.filter(parent = parent_queryset[0])    
+        cart_queryset = RegistrationCart.objects.filter(parent = parent_queryset[0])   
         cart, created = RegistrationCart.objects.update_or_create(
             id=cart_queryset[0].id if cart_queryset.count() > 0 else None,
             defaults=validated_data
