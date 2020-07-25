@@ -71,4 +71,4 @@ class Registration(models.Model):
 # Saves parent's enrollment preferences
 class RegistrationCart(models.Model):
     parent = models.ForeignKey(Parent, on_delete=models.CASCADE)
-    preferences = models.TextField()
+    registration_preferences = models.TextField()
