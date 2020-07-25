@@ -161,7 +161,7 @@ CORS_ORIGIN_WHITELIST = (
     "http://localhost:3000",
     "https://www.omoulearning.com",
     "https://omoulearning.com",
-    "https://development.omoulearning.com"
+    "https://development.omoulearning.com",
     "https://www.development.omoulearning.com"
 )
 
