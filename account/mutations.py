@@ -99,8 +99,8 @@ class CreateStudent(graphene.Mutation):
         # Student fields
         grade = graphene.Int()
         school = graphene.Int()
-        primary_parent = graphene.ID()
-        secondary_parent = graphene.ID()
+        primary_parent_id = graphene.ID(name='primary_parent')
+        secondary_parent_id = graphene.ID(name='secondary_parent')
 
     student = graphene.Field(StudentType)
     created = graphene.Boolean()
@@ -310,6 +310,7 @@ class DeleteInstructorAvailabilities(graphene.Mutation):
             )
         price_rule_objs.delete()
         return DeleteInstructorAvailabilities(deleted=True)
+
 
 class CreateInstructorOOO(graphene.Mutation):
     class Arguments:
