@@ -15,8 +15,19 @@ from scheduler.models import Session
 
 
 class CourseType(DjangoObjectType):
+    academic_level_pretty = String()
     class Meta:
         model = Course
+    
+    def resolve_academic_level_pretty(self, info):
+        level_to_pretty = {
+            "elementary_lvl": "elementary school",
+            "middle_lvl": "middle school",
+            "high_lvl": "high school",
+            "college_lvl": "college"
+        }
+        academic_name = level_to_pretty.get(self.academic_level)
+        return academic_name
 
 
 class CourseCategoryType(DjangoObjectType):
