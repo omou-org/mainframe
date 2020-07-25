@@ -7,6 +7,7 @@ from sendgrid.helpers.mail import Mail
 from twilio.rest import Client
 
 from account.models import Parent
+from course.models import Course
 
 sg = SendGridAPIClient(api_key=settings.SENDGRID_API_KEY)
 twilio = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
@@ -96,3 +97,16 @@ class ParentNotificationSettings(models.Model):
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+class Annoucement(models.Model):
+    timestamp = models.DateTimeField(auto_now_add=True)
+    subject = models.TextField(blank=True)
+    body = models.TextField()
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.PROTECT
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+    )    

@@ -1,7 +1,7 @@
 import graphene
 
-from comms.models import ParentNotificationSettings
-from comms.schema import ParentNotificationSettingsType
+from comms.models import ParentNotificationSettings, Annoucement
+from comms.schema import ParentNotificationSettingsType, AnnoucementType
 
 from graphene import Boolean, DateTime, ID, String
 from graphql_jwt.decorators import staff_member_required
@@ -27,6 +27,45 @@ class MutateParentNotificationSettings(graphene.Mutation):
         )
         return MutateParentNotificationSettings(settings=settings)
 
+class CreateAnnoucement(graphene.Mutation):
+    class Arguments:
+        annoucement_id = ID(name='id')
+        subject = String()
+        body = String()
+        course_id = ID(name='course_id')
+        user_id = graphene.ID(name='user_id')       
+
+
+    annoucement = graphene.Field(AnnoucementType)
+    created = Boolean()
+
+    @staticmethod
+    def mutate(root, info, **validated_data):
+        annoucement, created = Annoucement.objects.update_or_create(
+            id=validated_data.pop('annoucement_id', None),
+            defaults=validated_data
+        )
+        return CreateAnnoucement(annoucement=annoucement, created=created)
+
+
+class DeleteAnnoucement(graphene.Mutation):
+    class Arguments:
+        annoucement_id = graphene.ID(name='id')
+
+    deleted = graphene.Boolean()
+
+    @staticmethod
+    def mutate(root, info, **validated_data):
+        try:
+            annoucement_obj = Annoucement.objects.get(id=validated_data.get('annoucement_id'))
+        except ObjectDoesNotExist:
+            raise GraphQLError('Failed delete mutation. Annoucement does not exist.')
+        annoucement_obj.delete()
+        return DeleteAnnoucement(deleted=True)
+
 
 class Mutation(graphene.ObjectType):
+    create_annoucement = CreateAnnoucement.Field()
     create_parent_notification_setting = MutateParentNotificationSettings.Field()
+
+    delete_annoucement = DeleteAnnoucement.Field()
