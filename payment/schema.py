@@ -7,6 +7,7 @@ from payment.models import (
     Payment,
     Deduction,
     Registration,
+    RegistrationCart
 )
 
 
@@ -25,10 +26,16 @@ class RegistrationType(DjangoObjectType):
         model = Registration
 
 
+class CartType(DjangoObjectType):
+    class Meta:
+        model = RegistrationCart
+
+
 class Query(object):
     payment = Field(PaymentType, payment_id=ID())
     deduction = Field(DeductionType, deduction_id=ID())
     registration = Field(RegistrationType, registration_id=ID())
+    registration_cart = Field(CartType, cart_id=ID(), parent_id=ID())
 
     payments = List(PaymentType, parent_id=ID())
     deductions = List(DeductionType, payment_id=ID())
@@ -57,6 +64,18 @@ class Query(object):
 
         if registration_id:
             return Registration.objects.get(id=registration_id)
+
+        return None
+    
+    def resolve_registration_cart(self, info, **kwargs):
+        cart_id = kwargs.get('cart_id')
+        parent_id = kwargs.get('parent_id')
+
+        if cart_id:
+            return RegistrationCart.objects.get(id=cart_id)
+        
+        if parent_id:
+            return RegistrationCart.objects.get(parent=parent_id)
 
         return None
 
