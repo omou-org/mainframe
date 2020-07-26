@@ -138,7 +138,7 @@ class CreateMultiCourseDiscount(graphene.Mutation):
 
         LogEntry.objects.log_action(
             user_id=info.context.user.id,
-            content_type_id=ContentType.objects.get_for_model(MultiCourseDiscount).pk,
+            content_type_id=ContentType.objects.get_for_model(Discount).pk,
             object_id=multi_course_discount.id,
             object_repr=multi_course_discount.name,
             action_flag=ADDITION
@@ -165,7 +165,7 @@ class CreateDateRangeDiscount(graphene.Mutation):
 
         LogEntry.objects.log_action(
             user_id=info.context.user.id,
-            content_type_id=ContentType.objects.get_for_model(DateRangeDiscount).pk,
+            content_type_id=ContentType.objects.get_for_model(Discount).pk,
             object_id=date_range_discount.id,
             object_repr=date_range_discount.name,
             action_flag=ADDITION
@@ -191,7 +191,7 @@ class CreatePaymentMethodDiscount(graphene.Mutation):
 
         LogEntry.objects.log_action(
             user_id=info.context.user.id,
-            content_type_id=ContentType.objects.get_for_model(PaymentMethodDiscount).pk,
+            content_type_id=ContentType.objects.get_for_model(Discount).pk,
             object_id=payment_method_discount.id,
             object_repr=payment_method_discount.name,
             action_flag=ADDITION

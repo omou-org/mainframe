@@ -122,7 +122,7 @@ class CreateStudent(graphene.Mutation):
                 LogEntry.objects.log_action(
                     user_id=info.context.user.id,
                     content_type_id=ContentType.objects.get_for_model(Student).pk,
-                    object_id=student.id,
+                    object_id=student.user.id,
                     object_repr=f"Student: {student.user.first_name} {student.user.last_name}",
                     action_flag=CHANGE
                 )
@@ -147,7 +147,7 @@ class CreateStudent(graphene.Mutation):
             LogEntry.objects.log_action(
                 user_id=info.context.user.id,
                 content_type_id=ContentType.objects.get_for_model(Student).pk,
-                object_id=student.id,
+                object_id=student.user.id,
                 object_repr=f"Student: {student.user.first_name} {student.user.last_name}",
                 action_flag=ADDITION
             )
@@ -188,7 +188,7 @@ class CreateParent(graphene.Mutation):
                 LogEntry.objects.log_action(
                     user_id=info.context.user.id,
                     content_type_id=ContentType.objects.get_for_model(Parent).pk,
-                    object_id=parent.id,
+                    object_id=parent.user.id,
                     object_repr=f"Parent: {parent.user.first_name} {parent.user.last_name}",
                     action_flag=CHANGE
                 )
@@ -215,7 +215,7 @@ class CreateParent(graphene.Mutation):
             LogEntry.objects.log_action(
                 user_id=info.context.user.id,
                 content_type_id=ContentType.objects.get_for_model(Parent).pk,
-                object_id=parent.id,
+                object_id=parent.user.id,
                 object_repr=f"Parent: {parent.user.first_name} {parent.user.last_name}",
                 action_flag=ADDITION
             )
@@ -265,7 +265,7 @@ class CreateInstructor(graphene.Mutation):
                 LogEntry.objects.log_action(
                     user_id=info.context.user.id,
                     content_type_id=ContentType.objects.get_for_model(Instructor).pk,
-                    object_id=instructor.id,
+                    object_id=instructor.user.id,
                     object_repr=f"Instructor: {instructor.user.first_name} {instructor.user.last_name}",
                     action_flag=CHANGE
                 )
@@ -294,7 +294,7 @@ class CreateInstructor(graphene.Mutation):
             LogEntry.objects.log_action(
                 user_id=info.context.user.id,
                 content_type_id=ContentType.objects.get_for_model(Instructor).pk,
-                object_id=instructor.id,
+                object_id=instructor.user.id,
                 object_repr=f"Instructor: {instructor.user.first_name} {instructor.user.last_name}",
                 action_flag=ADDITION
             )
