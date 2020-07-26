@@ -6,12 +6,12 @@ from graphql_jwt.decorators import login_required
 
 from comms.models import (
     ParentNotificationSettings,
-    Annoucement
+    Announcement
 )
 
-class AnnoucementType(DjangoObjectType):
+class AnnouncementType(DjangoObjectType):
     class Meta:
-        model = Annoucement
+        model = Announcement
 
 class ParentNotificationSettingsType(DjangoObjectType):
     class Meta:
@@ -19,25 +19,25 @@ class ParentNotificationSettingsType(DjangoObjectType):
 
 
 class Query(object):
-    annoucement = Field(AnnoucementType, annoucement_id=ID())
+    announcement = Field(AnnouncementType, announcement_id=ID())
     parent_notification_settings = Field(ParentNotificationSettingsType, parent_id=ID(required=True))
 
-    annoucements = List(AnnoucementType, course_id=ID(required=True))
+    announcements = List(AnnouncementType, course_id=ID(required=True))
 
     @login_required
-    def resolve_annoucement(self, info, **kwargs):
-        annoucement_id = kwargs.get('annoucement_id')
+    def resolve_announcement(self, info, **kwargs):
+        announcement_id = kwargs.get('announcement_id')
 
-        if annoucement_id:
-            return Annoucement.objects.get(id=annoucement_id)
+        if announcement_id:
+            return Announcement.objects.get(id=announcement_id)
 
         return None
 
     @login_required
-    def resolve_annoucements(self, info, **kwargs):
+    def resolve_announcements(self, info, **kwargs):
         course_id = kwargs.get('course_id')
 
-        return Annoucement.objects.filter(course_id=course_id)    
+        return Announcement.objects.filter(course_id=course_id)    
 
     # @login_required
     # def resolve_annoucements(self, info, **kwargs):

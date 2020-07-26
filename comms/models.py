@@ -99,7 +99,7 @@ class ParentNotificationSettings(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-class Annoucement(models.Model):
+class Announcement(models.Model):
     subject = models.TextField()
     body = models.TextField()
     course = models.ForeignKey(

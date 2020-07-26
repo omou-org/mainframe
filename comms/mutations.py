@@ -1,7 +1,7 @@
 import graphene
 
-from comms.models import ParentNotificationSettings, Annoucement
-from comms.schema import ParentNotificationSettingsType, AnnoucementType
+from comms.models import ParentNotificationSettings, Announcement
+from comms.schema import ParentNotificationSettingsType, AnnouncementType
 from comms.templates import ANNOUNCEMENT_EMAIL_TEMPLATE
 from course.models import Course
 
@@ -30,9 +30,9 @@ class MutateParentNotificationSettings(graphene.Mutation):
         return MutateParentNotificationSettings(settings=settings)
 
 
-class CreateAnnoucement(graphene.Mutation):
+class CreateAnnouncement(graphene.Mutation):
     class Arguments:
-        annoucement_id = ID(name='id')
+        announcement_id = ID(name='id')
         subject = String()
         body = String()
         course_id = ID(name='course')
@@ -40,15 +40,15 @@ class CreateAnnoucement(graphene.Mutation):
         should_email = Boolean()
         should_sms = Boolean()       
 
-    annoucement = graphene.Field(AnnoucementType)
+    announcement = graphene.Field(AnnouncementType)
     created = Boolean()
 
     @staticmethod
     def mutate(root, info, **validated_data):
         should_email = validated_data.pop('should_email', False)
         should_sms = validated_data.pop('should_sms', False)
-        annoucement, created = Annoucement.objects.update_or_create(
-            id=validated_data.pop('annoucement_id', None),
+        announcement, created = Announcement.objects.update_or_create(
+            id=validated_data.pop('announcement_id', None),
             defaults=validated_data
         )
         if should_email:
@@ -63,27 +63,27 @@ class CreateAnnoucement(graphene.Mutation):
                 data={'username': user.first_name, 'token': token}
             )
             email.save()
-        return CreateAnnoucement(annoucement=annoucement, created=created)
+        return CreateAnnoucement(announcement=announcement, created=created)
 
 
-class DeleteAnnoucement(graphene.Mutation):
+class DeleteAnnouncement(graphene.Mutation):
     class Arguments:
-        annoucement_id = graphene.ID(name='id')
+        announcement_id = graphene.ID(name='id')
 
     deleted = graphene.Boolean()
 
     @staticmethod
     def mutate(root, info, **validated_data):
         try:
-            annoucement_obj = Annoucement.objects.get(id=validated_data.get('annoucement_id'))
+            announcement_obj = Announcement.objects.get(id=validated_data.get('announcement_id'))
         except ObjectDoesNotExist:
-            raise GraphQLError('Failed delete mutation. Annoucement does not exist.')
+            raise GraphQLError('Failed delete mutation. Announcement does not exist.')
         annoucement_obj.delete()
-        return DeleteAnnoucement(deleted=True)
+        return DeleteAnnouncement(deleted=True)
 
 
 class Mutation(graphene.ObjectType):
-    create_annoucement = CreateAnnoucement.Field()
+    create_announcement = CreateAnnouncement.Field()
     create_parent_notification_setting = MutateParentNotificationSettings.Field()
 
-    delete_annoucement = DeleteAnnoucement.Field()
+    delete_announcement = DeleteAnnouncement.Field()
