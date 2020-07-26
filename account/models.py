@@ -68,7 +68,7 @@ class Note(models.Model):
     title = models.TextField(blank=True)
     body = models.TextField()
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        get_user_model(),
         on_delete=models.PROTECT,
     )
     important = models.BooleanField(default=False)

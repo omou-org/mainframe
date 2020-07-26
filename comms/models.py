@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.db import models
@@ -99,14 +100,17 @@ class ParentNotificationSettings(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 class Annoucement(models.Model):
-    timestamp = models.DateTimeField(auto_now_add=True)
-    subject = models.TextField(blank=True)
+    subject = models.TextField()
     body = models.TextField()
     course = models.ForeignKey(
         Course,
         on_delete=models.PROTECT
     )
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+    poster = models.ForeignKey(
+        get_user_model(),
         on_delete=models.PROTECT,
     )    
+
+    # Timestamps
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
