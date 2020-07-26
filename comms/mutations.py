@@ -32,8 +32,8 @@ class CreateAnnoucement(graphene.Mutation):
         annoucement_id = ID(name='id')
         subject = String()
         body = String()
-        course_id = ID(name='course_id')
-        user_id = graphene.ID(name='user_id')       
+        course_id = graphene.ID(name='courseId')
+        user_id = graphene.ID(name='userId')       
 
 
     annoucement = graphene.Field(AnnoucementType)
