@@ -36,6 +36,9 @@ from comms.templates import (
     RESET_PASSWORD_TEMPLATE,
     INVITE_INSTRUCTOR_TEMPLATE,
     INVITE_STUDENT_TEMPLATE,
+    WELCOME_INSTRUCTOR_TEMPLATE,
+    WELCOME_PARENT_TEMPLATE,
+    WELCOME_STUDENT_TEMPLATE,
 )
 
 
@@ -190,6 +193,16 @@ class CreateParent(graphene.Mutation):
                 **validated_data
             )
             ParentNotificationSettings.objects.create(parent=parent)
+
+            Email.objects.create(
+                template_id=WELCOME_PARENT_TEMPLATE,
+                recipient=parent.user.email,
+                data={
+                    'parent_name': parent.user.first_name,
+                    'business_name': settings.BUSINESS_NAME,
+                }
+            )
+
             return CreateParent(parent=parent, created=True)
 
 
@@ -470,12 +483,11 @@ class RequestPasswordReset(graphene.Mutation):
 
         token = jwt.encode({'email': email}, settings.SECRET_KEY, algorithm='HS256').decode('utf-8')
 
-        email = Email(
+        email = Email.objects.create(
             template_id=RESET_PASSWORD_TEMPLATE,
             recipient=email,
             data={'username': user.first_name, 'token': token}
         )
-        email.save()
 
         return RequestPasswordReset(status=email.status, error_message=email.response_body)
 
@@ -484,11 +496,13 @@ class ResetPassword(graphene.Mutation):
     class Arguments:
         token = graphene.String(required=True)
         new_password = graphene.String(required=True)
+        set_student = graphene.Boolean()
+        set_instructor = graphene.Boolean()
 
     status = graphene.String()
 
     @staticmethod
-    def mutate(root, info, token, new_password):
+    def mutate(root, info, token, new_password, set_student=False, set_instructor=False):
         try:
             email = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])['email']
             user = User.objects.get(email=email)
@@ -496,6 +510,27 @@ class ResetPassword(graphene.Mutation):
             user.save()
         except Exception:
             return ResetPassword(status='failed')
+
+        if set_instructor:
+            instructor = Instructor.objects.get(user__email=email)
+            Email.objects.create(
+                template_id=WELCOME_INSTRUCTOR_TEMPLATE,
+                recipient=email,
+                data={
+                    'instructor_name': instructor.user.first_name,
+                    'business_name': settings.BUSINESS_NAME,
+                }
+            )
+        elif set_student:
+            student = Student.objects.get(user__email=email)
+            Email.objects.create(
+                template_id=WELCOME_STUDENT_TEMPLATE,
+                recipient=email,
+                data={
+                    'student_name': student.user.first_name,
+                    'business_name': settings.BUSINESS_NAME,
+                }
+            )
 
         return ResetPassword(status='success')
 
@@ -516,7 +551,7 @@ class InviteStudent(graphene.Mutation):
 
         token = jwt.encode({'email': email}, settings.SECRET_KEY, algorithm='HS256').decode('utf-8')
 
-        invite_email = Email(
+        invite_email = Email.objects.create(
             template_id=INVITE_STUDENT_TEMPLATE,
             recipient=email,
             data={
@@ -526,7 +561,6 @@ class InviteStudent(graphene.Mutation):
                 'business_name': 'Stark Industries'
             }
         )
-        invite_email.save()
 
         return InviteStudent(status=invite_email.status, error_message=invite_email.response_body)
 
@@ -547,7 +581,7 @@ class InviteInstructor(graphene.Mutation):
 
         token = jwt.encode({'email': email}, settings.SECRET_KEY, algorithm='HS256').decode('utf-8')
 
-        invite_email = Email(
+        invite_email = Email.objects.create(
             template_id=INVITE_INSTRUCTOR_TEMPLATE,
             recipient=email,
             data={
@@ -556,7 +590,6 @@ class InviteInstructor(graphene.Mutation):
                 'business_name': 'Stark Industries'
             }
         )
-        invite_email.save()
 
         return InviteInstructor(status=invite_email.status, error_message=invite_email.response_body)
 
