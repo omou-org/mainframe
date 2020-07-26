@@ -2,7 +2,7 @@ import arrow
 
 from django.core.management.base import BaseCommand, CommandError
 
-from comms.models import Email
+from comms.models import Email, InstructorNotificationSettings, ParentNotificationSettings
 from comms.templates import SESSION_REMINDER_TEMPLATE
 from scheduler.models import Session
 
@@ -20,12 +20,12 @@ class Command(BaseCommand):
         threshold = arrow.now().shift(hours=8).datetime
         sessions = Session.objects.filter(
             start_datetime__lte=threshold,
-            sent_reminder=False
+            start_datetime__gt=arrow.now().datetime,
+            sent_upcoming_reminder=False
         )
 
         for session in sessions:
-            # instructor reminder
-            instructor_data = {
+            email_data = {
                 "instructor_name": session.instructor.user.first_name,
                 "sessions": [
                     {
@@ -36,12 +36,26 @@ class Command(BaseCommand):
                     }
                 ]
             }
-            email = Email(
-                template_id=SESSION_REMINDER_TEMPLATE,
-                recipient=session.instructor.user.email,
-                data=instructor_data
-            )
-            email.save()
-            session.sent_reminder = True
+
+            # instructor reminder
+            instructor_settings = InstructorNotificationSettings.objects.get(instructor=session.instructor)
+            if instructor_settings.session_reminder_email:
+                Email.objects.create(
+                    template_id=SESSION_REMINDER_TEMPLATE,
+                    recipient=session.instructor.user.email,
+                    data=email_data
+                )
+
+            # parent reminders
+            for enrollment in session.course.enrollment_set:
+                primary_parent = enrollment.student.primary_parent
+                parent_settings = ParentNotificationSettings.objects.get(parent=primary_parent)
+                if parent_settings.session_reminder_email:
+                    Email.objects.create(
+                        template_id=SESSION_REMINDER_TEMPLATE,
+                        recipient=primary_parent.user.email,
+                        data=email_data
+                    )
+
+            session.sent_upcoming_reminder = True
             session.save()
-            print(email.__dict__)
