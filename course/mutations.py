@@ -268,6 +268,7 @@ class CreateEnrollments(graphene.Mutation):
             enrollments=enrollments
         )
 
+
 class CreateEnrollmentNote(graphene.Mutation):
     class Arguments:
         note_id = ID(name='id')
