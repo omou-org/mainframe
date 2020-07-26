@@ -37,7 +37,7 @@ class Query(object):
     registration = Field(RegistrationType, registration_id=ID())
     registration_cart = Field(CartType, cart_id=ID(), parent_id=ID())
 
-    payments = List(PaymentType, parent_id=ID())
+    payments = List(PaymentType, parent_id=ID(), start_date=String(), end_date=String())
     deductions = List(DeductionType, payment_id=ID())
     registrations = List(RegistrationType, payment_id=ID())
 
@@ -81,9 +81,15 @@ class Query(object):
 
     def resolve_payments(self, info, **kwargs):
         parent_id = kwargs.get('parent_id')
+        start_date = kwargs.get('start_date')
+        end_date = kwargs.get('end_date')
 
         if parent_id:
             return Payment.objects.filter(parent=parent_id)
+        # if start_date is not None and end_date is not None:
+        #     return Payment.objects.filter(
+        #         created_at
+        #     )
         return Payment.objects.all()
 
     def resolve_deductions(self, info, **kwargs):
