@@ -29,7 +29,7 @@ class MutateParentNotificationSettings(graphene.Mutation):
 
 class MutateInstructorNotificationSettings(graphene.Mutation):
     class Arguments:
-        instructor_id = ID(name="parent", required=True)
+        instructor_id = ID(name="instructor", required=True)
         session_reminder_email = Boolean()
         session_reminder_sms = Boolean()
         schedule_updates_sms = Boolean()

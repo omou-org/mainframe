@@ -495,6 +495,32 @@ class ResetPassword(graphene.Mutation):
         return ResetPassword(status='success')
 
 
+class InviteStudent(graphene.Mutation):
+    class Arguments:
+        email = graphene.String(required=True)
+
+    status = graphene.String()
+    error_message = graphene.String()
+
+    @staticmethod
+    def mutate(root, info, email):
+        try:
+            user = User.objects.get(email=email)
+        except Exception:
+            return InviteStudent(status='failed', error_message='No such user exists.')
+
+        token = jwt.encode({'email': email}, settings.SECRET_KEY, algorithm='HS256').decode('utf-8')
+
+        email = Email(
+            template_id=RESET_PASSWORD_TEMPLATE,
+            recipient=email,
+            data={'username': user.first_name, 'token': token}
+        )
+        email.save()
+
+        return InviteStudent(status=email.status, error_message=email.response_body)
+
+
 class Mutation(graphene.ObjectType):
     create_school = CreateSchool.Field()
     create_student = CreateStudent.Field()
@@ -515,3 +541,6 @@ class Mutation(graphene.ObjectType):
     # Auth endpoints
     request_password_reset = RequestPasswordReset.Field()
     reset_password = ResetPassword.Field()
+
+    # invite endpoints
+    invite_student = InviteStudent.Field()
