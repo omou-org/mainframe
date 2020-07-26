@@ -1,5 +1,8 @@
-from graphene import Field, Int, ID, List
+from graphene import Field, ID, List, String
 from graphene_django.types import DjangoObjectType
+
+from datetime import datetime
+import arrow
 
 from course.schema import EnrollmentType
 from course.models import Course, Enrollment
@@ -85,11 +88,18 @@ class Query(object):
         end_date = kwargs.get('end_date')
 
         if parent_id:
+            if start_date and end_date:
+                return Payment.objects.filter(
+                    created_at__gt=arrow.get(start_date).datetime,
+                    created_at__lt=arrow.get(end_date).datetime,
+                    parent=parent_id
+                )
             return Payment.objects.filter(parent=parent_id)
-        # if start_date is not None and end_date is not None:
-        #     return Payment.objects.filter(
-        #         created_at
-        #     )
+        if start_date and end_date:
+            return Payment.objects.filter(
+                created_at__gt=datetime.date(start_date),
+                created_at__lt=datetime.date(end_date)
+            )
         return Payment.objects.all()
 
     def resolve_deductions(self, info, **kwargs):
