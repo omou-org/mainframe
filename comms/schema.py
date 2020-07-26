@@ -6,7 +6,8 @@ from graphql_jwt.decorators import login_required
 
 from comms.models import (
     ParentNotificationSettings,
-    Announcement
+    InstructorNotificationSettings,
+    Announcement,
 )
 
 class AnnouncementType(DjangoObjectType):
@@ -18,9 +19,15 @@ class ParentNotificationSettingsType(DjangoObjectType):
         model = ParentNotificationSettings
 
 
+class InstructorNotificationSettingsType(DjangoObjectType):
+    class Meta:
+        model = InstructorNotificationSettings
+
+
 class Query(object):
     announcement = Field(AnnouncementType, announcement_id=ID())
     parent_notification_settings = Field(ParentNotificationSettingsType, parent_id=ID(required=True))
+    instructor_notification_settings = Field(InstructorNotificationSettingsType, instructor_id=ID(required=True))
 
     announcements = List(AnnouncementType, course_id=ID(required=True))
 
@@ -47,3 +54,6 @@ class Query(object):
         
     def resolve_parent_notification_settings(self, info, parent_id):
         return ParentNotificationSettings.objects.get(parent=parent_id)
+
+    def resolve_instructor_notification_settings(self, info, instructor_id):
+        return InstructorNotificationSettings.objects.get(instructor=instructor_id)

@@ -7,8 +7,9 @@ from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 from twilio.rest import Client
 
-from account.models import Parent
+from account.models import Parent, Instructor
 from course.models import Course
+
 
 sg = SendGridAPIClient(api_key=settings.SENDGRID_API_KEY)
 twilio = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
@@ -92,6 +93,21 @@ class ParentNotificationSettings(models.Model):
     session_reminder_sms = models.BooleanField(default=False)
     payment_reminder_email = models.BooleanField(default=True)
     payment_reminder_sms = models.BooleanField(default=False)
+    schedule_updates_sms = models.BooleanField(default=False)
+
+    # Timestamps
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class InstructorNotificationSettings(models.Model):
+    instructor = models.OneToOneField(
+        Instructor,
+        on_delete=models.PROTECT,
+        primary_key=True
+    )
+    session_reminder_email = models.BooleanField(default=True)
+    session_reminder_sms = models.BooleanField(default=False)
     schedule_updates_sms = models.BooleanField(default=False)
     course_requests_sms = models.BooleanField(default=False)
 

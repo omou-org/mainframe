@@ -32,7 +32,14 @@ from account.schema import (
     InstructorOutOfOfficeType,
 )
 from comms.models import Email, ParentNotificationSettings
-from comms.templates import RESET_PASSWORD_TEMPLATE
+from comms.templates import (
+    RESET_PASSWORD_TEMPLATE,
+    INVITE_INSTRUCTOR_TEMPLATE,
+    INVITE_STUDENT_TEMPLATE,
+    WELCOME_INSTRUCTOR_TEMPLATE,
+    WELCOME_PARENT_TEMPLATE,
+    WELCOME_STUDENT_TEMPLATE,
+)
 
 
 class GenderEnum(graphene.Enum):
@@ -78,8 +85,8 @@ class CreateSchool(graphene.Mutation):
 
 class UserInput(graphene.InputObjectType):
     id = graphene.ID()
-    first_name = graphene.String(required=True)
-    last_name = graphene.String(required=True)
+    first_name = graphene.String()
+    last_name = graphene.String()
     email = graphene.String()
     password = graphene.String()
 
@@ -98,9 +105,9 @@ class CreateStudent(graphene.Mutation):
 
         # Student fields
         grade = graphene.Int()
-        school = graphene.Int()
-        primary_parent = graphene.ID()
-        secondary_parent = graphene.ID()
+        school_id = graphene.ID(name='school')
+        primary_parent_id = graphene.ID(name='primaryParent')
+        secondary_parent_id = graphene.ID(name='secondaryParent')
 
     student = graphene.Field(StudentType)
     created = graphene.Boolean()
@@ -124,6 +131,7 @@ class CreateStudent(graphene.Mutation):
                 password='password',
                 first_name=user['first_name'],
                 last_name=user['last_name'],
+                email=user.get('email')
             )
             Token.objects.get_or_create(user=user_object)
 
@@ -185,6 +193,16 @@ class CreateParent(graphene.Mutation):
                 **validated_data
             )
             ParentNotificationSettings.objects.create(parent=parent)
+
+            Email.objects.create(
+                template_id=WELCOME_PARENT_TEMPLATE,
+                recipient=parent.user.email,
+                data={
+                    'parent_name': parent.user.first_name,
+                    'business_name': settings.BUSINESS_NAME,
+                }
+            )
+
             return CreateParent(parent=parent, created=True)
 
 
@@ -285,7 +303,7 @@ class InstructorAvailabilityInput(graphene.InputObjectType):
 class CreateInstructorAvailabilities(graphene.Mutation):
     class Arguments:
         availabilities = graphene.List(InstructorAvailabilityInput, required=True)
-    
+
     instructor_availabilities = graphene.List(InstructorAvailabilityType)
 
     @staticmethod
@@ -300,7 +318,7 @@ class CreateInstructorAvailabilities(graphene.Mutation):
 class DeleteInstructorAvailabilities(graphene.Mutation):
     class Arguments:
         availabilities = graphene.List(graphene.ID, required=True)
-    
+
     deleted = graphene.Boolean()
 
     @staticmethod
@@ -310,6 +328,7 @@ class DeleteInstructorAvailabilities(graphene.Mutation):
             )
         price_rule_objs.delete()
         return DeleteInstructorAvailabilities(deleted=True)
+
 
 class CreateInstructorOOO(graphene.Mutation):
     class Arguments:
@@ -464,12 +483,11 @@ class RequestPasswordReset(graphene.Mutation):
 
         token = jwt.encode({'email': email}, settings.SECRET_KEY, algorithm='HS256').decode('utf-8')
 
-        email = Email(
+        email = Email.objects.create(
             template_id=RESET_PASSWORD_TEMPLATE,
             recipient=email,
             data={'username': user.first_name, 'token': token}
         )
-        email.save()
 
         return RequestPasswordReset(status=email.status, error_message=email.response_body)
 
@@ -478,11 +496,13 @@ class ResetPassword(graphene.Mutation):
     class Arguments:
         token = graphene.String(required=True)
         new_password = graphene.String(required=True)
+        set_student = graphene.Boolean()
+        set_instructor = graphene.Boolean()
 
     status = graphene.String()
 
     @staticmethod
-    def mutate(root, info, token, new_password):
+    def mutate(root, info, token, new_password, set_student=False, set_instructor=False):
         try:
             email = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])['email']
             user = User.objects.get(email=email)
@@ -491,7 +511,87 @@ class ResetPassword(graphene.Mutation):
         except Exception:
             return ResetPassword(status='failed')
 
+        if set_instructor:
+            instructor = Instructor.objects.get(user__email=email)
+            Email.objects.create(
+                template_id=WELCOME_INSTRUCTOR_TEMPLATE,
+                recipient=email,
+                data={
+                    'instructor_name': instructor.user.first_name,
+                    'business_name': settings.BUSINESS_NAME,
+                }
+            )
+        elif set_student:
+            student = Student.objects.get(user__email=email)
+            Email.objects.create(
+                template_id=WELCOME_STUDENT_TEMPLATE,
+                recipient=email,
+                data={
+                    'student_name': student.user.first_name,
+                    'business_name': settings.BUSINESS_NAME,
+                }
+            )
+
         return ResetPassword(status='success')
+
+
+class InviteStudent(graphene.Mutation):
+    class Arguments:
+        email = graphene.String(required=True)
+
+    status = graphene.String()
+    error_message = graphene.String()
+
+    @staticmethod
+    def mutate(root, info, email):
+        try:
+            student = Student.objects.get(user__email=email)
+        except Exception:
+            return InviteStudent(status='failed', error_message='No such user exists.')
+
+        token = jwt.encode({'email': email}, settings.SECRET_KEY, algorithm='HS256').decode('utf-8')
+
+        invite_email = Email.objects.create(
+            template_id=INVITE_STUDENT_TEMPLATE,
+            recipient=email,
+            data={
+                'student_name': student.user.first_name,
+                'parent_name': student.primary_parent.user.first_name,
+                'token': token,
+                'business_name': 'Stark Industries'
+            }
+        )
+
+        return InviteStudent(status=invite_email.status, error_message=invite_email.response_body)
+
+
+class InviteInstructor(graphene.Mutation):
+    class Arguments:
+        email = graphene.String(required=True)
+
+    status = graphene.String()
+    error_message = graphene.String()
+
+    @staticmethod
+    def mutate(root, info, email):
+        try:
+            instructor = Instructor.objects.get(user__email=email)
+        except Exception:
+            return InviteInstructor(status='failed', error_message='No such user exists.')
+
+        token = jwt.encode({'email': email}, settings.SECRET_KEY, algorithm='HS256').decode('utf-8')
+
+        invite_email = Email.objects.create(
+            template_id=INVITE_INSTRUCTOR_TEMPLATE,
+            recipient=email,
+            data={
+                'instructor_name': instructor.user.first_name,
+                'token': token,
+                'business_name': 'Stark Industries'
+            }
+        )
+
+        return InviteInstructor(status=invite_email.status, error_message=invite_email.response_body)
 
 
 class Mutation(graphene.ObjectType):
@@ -514,3 +614,7 @@ class Mutation(graphene.ObjectType):
     # Auth endpoints
     request_password_reset = RequestPasswordReset.Field()
     reset_password = ResetPassword.Field()
+
+    # invite endpoints
+    invite_student = InviteStudent.Field()
+    invite_instructor = InviteInstructor.Field()

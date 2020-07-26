@@ -231,7 +231,6 @@ class Query(object):
 
         return Note.objects.filter(user=user_id)
 
-    @login_required
     def resolve_students(self, info, **kwargs):
         grade = kwargs.get('grade')
 
@@ -257,7 +256,6 @@ class Query(object):
             return Admin.objects.filter(admin_type=admin_type)
         return Admin.objects.all()
 
-    @login_required
     def resolve_parents(self, info, **kwargs):
         return Parent.objects.all()
 
@@ -266,7 +264,7 @@ class Query(object):
         return Instructor.objects.all()
 
     @login_required
-    def resolve_instructor_out_of_office(self, info, **kwargs):
+    def resolve_instructor_ooo(self, info, **kwargs):
         instructor_id = kwargs.get('instructor_id')
 
         return InstructorOutOfOffice.objects.filter(instructor=instructor_id)
