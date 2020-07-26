@@ -32,7 +32,11 @@ from account.schema import (
     InstructorOutOfOfficeType,
 )
 from comms.models import Email, ParentNotificationSettings
-from comms.templates import RESET_PASSWORD_TEMPLATE
+from comms.templates import (
+    RESET_PASSWORD_TEMPLATE,
+    INVITE_INSTRUCTOR_TEMPLATE,
+    INVITE_STUDENT_TEMPLATE,
+)
 
 
 class GenderEnum(graphene.Enum):
@@ -78,8 +82,8 @@ class CreateSchool(graphene.Mutation):
 
 class UserInput(graphene.InputObjectType):
     id = graphene.ID()
-    first_name = graphene.String(required=True)
-    last_name = graphene.String(required=True)
+    first_name = graphene.String()
+    last_name = graphene.String()
     email = graphene.String()
     password = graphene.String()
 
@@ -124,6 +128,7 @@ class CreateStudent(graphene.Mutation):
                 password='password',
                 first_name=user['first_name'],
                 last_name=user['last_name'],
+                email=user.get('email')
             )
             Token.objects.get_or_create(user=user_object)
 
@@ -505,20 +510,55 @@ class InviteStudent(graphene.Mutation):
     @staticmethod
     def mutate(root, info, email):
         try:
-            user = User.objects.get(email=email)
+            student = Student.objects.get(user__email=email)
         except Exception:
             return InviteStudent(status='failed', error_message='No such user exists.')
 
         token = jwt.encode({'email': email}, settings.SECRET_KEY, algorithm='HS256').decode('utf-8')
 
-        email = Email(
-            template_id=RESET_PASSWORD_TEMPLATE,
+        invite_email = Email(
+            template_id=INVITE_STUDENT_TEMPLATE,
             recipient=email,
-            data={'username': user.first_name, 'token': token}
+            data={
+                'student_name': student.user.first_name,
+                'parent_name': student.primary_parent.user.first_name,
+                'token': token,
+                'business_name': 'Stark Industries'
+            }
         )
-        email.save()
+        invite_email.save()
 
-        return InviteStudent(status=email.status, error_message=email.response_body)
+        return InviteStudent(status=invite_email.status, error_message=invite_email.response_body)
+
+
+class InviteInstructor(graphene.Mutation):
+    class Arguments:
+        email = graphene.String(required=True)
+
+    status = graphene.String()
+    error_message = graphene.String()
+
+    @staticmethod
+    def mutate(root, info, email):
+        try:
+            instructor = Instructor.objects.get(user__email=email)
+        except Exception:
+            return InviteInstructor(status='failed', error_message='No such user exists.')
+
+        token = jwt.encode({'email': email}, settings.SECRET_KEY, algorithm='HS256').decode('utf-8')
+
+        invite_email = Email(
+            template_id=INVITE_INSTRUCTOR_TEMPLATE,
+            recipient=email,
+            data={
+                'instructor_name': instructor.user.first_name,
+                'token': token,
+                'business_name': 'Stark Industries'
+            }
+        )
+        invite_email.save()
+
+        return InviteInstructor(status=invite_email.status, error_message=invite_email.response_body)
 
 
 class Mutation(graphene.ObjectType):
@@ -544,3 +584,4 @@ class Mutation(graphene.ObjectType):
 
     # invite endpoints
     invite_student = InviteStudent.Field()
+    invite_instructor = InviteInstructor.Field()
