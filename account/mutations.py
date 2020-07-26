@@ -102,9 +102,9 @@ class CreateStudent(graphene.Mutation):
 
         # Student fields
         grade = graphene.Int()
-        school = graphene.Int()
-        primary_parent_id = graphene.ID(name='primary_parent')
-        secondary_parent_id = graphene.ID(name='secondary_parent')
+        school_id = graphene.ID(name='school')
+        primary_parent_id = graphene.ID(name='primaryParent')
+        secondary_parent_id = graphene.ID(name='secondaryParent')
 
     student = graphene.Field(StudentType)
     created = graphene.Boolean()
@@ -290,7 +290,7 @@ class InstructorAvailabilityInput(graphene.InputObjectType):
 class CreateInstructorAvailabilities(graphene.Mutation):
     class Arguments:
         availabilities = graphene.List(InstructorAvailabilityInput, required=True)
-    
+
     instructor_availabilities = graphene.List(InstructorAvailabilityType)
 
     @staticmethod
@@ -305,7 +305,7 @@ class CreateInstructorAvailabilities(graphene.Mutation):
 class DeleteInstructorAvailabilities(graphene.Mutation):
     class Arguments:
         availabilities = graphene.List(graphene.ID, required=True)
-    
+
     deleted = graphene.Boolean()
 
     @staticmethod
