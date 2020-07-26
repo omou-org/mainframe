@@ -75,7 +75,7 @@ class DeletePriceRule(graphene.Mutation):
 
 class CreateDiscount(graphene.Mutation):
     class Arguments:
-        discountId = graphene.ID()
+        discount_id = graphene.ID()
         name = graphene.String()
         description = graphene.String()
         amount = graphene.Float()
@@ -89,7 +89,7 @@ class CreateDiscount(graphene.Mutation):
     @staff_member_required
     def mutate(root, info, **validated_data):
         discount, created = Discount.objects.update_or_create(
-            id=validated_data.pop('discountId', None),
+            id=validated_data.pop('discount_id', None),
             defaults=validated_data
         )
         return CreateDiscount(discount=discount, created=created)
@@ -97,7 +97,7 @@ class CreateDiscount(graphene.Mutation):
 
 class CreateMultiCourseDiscount(graphene.Mutation):
     class Arguments:
-        discountId = graphene.ID()
+        discount_id = graphene.ID()
         name = graphene.String()
         description = graphene.String()
         amount = graphene.Float()
@@ -112,7 +112,7 @@ class CreateMultiCourseDiscount(graphene.Mutation):
     @staff_member_required
     def mutate(root, info, **validated_data):
         multi_course_discount, created = MultiCourseDiscount.objects.update_or_create(
-            id=validated_data.pop('discountId', None),
+            id=validated_data.pop('discount_id', None),
             defaults=validated_data
         )
         return CreateMultiCourseDiscount(multi_course_discount=multi_course_discount, created=created)
@@ -120,7 +120,7 @@ class CreateMultiCourseDiscount(graphene.Mutation):
 
 class CreateDateRangeDiscount(graphene.Mutation):
     class Arguments:
-        discountId = graphene.ID()
+        discount_id = graphene.ID()
         name = graphene.String()
         description = graphene.String()
         amount = graphene.Float()
@@ -136,7 +136,7 @@ class CreateDateRangeDiscount(graphene.Mutation):
     @staff_member_required
     def mutate(root, info, **validated_data):
         date_range_discount, created = DateRangeDiscount.objects.update_or_create(
-            id=validated_data.pop('discountId', None),
+            id=validated_data.pop('discount_id', None),
             defaults=validated_data
         )
         return CreateDateRangeDiscount(date_range_discount=date_range_discount, created=created)
@@ -144,7 +144,7 @@ class CreateDateRangeDiscount(graphene.Mutation):
 
 class CreatePaymentMethodDiscount(graphene.Mutation):
     class Arguments:
-        discountId = graphene.ID()
+        discount_id = graphene.ID()
         name = graphene.String()
         description = graphene.String()
         amount = graphene.Float()
@@ -159,7 +159,7 @@ class CreatePaymentMethodDiscount(graphene.Mutation):
     @staff_member_required
     def mutate(root, info, **validated_data):
         payment_method_discount, created = PaymentMethodDiscount.objects.update_or_create(
-            id=validated_data.pop('discountId', None),
+            id=validated_data.pop('discount_id', None),
             defaults=validated_data
         )
         return CreatePaymentMethodDiscount(payment_method_discount=payment_method_discount, created=created)
