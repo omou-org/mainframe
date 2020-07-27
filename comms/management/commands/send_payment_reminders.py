@@ -1,8 +1,8 @@
 import arrow
 
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
-from comms.models import Email, InstructorNotificationSettings, ParentNotificationSettings
+from comms.models import Email, ParentNotificationSettings
 from comms.templates import PAYMENT_REMINDER_TEMPLATE
 from course.models import Course
 from scheduler.models import Session
@@ -28,15 +28,17 @@ class Command(BaseCommand):
                 if enrollment.sessions_left != 1:
                     continue
                 parent = enrollment.student.primary_parent
+                parent_settings = ParentNotificationSettings.objects.get(parent=parent)
 
-                Email.objects.create(
-                    template_id=PAYMENT_REMINDER_TEMPLATE,
-                    recipient=parent.user.email,
-                    data={
-                        "parent_name": parent.user.first_name,
-                        "course_name": enrollment.course.title
-                    }
-                )
+                if parent_settings.payment_reminder_email:
+                    Email.objects.create(
+                        template_id=PAYMENT_REMINDER_TEMPLATE,
+                        recipient=parent.user.email,
+                        data={
+                            'parent_name': parent.user.first_name,
+                            'course_name': enrollment.course.title
+                        }
+                    )
 
             session.sent_payment_reminder = True
             session.save()

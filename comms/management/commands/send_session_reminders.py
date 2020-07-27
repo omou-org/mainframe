@@ -26,13 +26,13 @@ class Command(BaseCommand):
 
         for session in sessions:
             email_data = {
-                "instructor_name": session.instructor.user.first_name,
-                "sessions": [
+                'instructor_name': session.instructor.user.first_name,
+                'sessions': [
                     {
-                        "title": session.course.title,
-                        "date": session.start_datetime.strftime("%m/%d/%Y"),
-                        "start_time": session.start_datetime.strftime("%I:%M %p"),
-                        "end_time": session.end_datetime.strftime("%I:%M %p")
+                        'title': session.course.title,
+                        'date': session.start_datetime.strftime('%m/%d/%Y'),
+                        'start_time': session.start_datetime.strftime('%I:%M %p'),
+                        'end_time': session.end_datetime.strftime('%I:%M %p')
                     }
                 ]
             }
