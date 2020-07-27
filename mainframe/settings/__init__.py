@@ -75,13 +75,13 @@ COMMON_APPS = (
 INSTALLED_APPS = API_APPS + COMMON_APPS
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.BrokenLinkEmailsMiddleware",
     "django.middleware.common.CommonMiddleware",
 ]
@@ -161,6 +161,9 @@ CORS_ORIGIN_WHITELIST = (
     "http://localhost:8000",
     "http://localhost:3000",
     "https://www.omoulearning.com",
+    "https://omoulearning.com",
+    "https://development.omoulearning.com",
+    "https://www.development.omoulearning.com"
 )
 
 # GraphQL
@@ -178,3 +181,4 @@ AUTHENTICATION_BACKENDS = [
 SENDGRID_API_KEY = env.SENDGRID_API_KEY
 TWILIO_ACCOUNT_SID = 'test'
 TWILIO_AUTH_TOKEN = 'test'
+BUSINESS_NAME = 'Stark Industries'

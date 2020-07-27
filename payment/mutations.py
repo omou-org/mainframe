@@ -1,6 +1,6 @@
 import graphene
 from graphene import Field, ID, Int, List, String, Float
-from graphene.types.json import JSONString
+from graphql import GraphQLError
 
 from account.models import Parent
 from payment.models import Payment, RegistrationCart
@@ -72,6 +72,7 @@ class CreateRegistrationCart(graphene.Mutation):
             defaults=validated_data
         )
         return CreateRegistrationCart(registrationCart=cart)
+
 
 class Mutation(graphene.ObjectType):
     create_payment = CreatePayment.Field()
