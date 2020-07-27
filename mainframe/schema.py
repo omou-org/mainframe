@@ -8,11 +8,11 @@ from payment import schema as payment_schema, mutations as payment_mutations
 from scheduler import schema as scheduler_schema, mutations as scheduler_mutations
 from search import schema as search_schema
 from pricing import schema as pricing_schema, mutations as pricing_mutations
-
+from log import schema as log_schema
 
 class Query(account_schema.Query, comms_schema.Query, course_schema.Query,
             payment_schema.Query, scheduler_schema.Query, search_schema.Query,
-            pricing_schema.Query, graphene.ObjectType):
+            pricing_schema.Query, log_schema.Query, graphene.ObjectType):
     pass
 
 
