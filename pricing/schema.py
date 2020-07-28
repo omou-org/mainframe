@@ -105,6 +105,7 @@ def price_quote_total(body):
                 (Q(start_date__lte = course.start_date) & Q(end_date__lte = course.end_date)) |
                 (Q(start_date__gte = course.start_date) & Q(start_date__lte = course.end_date)) |
                 (Q(end_date__gte = course.start_date) & Q(end_date__lte = course.end_date)))
+            date_range_discounts = []
 
             for discount in date_range_discounts:
                 if discount.id not in disabled_discounts and discount.active:

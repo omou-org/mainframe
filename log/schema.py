@@ -44,7 +44,8 @@ class LogTypeResults(graphene.ObjectType):
 
 class Query(object):
     logs=Field(LogTypeResults,
-                        date=DateTime(),
+                        start_date_time=DateTime(),
+                        end_date_time=DateTime(),
                         user_id=ID(),
                         admin_type=AdminTypeEnum(),
                         action=ActionEnum(),
@@ -78,10 +79,14 @@ class Query(object):
         if action:
             queryset=queryset.filter(action_flag=action)
 
-        action_date=kwargs.get('date')
-        if action_date:
-            queryset=queryset.filter(action_time=action_date)
+        start_date=kwargs.get('start_date_time')
+        if start_date:
+            queryset=queryset.filter(action_time__gte=start_date)
         
+        end_date=kwargs.get('end_date_time')
+        if end_date:
+            queryset=queryset.filter(action_time__lt=end_date)
+
         total_size=len(queryset)
         page=kwargs.get('page')
         page_size=kwargs.get('page_size')

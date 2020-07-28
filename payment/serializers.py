@@ -1,4 +1,6 @@
 from django.conf import settings
+from django.contrib.admin.models import LogEntry, ADDITION
+from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 from rest_framework import serializers
 
@@ -96,7 +98,7 @@ class PaymentSerializer(serializers.ModelSerializer):
                 discount=deduction["discount"],
                 amount=deduction["amount"]
             )
-
+        
         # create registrations
         registration_objs = []
         for registration in registrations:
@@ -107,11 +109,19 @@ class PaymentSerializer(serializers.ModelSerializer):
             )
             registration_objs.append(registration_obj)
 
+            LogEntry.objects.log_action(
+                user_id=self.context['user_id'],
+                content_type_id=ContentType.objects.get_for_model(Registration).pk,
+                object_id=registration_obj.id,
+                object_repr=f"{registration_obj.enrollment.student.user.first_name} {registration_obj.enrollment.student.user.last_name}, {registration_obj.enrollment.course.title}",
+                action_flag=ADDITION
+            )
+
         payment_data = {
             "parent_name": payment.parent.user.first_name,
             "business_name": settings.BUSINESS_NAME,
             "receipt_text": f"You've paid {payment.total} for {len(registrations)} classes",
-            "total_tuition": payment.total,
+            "total_tuition": float(payment.total),
             "payment_id": payment.id,
             "enrollments": {
                 "course": [{
