@@ -45,9 +45,17 @@ class CreatePayment(graphene.Mutation):
                 }
             )
         
-        serializer = PaymentSerializer(data=data)
+        serializer = PaymentSerializer(data=data, context={'user_id': info.context.user.id})
         serializer.is_valid(raise_exception=True)
         payment = serializer.save()
+
+        LogEntry.objects.log_action(
+            user_id=info.context.user.id,
+            content_type_id=ContentType.objects.get_for_model(Payment).pk,
+            object_id=payment.id,
+            object_repr=f"{payment.parent.user.first_name} {payment.parent.user.last_name}, {payment.method}",
+            action_flag=ADDITION
+        )
         return CreatePayment(payment=payment)
 
 

@@ -130,7 +130,7 @@ class CreateStudent(graphene.Mutation):
                     user_id=info.context.user.id,
                     content_type_id=ContentType.objects.get_for_model(Student).pk,
                     object_id=student.user.id,
-                    object_repr=f"Student: {student.user.first_name} {student.user.last_name}",
+                    object_repr=f"{student.user.first_name} {student.user.last_name}",
                     action_flag=CHANGE
                 )
                 return CreateStudent(student=student, created=False)
@@ -156,7 +156,7 @@ class CreateStudent(graphene.Mutation):
                 user_id=info.context.user.id,
                 content_type_id=ContentType.objects.get_for_model(Student).pk,
                 object_id=student.user.id,
-                object_repr=f"Student: {student.user.first_name} {student.user.last_name}",
+                object_repr=f"{student.user.first_name} {student.user.last_name}",
                 action_flag=ADDITION
             )
             return CreateStudent(student=student, created=True)
@@ -197,7 +197,7 @@ class CreateParent(graphene.Mutation):
                     user_id=info.context.user.id,
                     content_type_id=ContentType.objects.get_for_model(Parent).pk,
                     object_id=parent.user.id,
-                    object_repr=f"Parent: {parent.user.first_name} {parent.user.last_name}",
+                    object_repr=f"{parent.user.first_name} {parent.user.last_name}",
                     action_flag=CHANGE
                 )
                 return CreateParent(parent=parent, created=False)
@@ -233,7 +233,7 @@ class CreateParent(graphene.Mutation):
                 user_id=info.context.user.id,
                 content_type_id=ContentType.objects.get_for_model(Parent).pk,
                 object_id=parent.user.id,
-                object_repr=f"Parent: {parent.user.first_name} {parent.user.last_name}",
+                object_repr=f"{parent.user.first_name} {parent.user.last_name}",
                 action_flag=ADDITION
             )
             return CreateParent(parent=parent, created=True)
@@ -283,7 +283,7 @@ class CreateInstructor(graphene.Mutation):
                     user_id=info.context.user.id,
                     content_type_id=ContentType.objects.get_for_model(Instructor).pk,
                     object_id=instructor.user.id,
-                    object_repr=f"Instructor: {instructor.user.first_name} {instructor.user.last_name}",
+                    object_repr=f"{instructor.user.first_name} {instructor.user.last_name}",
                     action_flag=CHANGE
                 )
                 return CreateInstructor(instructor=instructor, created=False)
@@ -312,7 +312,7 @@ class CreateInstructor(graphene.Mutation):
                 user_id=info.context.user.id,
                 content_type_id=ContentType.objects.get_for_model(Instructor).pk,
                 object_id=instructor.user.id,
-                object_repr=f"Instructor: {instructor.user.first_name} {instructor.user.last_name}",
+                object_repr=f"{instructor.user.first_name} {instructor.user.last_name}",
                 action_flag=ADDITION
             )
             return CreateInstructor(instructor=instructor, created=True)
