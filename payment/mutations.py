@@ -1,3 +1,6 @@
+from django.contrib.admin.models import LogEntry, ADDITION
+from django.contrib.contenttypes.models import ContentType
+
 import graphene
 from graphene import Field, ID, Int, List, String, Float
 from graphql import GraphQLError

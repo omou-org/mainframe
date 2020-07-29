@@ -28,6 +28,19 @@ class ObjectEnum(graphene.Enum):
     PRICERULE='pricerule'
 
 
+class SortEnum(graphene.Enum):
+    DATE_ASC="date_asc"
+    DATE_DESC="date_desc"
+    USER_ASC="user_asc"
+    USER_DESC="user_desc"
+    ADMIN_ASC="admin_asc"
+    ADMIN_DESC="admin_desc"
+    ACTION_ASC="action_asc"
+    ACTION_DESC="action_desc"
+    OBJECT_ASC="object_asc"
+    OBJECT_DESC="object_desc"
+
+
 class LogType(graphene.ObjectType):
     date=DateTime()
     user_id=ID()
@@ -51,7 +64,8 @@ class Query(object):
                         action=ActionEnum(),
                         object_type=ObjectEnum(),
                         page=Int(),
-                        page_size=Int()
+                        page_size=Int(),
+                        sort=SortEnum()
                         )
     
     @login_required
@@ -67,7 +81,7 @@ class Query(object):
             admins=Admin.objects.filter(
                 user__id__in=set([log.user.id for log in queryset]),
                 admin_type=admin_type
-                )
+            )
             queryset=queryset.filter(user_id__in=[admin.user.id for admin in admins])
 
         object_type=kwargs.get('object_type')
@@ -87,12 +101,47 @@ class Query(object):
         if end_date:
             queryset=queryset.filter(action_time__lt=end_date)
 
+        sort=kwargs.get('sort')
+        if sort:
+            obj, order = sort.split("_")
+            # filter for obj
+            if obj == "date":
+                queryset=queryset.order_by("action_time")
+            elif obj == "user":
+                def get_admin_firstlast_name(log):
+                    obj=Admin.objects.get(user__id=log.user_id)
+                    return obj.user.first_name+" "+obj.user.last_name
+                queryset=sorted(queryset, key=get_admin_firstlast_name)
+            elif obj == "admin":
+                def get_admin_type(log):
+                    obj=Admin.objects.get(user__id=log.user_id)
+                    return obj.admin_type
+                queryset=sorted(queryset, key=get_admin_type)
+            elif obj == "action":
+                queryset=queryset.order_by("action_flag")
+            elif obj == "object":
+                def get_object_name(log):
+                    obj=ContentType.objects.get(id=log.content_type_id)
+                    return str(obj)
+                queryset=sorted(queryset, key=get_object_name)
+
+            # sort by order
+            if order == "desc":
+                # reverse list
+                if isinstance(queryset, list):
+                    queryset.reverse()
+                # reverse queryset
+                else:
+                    queryset=queryset.reverse()
+            
+        # pagination
         total_size=len(queryset)
         page=kwargs.get('page')
         page_size=kwargs.get('page_size')
         if page and page_size:
             queryset=paginate(queryset, page, page_size)
 
+        # convert EntryLog to LogType
         flag_to_action = {
             1: "Add",
             2: "Edit",
