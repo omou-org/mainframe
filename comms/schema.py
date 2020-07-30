@@ -45,12 +45,6 @@ class Query(object):
         course_id = kwargs.get('course_id')
 
         return Announcement.objects.filter(course_id=course_id)    
-
-    # @login_required
-    # def resolve_annoucements(self, info, **kwargs):
-    #     course_id = kwargs.get('course_id')
-
-    #     return Annoucement.objects.filter(course__id=course_id)
         
     def resolve_parent_notification_settings(self, info, parent_id):
         return ParentNotificationSettings.objects.get(parent=parent_id)

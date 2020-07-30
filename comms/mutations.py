@@ -1,7 +1,9 @@
 import graphene
+from django.contrib.auth.models import User
 
-from comms.models import ParentNotificationSettings, InstructorNotificationSettings, Announcement
-from comms.schema import ParentNotificationSettingsType, InstructorNotificationSettingsType, AnnouncementType
+from account.models import Admin
+from comms.models import Announcement, Email, ParentNotificationSettings, InstructorNotificationSettings
+from comms.schema import AnnouncementType, ParentNotificationSettingsType, InstructorNotificationSettingsType 
 from comms.templates import ANNOUNCEMENT_EMAIL_TEMPLATE
 from course.models import Course
 
@@ -17,11 +19,11 @@ class CreateAnnouncement(graphene.Mutation):
         course_id = ID(name='course')
         poster_id = ID(name='user')
         should_email = Boolean()
-        should_sms = Boolean()       
-
+        should_sms = Boolean()   
+     
     announcement = graphene.Field(AnnouncementType)
     created = Boolean()
-
+     
     @staticmethod
     def mutate(root, info, **validated_data):
         should_email = validated_data.pop('should_email', False)
@@ -30,19 +32,24 @@ class CreateAnnouncement(graphene.Mutation):
             id=validated_data.pop('announcement_id', None),
             defaults=validated_data
         )
+        print(validated_data)
         if should_email:
-            course = Course.objects.get(validated_data.get('course_id'))
-            for enrollemnt.student in course.enrollemnt_set:
+            course = Course.objects.get(id=validated_data.get('course_id'))
+            for enrollment in course.enrollment_set.all():
                 primary_parent = enrollment.student.primary_parent
                 email_address = primary_parent.user.email
+                primary_parent_fullname = primary_parent.user.first_name + ' ' +primary_parent.user.last_name
+                user = User.objects.get(id=validated_data.get('poster_id'))
+                poster = user.first_name + ' ' + user.last_name
+                # print(validated_data)
+                # email = Email.objects.create(
+                #     template_id=ANNOUNCEMENT_EMAIL_TEMPLATE,
+                #     recipient=email_address,
+                #     data={'subject': validated_data.get('subject'), 'body': validated_data.get('body'), 'poster_name': poster, 'course': course.title, 'parent_name': primary_parent_fullname}
+                # )
+                # email.save()
+        return CreateAnnouncement(announcement=announcement, created=created)
 
-            email = Email.objects.create(
-                template_id=ANNOUNCEMENT_EMAIL_TEMPLATE,
-                recipient=email_address,
-                data={'username': user.first_name, 'token': token}
-            )
-            email.save()
-        return CreateAnnoucement(announcement=announcement, created=created)
 
 
 class DeleteAnnouncement(graphene.Mutation):
@@ -57,8 +64,9 @@ class DeleteAnnouncement(graphene.Mutation):
             announcement_obj = Announcement.objects.get(id=validated_data.get('announcement_id'))
         except ObjectDoesNotExist:
             raise GraphQLError('Failed delete mutation. Announcement does not exist.')
-        annoucement_obj.delete()
+        announcement_obj.delete()
         return DeleteAnnouncement(deleted=True)
+        
 
 class MutateParentNotificationSettings(graphene.Mutation):
     class Arguments:
