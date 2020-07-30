@@ -111,6 +111,7 @@ class ParentNotificationSettings(models.Model):
     payment_reminder_email = models.BooleanField(default=True)
     payment_reminder_sms = models.BooleanField(default=False)
     schedule_updates_sms = models.BooleanField(default=False)
+    course_requests_sms = models.BooleanField(default=False)
 
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)

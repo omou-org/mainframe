@@ -4,11 +4,14 @@ import pytz
 from datetime import datetime, timezone
 
 import graphene
-from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Q
 from graphene import Boolean, DateTime, Decimal, Field, ID, Int, String, Time
 from graphql import GraphQLError
 from graphql_jwt.decorators import staff_member_required
+
+from django.contrib.admin.models import LogEntry, ADDITION, CHANGE, DELETION
+from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q
 
 from account.mutations import DayOfWeekEnum
 from course.models import Course, CourseNote, CourseCategory, Enrollment, EnrollmentNote, SessionNote
@@ -63,10 +66,12 @@ class CreateCourse(graphene.Mutation):
     created = Boolean()
 
     @staticmethod
+    @staff_member_required
     def mutate(root, info, **validated_data):
+        print(validated_data)
         # update course
-        if validated_data.get('id'):
-            course = Course.objects.get(id=validated_data.get('id'))
+        if validated_data.get('course_id'):
+            course = Course.objects.get(id=validated_data.get('course_id'))
             now = datetime.now()
             sessions = Session.objects.filter(
                 course=course,
@@ -124,6 +129,14 @@ class CreateCourse(graphene.Mutation):
             course.save()
             Course.objects.filter(id=course.id).update(**validated_data)
             course.refresh_from_db()
+
+            LogEntry.objects.log_action(
+                user_id=info.context.user.id,
+                content_type_id=ContentType.objects.get_for_model(Course).pk,
+                object_id=course.id,
+                object_repr=course.title,
+                action_flag=CHANGE
+            )
             return CreateCourse(course=course, created=False)
 
         # create course
@@ -178,6 +191,13 @@ class CreateCourse(graphene.Mutation):
             course.total_tuition = course.hourly_tuition * course.num_sessions
 
         course.save()
+        LogEntry.objects.log_action(
+            user_id=info.context.user.id,
+            content_type_id=ContentType.objects.get_for_model(Course).pk,
+            object_id=course.id,
+            object_repr=course.title,
+            action_flag=ADDITION
+        )
         return CreateCourse(course=course, created=True)
 
 
@@ -191,10 +211,18 @@ class CreateCourseCategory(graphene.Mutation):
     created = Boolean()
 
     @staticmethod
+    @staff_member_required
     def mutate(root, info, **validated_data):
         course_category, created = CourseCategory.objects.update_or_create(
-            id=validated_data.pop('category_id', None),
+            id=validated_data.get('category_id', None),
             defaults=validated_data
+        )
+        LogEntry.objects.log_action(
+            user_id=info.context.user.id,
+            content_type_id=ContentType.objects.get_for_model(CourseCategory).pk,
+            object_id=course_category.id,
+            object_repr=course_category.name,
+            action_flag=CHANGE if 'category_id' in validated_data else ADDITION
         )
         return CreateCourseCategory(course_category=course_category, created=created)
 
@@ -268,6 +296,7 @@ class CreateEnrollments(graphene.Mutation):
         return CreateEnrollments(
             enrollments=enrollments
         )
+
 
 class CreateEnrollmentNote(graphene.Mutation):
     class Arguments:

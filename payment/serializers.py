@@ -1,3 +1,6 @@
+from django.conf import settings
+from django.contrib.admin.models import LogEntry, ADDITION
+from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 from rest_framework import serializers
 
@@ -95,7 +98,7 @@ class PaymentSerializer(serializers.ModelSerializer):
                 discount=deduction["discount"],
                 amount=deduction["amount"]
             )
-
+        
         # create registrations
         registration_objs = []
         for registration in registrations:
@@ -106,10 +109,21 @@ class PaymentSerializer(serializers.ModelSerializer):
             )
             registration_objs.append(registration_obj)
 
+            LogEntry.objects.log_action(
+                user_id=self.context['user_id'],
+                content_type_id=ContentType.objects.get_for_model(Registration).pk,
+                object_id=registration_obj.id,
+                object_repr=f"{registration_obj.enrollment.student.user.first_name} {registration_obj.enrollment.student.user.last_name}, {registration_obj.enrollment.course.title}",
+                action_flag=ADDITION
+            )
+
         payment_data = {
-            "first_name": payment.parent.user.first_name,
+            "parent_name": payment.parent.user.first_name,
+            "business_name": settings.BUSINESS_NAME,
             "receipt_text": f"You've paid {payment.total} for {len(registrations)} classes",
-            "enrollment": {
+            "total_tuition": float(payment.total),
+            "payment_id": payment.id,
+            "enrollments": {
                 "course": [{
                     "title": registration.enrollment.course.title,
                     "start_date": registration.attendance_start_date.strftime("%Y-%m-%d"),
@@ -117,21 +131,18 @@ class PaymentSerializer(serializers.ModelSerializer):
                     "start_time": registration.enrollment.course.start_time.strftime("%H:%M"),
                     "end_time": registration.enrollment.course.end_time.strftime("%H:%M"),
                     "instructor": {
-                        "user": {
-                            "first_name": registration.enrollment.course.instructor.user.first_name,
-                            "last_name": registration.enrollment.course.instructor.user.last_name
-                        }
+                        "first_name": registration.enrollment.course.instructor.user.first_name,
+                        "last_name": registration.enrollment.course.instructor.user.last_name
                     }
                 } for registration in registration_objs]
             }
         }
 
-        email = Email(
+        Email.objects.create(
             template_id=PAYMENT_CONFIRM_TEMPLATE,
             recipient=payment.parent.user.email,
             data=payment_data
         )
-        email.save()
 
         return payment
 

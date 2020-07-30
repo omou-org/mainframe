@@ -1,6 +1,9 @@
+from django.contrib.admin.models import LogEntry, ADDITION
+from django.contrib.contenttypes.models import ContentType
+
 import graphene
 from graphene import Field, ID, Int, List, String, Float
-from graphene.types.json import JSONString
+from graphql import GraphQLError
 
 from account.models import Parent
 from payment.models import Payment, RegistrationCart
@@ -45,9 +48,17 @@ class CreatePayment(graphene.Mutation):
                 }
             )
         
-        serializer = PaymentSerializer(data=data)
+        serializer = PaymentSerializer(data=data, context={'user_id': info.context.user.id})
         serializer.is_valid(raise_exception=True)
         payment = serializer.save()
+
+        LogEntry.objects.log_action(
+            user_id=info.context.user.id,
+            content_type_id=ContentType.objects.get_for_model(Payment).pk,
+            object_id=payment.id,
+            object_repr=f"{payment.parent.user.first_name} {payment.parent.user.last_name}, {payment.method}",
+            action_flag=ADDITION
+        )
         return CreatePayment(payment=payment)
 
 
@@ -72,6 +83,7 @@ class CreateRegistrationCart(graphene.Mutation):
             defaults=validated_data
         )
         return CreateRegistrationCart(registrationCart=cart)
+
 
 class Mutation(graphene.ObjectType):
     create_payment = CreatePayment.Field()

@@ -5,6 +5,8 @@ import uuid
 import graphene
 from django.db import transaction
 from django.contrib.auth.models import User
+from django.contrib.admin.models import LogEntry, ADDITION, CHANGE, DELETION
+from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from graphql import GraphQLError
@@ -123,6 +125,14 @@ class CreateStudent(graphene.Mutation):
                 student = Student.objects.get(user__id=user_id)
                 student.refresh_from_db()
                 student.save()
+
+                LogEntry.objects.log_action(
+                    user_id=info.context.user.id,
+                    content_type_id=ContentType.objects.get_for_model(Student).pk,
+                    object_id=student.user.id,
+                    object_repr=f"{student.user.first_name} {student.user.last_name}",
+                    action_flag=CHANGE
+                )
                 return CreateStudent(student=student, created=False)
 
             # create user and token
@@ -140,6 +150,14 @@ class CreateStudent(graphene.Mutation):
                 user=user_object,
                 account_type='student',
                 **validated_data
+            )
+
+            LogEntry.objects.log_action(
+                user_id=info.context.user.id,
+                content_type_id=ContentType.objects.get_for_model(Student).pk,
+                object_id=student.user.id,
+                object_repr=f"{student.user.first_name} {student.user.last_name}",
+                action_flag=ADDITION
             )
             return CreateStudent(student=student, created=True)
 
@@ -174,6 +192,14 @@ class CreateParent(graphene.Mutation):
                 parent = Parent.objects.get(user__id=user_id)
                 parent.refresh_from_db()
                 parent.save()
+
+                LogEntry.objects.log_action(
+                    user_id=info.context.user.id,
+                    content_type_id=ContentType.objects.get_for_model(Parent).pk,
+                    object_id=parent.user.id,
+                    object_repr=f"{parent.user.first_name} {parent.user.last_name}",
+                    action_flag=CHANGE
+                )
                 return CreateParent(parent=parent, created=False)
 
             # create user and token
@@ -203,6 +229,13 @@ class CreateParent(graphene.Mutation):
                 }
             )
 
+            LogEntry.objects.log_action(
+                user_id=info.context.user.id,
+                content_type_id=ContentType.objects.get_for_model(Parent).pk,
+                object_id=parent.user.id,
+                object_repr=f"{parent.user.first_name} {parent.user.last_name}",
+                action_flag=ADDITION
+            )
             return CreateParent(parent=parent, created=True)
 
 
@@ -245,6 +278,14 @@ class CreateInstructor(graphene.Mutation):
                     instructor.save()
                 Instructor.objects.filter(user__id=user_id).update(**validated_data)
                 instructor.refresh_from_db()
+
+                LogEntry.objects.log_action(
+                    user_id=info.context.user.id,
+                    content_type_id=ContentType.objects.get_for_model(Instructor).pk,
+                    object_id=instructor.user.id,
+                    object_repr=f"{instructor.user.first_name} {instructor.user.last_name}",
+                    action_flag=CHANGE
+                )
                 return CreateInstructor(instructor=instructor, created=False)
 
             # create user and token
@@ -266,6 +307,14 @@ class CreateInstructor(graphene.Mutation):
             )
             instructor.subjects.set(subjects)
             instructor.save()
+
+            LogEntry.objects.log_action(
+                user_id=info.context.user.id,
+                content_type_id=ContentType.objects.get_for_model(Instructor).pk,
+                object_id=instructor.user.id,
+                object_repr=f"{instructor.user.first_name} {instructor.user.last_name}",
+                action_flag=ADDITION
+            )
             return CreateInstructor(instructor=instructor, created=True)
 
 
