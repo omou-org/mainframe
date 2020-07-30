@@ -32,7 +32,6 @@ class CreateAnnouncement(graphene.Mutation):
             id=validated_data.pop('announcement_id', None),
             defaults=validated_data
         )
-        print(validated_data)
         if should_email:
             course = Course.objects.get(id=validated_data.get('course_id'))
             for enrollment in course.enrollment_set.all():
@@ -41,13 +40,12 @@ class CreateAnnouncement(graphene.Mutation):
                 primary_parent_fullname = primary_parent.user.first_name + ' ' +primary_parent.user.last_name
                 user = User.objects.get(id=validated_data.get('poster_id'))
                 poster = user.first_name + ' ' + user.last_name
-                # print(validated_data)
-                # email = Email.objects.create(
-                #     template_id=ANNOUNCEMENT_EMAIL_TEMPLATE,
-                #     recipient=email_address,
-                #     data={'subject': validated_data.get('subject'), 'body': validated_data.get('body'), 'poster_name': poster, 'course': course.title, 'parent_name': primary_parent_fullname}
-                # )
-                # email.save()
+                email = Email.objects.create(
+                    template_id=ANNOUNCEMENT_EMAIL_TEMPLATE,
+                    recipient=email_address,
+                    data={'subject': validated_data.get('subject'), 'body': validated_data.get('body'), 'poster_name': poster, 'course': course.title, 'parent_name': primary_parent_fullname}
+                )
+                email.save()
         return CreateAnnouncement(announcement=announcement, created=created)
 
 
