@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from account.models import Admin
 from comms.models import Announcement, Email, ParentNotificationSettings, InstructorNotificationSettings
 from comms.schema import AnnouncementType, ParentNotificationSettingsType, InstructorNotificationSettingsType 
-from comms.templates import ANNOUNCEMENT_EMAIL_TEMPLATE
+from comms.templates import ANNOUNCEMENT_EMAIL_TEMPLATE, SEND_EMAIL_TO_PARENT_TEMPLATE
 from course.models import Course
 
 from graphene import Boolean, DateTime, ID, String
@@ -105,9 +105,35 @@ class MutateInstructorNotificationSettings(graphene.Mutation):
         return MutateInstructorNotificationSettings(settings=settings)
 
 
+class SendEmail(graphene.Mutation):
+    class Arguments:
+        subject = String()
+        body = String()
+        parent_id = ID(name="primaryParentId")
+        poster_id = ID(name='user')
+
+    created = Boolean()
+    
+    @staticmethod
+    def mutate(root, info, **validated_data):    
+        user = User.objects.get(id=validated_data.get('poster_id'))
+        primary_parent = User.objects.get(id=validated_data.get('parent_id'))
+        poster = user.first_name + ' ' + user.last_name
+        parent_email = primary_parent.email
+        primary_parent_fullname = primary_parent.first_name + ' ' + primary_parent.last_name
+        email = Email.objects.create(
+            template_id=SEND_EMAIL_TO_PARENT_TEMPLATE,
+            recipient=parent_email,
+            data={'subject': validated_data.get('subject'), 'body': validated_data.get('body'), 'poster_name': poster, 'parent_name': primary_parent_fullname}            
+        )
+        email.save()
+        return SendEmail(created=True)
+
+
 class Mutation(graphene.ObjectType):
     create_announcement = CreateAnnouncement.Field()
     create_parent_notification_setting = MutateParentNotificationSettings.Field()
     create_instructor_notification_setting = MutateInstructorNotificationSettings.Field()
+    send_email = SendEmail.Field()
 
     delete_announcement = DeleteAnnouncement.Field()
