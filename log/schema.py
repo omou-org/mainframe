@@ -1,3 +1,4 @@
+import arrow
 import graphene
 from graphql import GraphQLError
 from graphene import DateTime, Field, ID, Int, List, String
@@ -28,8 +29,8 @@ class LogTypeResults(graphene.ObjectType):
 
 class Query(object):
     logs=Field(LogTypeResults,
-                        start_date_time=DateTime(),
-                        end_date_time=DateTime(),
+                        start_date_time=String(),
+                        end_date_time=String(),
                         user_id=ID(),
                         admin_type=String(),
                         action=String(),
@@ -78,11 +79,11 @@ class Query(object):
 
         start_date=kwargs.get('start_date_time')
         if start_date:
-            queryset=queryset.filter(action_time__gte=start_date)
+            queryset=queryset.filter(action_time__gte=arrow.get(start_date).datetime)
         
         end_date=kwargs.get('end_date_time')
         if end_date:
-            queryset=queryset.filter(action_time__lt=end_date)
+            queryset=queryset.filter(action_time__lt=arrow.get(end_date).datetime)
 
         sort=kwargs.get('sort')
         if sort:
