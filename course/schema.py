@@ -10,7 +10,6 @@ from course.models import (
     CourseNote,
     Enrollment,
     EnrollmentNote,
-    SessionNote,
 )
 from scheduler.models import Session
 
@@ -67,24 +66,18 @@ class PopularCategoryType(ObjectType):
     num_sessions = Int()
 
 
-class SessionNoteType(DjangoObjectType):
-    class Meta:
-        model = SessionNote
-
 class Query(object):
     course = Field(CourseType, course_id=ID())
     course_category = Field(CourseCategoryType, category_id=ID())
     course_note = Field(CourseNoteType, note_id=ID())
     enrollment = Field(EnrollmentType, enrollment_id=ID())
     enrollment_note = Field(EnrollmentNoteType, note_id=ID())
-    session_note = Field(SessionNoteType, note_id=ID())
 
     courses = List(CourseType, category_id=ID(), course_ids=List(ID), instructor_id=ID())
     course_categories = List(CourseCategoryType)
     course_notes = List(CourseNoteType, course_id=ID(required=True))
     enrollments = List(EnrollmentType, student_id=ID(), course_id=ID(), student_ids=List(ID))
     enrollment_notes = List(EnrollmentNoteType, enrollment_id=ID(required=True))
-    session_notes = List(SessionNoteType, course_id=ID(required=True))
 
     # custom methods
     num_recent_sessions = Int(timeframe=LookbackTimeframe(required=True))
@@ -243,18 +236,3 @@ class Query(object):
         )[:5]
 
         return top_5_categories
-
-    @login_required
-    def resolve_session_note(self, info, **kwargs):
-        note_id = kwargs.get('note_id')
-
-        if note_id:
-            return SessionNote.objects.get(id=note_id)
-        
-        return None
-
-    @login_required
-    def resolve_session_notes(self, info, **kwargs):
-        course_id = kwargs.get('course_id')
-
-        return SessionNote.objects.filter(course_id=course_id)

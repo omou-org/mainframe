@@ -2,7 +2,6 @@ from datetime import date, datetime, timezone
 from decimal import Decimal
 from math import floor
 
-from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.functional import cached_property
 from account.models import Instructor, Student
@@ -188,19 +187,3 @@ class EnrollmentNote(models.Model):
     important = models.BooleanField(default=False)
     complete = models.BooleanField(default=False)
 
-
-class SessionNote(models.Model):
-    subject = models.TextField()
-    body = models.TextField()
-    course = models.ForeignKey(
-        Course,
-        on_delete=models.PROTECT
-    )
-    poster = models.ForeignKey(
-        get_user_model(),
-        on_delete=models.PROTECT,
-    )    
-
-    # Timestamps
-    updated_at = models.DateTimeField(auto_now=True)
-    created_at = models.DateTimeField(auto_now_add=True)

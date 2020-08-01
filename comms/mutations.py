@@ -1,4 +1,5 @@
 import graphene
+from django.conf import settings
 from django.contrib.auth.models import User
 
 from account.models import Admin
@@ -110,7 +111,7 @@ class SendEmail(graphene.Mutation):
         subject = String()
         body = String()
         parent_id = ID(name="primaryParentId")
-        poster_id = ID(name='user')
+        poster_id = ID(name='userId')
 
     created = Boolean()
     
@@ -124,7 +125,7 @@ class SendEmail(graphene.Mutation):
         email = Email.objects.create(
             template_id=SEND_EMAIL_TO_PARENT_TEMPLATE,
             recipient=parent_email,
-            data={'subject': validated_data.get('subject'), 'body': validated_data.get('body'), 'poster_name': poster, 'parent_name': primary_parent_fullname}            
+            data={'subject': validated_data.get('subject'), 'body': validated_data.get('body'), 'poster_name': poster, 'parent_name': primary_parent_fullname, 'business_name': settings.BUSINESS_NAME}            
         )
         email.save()
         return SendEmail(created=True)

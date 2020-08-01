@@ -14,14 +14,13 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
 from account.mutations import DayOfWeekEnum
-from course.models import Course, CourseNote, CourseCategory, Enrollment, EnrollmentNote, SessionNote
+from course.models import Course, CourseNote, CourseCategory, Enrollment, EnrollmentNote
 from course.schema import (
     CourseType,
     CourseNoteType,
     CourseCategoryType,
     EnrollmentType,
     EnrollmentNoteType,
-    SessionNoteType
 )
 from scheduler.models import Session
 from pricing.models import PriceRule
@@ -334,52 +333,16 @@ class DeleteEnrollmentNote(graphene.Mutation):
         note_obj.delete()
         return DeleteEnrollmentNote(deleted=True)
 
-
-class CreateSessionNote(graphene.Mutation):
-    class Arguments:
-        note_id = ID(name='id')
-        subject = String()
-        body = String()
-        course_id = ID(name='course')
-        poster_id = ID(name='user')
-
-    session_note = graphene.Field(SessionNoteType)
-    created = Boolean()
-
-    @staticmethod
-    def mutate(root, info, **validated_data):
-        session_note, created = SessionNote.objects.update_or_create(
-            id=validated_data.pop('note_id', None),
-            defaults=validated_data
-        )
-        return CreateSessionNote(session_note=session_note, created=created)
-
-
-class DeleteSessionNote(graphene.Mutation):
-    class Arguments:
-        note_id = graphene.ID(name="id")
-
-    deleted = graphene.Boolean()
-
-    @staticmethod
-    def mutate(root, info, **validated_data):
-        try:
-            session_note_obj = SessionNote.objects.get(id=validated_data.get('note_id'))
-        except ObjectDoesNotExist:
-            raise GraphQLError('Failed delete mutation. Session Note does not exist.')
-        session_note_obj.delete()
-        return DeleteSessionNote(deleted=True)
         
 
 class Mutation(graphene.ObjectType):
     create_course = CreateCourse.Field()
     create_course_category = CreateCourseCategory.Field()
     create_course_note = CreateCourseNote.Field()
-    create_enrollment = CreateEnrollment.Field()
+    create_enrollment = CreateEnrollment.Field()    
     create_enrollments = CreateEnrollments.Field()
     create_enrollment_note = CreateEnrollmentNote.Field()
-    create_session_note = CreateSessionNote.Field()
 
     delete_course_note = DeleteCourseNote.Field()
     delete_enrollment_note = DeleteEnrollmentNote.Field()
-    delete_session_note = DeleteSessionNote.Field()
+

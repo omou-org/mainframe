@@ -6,8 +6,8 @@ from comms.templates import (
     SCHEDULE_UPDATE_INSTRUCTOR_TEMPLATE,
     SCHEDULE_UPDATE_PARENT_TEMPLATE,
 )
-from scheduler.models import Session
-from scheduler.schema import SessionType
+from scheduler.models import Session, SessionNote
+from scheduler.schema import SessionType, SessionNoteType
 
 from graphene import Boolean, DateTime, ID, String
 from graphql_jwt.decorators import staff_member_required
@@ -78,5 +78,44 @@ class CreateSession(graphene.Mutation):
         return CreateSession(session=session, created=created)
 
 
+class CreateSessionNote(graphene.Mutation):
+    class Arguments:
+        note_id = ID(name='id')
+        subject = String()
+        body = String()
+        poster_id = ID(name='user')
+        session_id = ID(name='sessionId')
+
+    session_note = graphene.Field(SessionNoteType)
+    created = Boolean()
+
+    @staticmethod
+    def mutate(root, info, **validated_data):
+        session_note, created = SessionNote.objects.update_or_create(
+            id=validated_data.pop('note_id', None),
+            defaults=validated_data
+        )
+        return CreateSessionNote(session_note=session_note, created=created)
+
+
+class DeleteSessionNote(graphene.Mutation):
+    class Arguments:
+        note_id = graphene.ID(name="id")
+
+    deleted = graphene.Boolean()
+
+    @staticmethod
+    def mutate(root, info, **validated_data):
+        try:
+            session_note_obj = SessionNote.objects.get(id=validated_data.get('note_id'))
+        except ObjectDoesNotExist:
+            raise GraphQLError('Failed delete mutation. Session Note does not exist.')
+        session_note_obj.delete()
+        return DeleteSessionNote(deleted=True)
+
+
 class Mutation(graphene.ObjectType):
     create_session = CreateSession.Field()
+    create_session_note = CreateSessionNote.Field()
+
+    delete_session_note = DeleteSessionNote.Field()
