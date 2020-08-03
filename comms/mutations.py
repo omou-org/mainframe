@@ -110,22 +110,22 @@ class SendEmail(graphene.Mutation):
     class Arguments:
         subject = String()
         body = String()
-        parent_id = ID(name="primaryParentId")
-        poster_id = ID(name='userId')
+        user_id = ID(name="userId")
+        poster_id = ID(name='posterId')
 
     created = Boolean()
     
     @staticmethod
     def mutate(root, info, **validated_data):    
-        user = User.objects.get(id=validated_data.get('poster_id'))
-        primary_parent = User.objects.get(id=validated_data.get('parent_id'))
-        poster = user.first_name + ' ' + user.last_name
-        parent_email = primary_parent.email
-        primary_parent_fullname = primary_parent.first_name + ' ' + primary_parent.last_name
+        poster = User.objects.get(id=validated_data.get('poster_id'))
+        user = User.objects.get(id=validated_data.get('user_id'))
+        poster_fullname = poster.first_name + ' ' + poster.last_name
+        user_email = user.email
+        user_fullname = user.first_name + ' ' + user.last_name
         email = Email.objects.create(
             template_id=SEND_EMAIL_TO_PARENT_TEMPLATE,
-            recipient=parent_email,
-            data={'subject': validated_data.get('subject'), 'body': validated_data.get('body'), 'poster_name': poster, 'parent_name': primary_parent_fullname, 'business_name': settings.BUSINESS_NAME}            
+            recipient=user_email,
+            data={'subject': validated_data.get('subject'), 'body': validated_data.get('body'), 'poster_name': poster_fullname, 'user_name': user_fullname, 'business_name': settings.BUSINESS_NAME}            
         )
         email.save()
         return SendEmail(created=True)
