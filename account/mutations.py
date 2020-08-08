@@ -66,6 +66,13 @@ class DayOfWeekEnum(graphene.Enum):
     SUNDAY = 'sunday'
 
 
+class RelationshipEnum(graphene.Enum):
+    MOTHER = 'mother'
+    FATHER = 'father'
+    GUARDIAN = 'guardian'
+    OTHER = 'other'
+
+
 class CreateSchool(graphene.Mutation):
     class Arguments:
         id = graphene.ID()
@@ -175,7 +182,7 @@ class CreateParent(graphene.Mutation):
         zipcode = graphene.String()
 
         # Parent fields
-        relationship = graphene.String()
+        relationship = RelationshipEnum()
         secondary_phone_number = graphene.String()
 
     parent = graphene.Field(ParentType)
