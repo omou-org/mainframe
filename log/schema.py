@@ -1,4 +1,6 @@
+import arrow
 import graphene
+from graphql import GraphQLError
 from graphene import DateTime, Field, ID, Int, List, String
 from graphene_django.types import DjangoObjectType
 from django.contrib.admin.models import LogEntry
@@ -10,41 +12,11 @@ from account.models import Admin
 from account.mutations import AdminTypeEnum
 from search.schema import paginate
 
-class ActionEnum(graphene.Enum):
-    ADDITION=1
-    CHANGE=2
-    DELETION=3
-
-
-class ObjectEnum(graphene.Enum):
-    STUDENT='student'
-    PARENT='parent'
-    INSTRUCTOR='instructor'
-    ADMIN='admin'
-    PAYMENT='payment'
-    REGISTRATION='registration'
-    COURSE='course'
-    DISCOUNT='discount'
-    PRICERULE='pricerule'
-
-
-class SortEnum(graphene.Enum):
-    DATE_ASC="date_asc"
-    DATE_DESC="date_desc"
-    USER_ASC="user_asc"
-    USER_DESC="user_desc"
-    ADMIN_ASC="admin_asc"
-    ADMIN_DESC="admin_desc"
-    ACTION_ASC="action_asc"
-    ACTION_DESC="action_desc"
-    OBJECT_ASC="object_asc"
-    OBJECT_DESC="object_desc"
-
 
 class LogType(graphene.ObjectType):
     date=DateTime()
     user_id=ID()
-    admin_type=AdminTypeEnum()
+    admin_type=String()
     action=String()
     object_type=String()
     object_repr=String()
@@ -57,15 +29,15 @@ class LogTypeResults(graphene.ObjectType):
 
 class Query(object):
     logs=Field(LogTypeResults,
-                        start_date_time=DateTime(),
-                        end_date_time=DateTime(),
+                        start_date_time=String(),
+                        end_date_time=String(),
                         user_id=ID(),
-                        admin_type=AdminTypeEnum(),
-                        action=ActionEnum(),
-                        object_type=ObjectEnum(),
+                        admin_type=String(),
+                        action=String(),
+                        object_type=String(),
                         page=Int(),
                         page_size=Int(),
-                        sort=SortEnum()
+                        sort=String()
                         )
     
     @login_required
@@ -78,6 +50,10 @@ class Query(object):
 
         admin_type=kwargs.get('admin_type')
         if admin_type:
+            admin_types = ["owner", "receptionist", "assistant"]
+            if admin_type not in admin_types:
+                raise GraphQLError('Failed query. Invalid admin type.')
+
             admins=Admin.objects.filter(
                 user__id__in=set([log.user.id for log in queryset]),
                 admin_type=admin_type
@@ -86,23 +62,35 @@ class Query(object):
 
         object_type=kwargs.get('object_type')
         if object_type:
+            object_types = ['student', 'parent', 'instructor', 'admin', 'payment', 'registration', 'course', 'discount', 'pricerule']
+            if object_type not in object_types:
+                raise GraphQLError('Failed query. Invalid object type.')
+
             model_content_id=ContentType.objects.get(model=object_type)
             queryset=queryset.filter(content_type_id=model_content_id)
 
         action=kwargs.get('action')
         if action:
-            queryset=queryset.filter(action_flag=action)
+            action_types = {"add": 1, "edit": 2, "delete": 3}
+            if action not in action_types:
+                raise GraphQLError('Failed query. Invalid action type.')
+
+            queryset=queryset.filter(action_flag=action_types[action])
 
         start_date=kwargs.get('start_date_time')
         if start_date:
-            queryset=queryset.filter(action_time__gte=start_date)
+            queryset=queryset.filter(action_time__gte=arrow.get(start_date).datetime)
         
         end_date=kwargs.get('end_date_time')
         if end_date:
-            queryset=queryset.filter(action_time__lt=end_date)
+            queryset=queryset.filter(action_time__lt=arrow.get(end_date).datetime)
 
         sort=kwargs.get('sort')
         if sort:
+            sort_types = ["date_asc", "date_desc", "user_asc", "user_desc", "admin_asc", "admin_desc", "action_asc", "action_desc", "object_asc", "object_desc"]
+            if sort not in sort_types:
+                raise GraphQLError('Failed query. Invalid sort type.')
+
             obj, order = sort.split("_")
             # filter for obj
             if obj == "date":
