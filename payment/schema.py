@@ -1,5 +1,8 @@
-from graphene import Field, Int, ID, List
+from graphene import Field, ID, List, String
 from graphene_django.types import DjangoObjectType
+
+from datetime import datetime
+import arrow
 
 from course.schema import EnrollmentType
 from course.models import Course, Enrollment
@@ -37,7 +40,7 @@ class Query(object):
     registration = Field(RegistrationType, registration_id=ID())
     registration_cart = Field(CartType, cart_id=ID(), parent_id=ID())
 
-    payments = List(PaymentType, parent_id=ID())
+    payments = List(PaymentType, parent_id=ID(), start_date=String(), end_date=String())
     deductions = List(DeductionType, payment_id=ID())
     registrations = List(RegistrationType, payment_id=ID())
 
@@ -81,9 +84,22 @@ class Query(object):
 
     def resolve_payments(self, info, **kwargs):
         parent_id = kwargs.get('parent_id')
+        start_date = kwargs.get('start_date')
+        end_date = kwargs.get('end_date')
 
         if parent_id:
+            if start_date and end_date:
+                return Payment.objects.filter(
+                    created_at__gt=arrow.get(start_date).datetime,
+                    created_at__lt=arrow.get(end_date).datetime,
+                    parent=parent_id
+                )
             return Payment.objects.filter(parent=parent_id)
+        if start_date and end_date:
+            return Payment.objects.filter(
+                created_at__gt=datetime.date(start_date),
+                created_at__lt=datetime.date(end_date)
+            )
         return Payment.objects.all()
 
     def resolve_deductions(self, info, **kwargs):
