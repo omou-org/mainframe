@@ -104,7 +104,6 @@ class Query(object):
                 end_datetime__lt=end_of_month
             )
 
-        # TODO: fix these filters to filter by start and end date
         if start_date is not None and end_date is not None:
             queryset = queryset.filter(
                 start_datetime__gte=arrow.get(start_date).datetime,
