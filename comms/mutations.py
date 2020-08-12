@@ -44,7 +44,13 @@ class CreateAnnouncement(graphene.Mutation):
                 email = Email.objects.create(
                     template_id=ANNOUNCEMENT_EMAIL_TEMPLATE,
                     recipient=email_address,
-                    data={'subject': validated_data.get('subject'), 'body': validated_data.get('body'), 'poster_name': poster, 'course': course.title, 'parent_name': primary_parent_fullname}
+                    data={
+                        'subject': validated_data.get('subject'), 
+                        'body': validated_data.get('body'), 
+                        'poster_name': poster, 
+                        'course': course.title, 
+                        'parent_name': primary_parent_fullname
+                    }
                 )
                 email.save()
         return CreateAnnouncement(announcement=announcement, created=created)
@@ -125,7 +131,13 @@ class SendEmail(graphene.Mutation):
         email = Email.objects.create(
             template_id=SEND_EMAIL_TO_PARENT_TEMPLATE,
             recipient=user_email,
-            data={'subject': validated_data.get('subject'), 'body': validated_data.get('body'), 'poster_name': poster_fullname, 'user_name': user_fullname, 'business_name': settings.BUSINESS_NAME}            
+            data={
+                'subject': validated_data.get('subject'), 
+                'body': validated_data.get('body'), 
+                'poster_name': poster_fullname, 
+                'user_name': user_fullname, 
+                'business_name': settings.BUSINESS_NAME
+            }            
         )
         email.save()
         return SendEmail(created=True)
