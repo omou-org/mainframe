@@ -188,4 +188,5 @@ BUSINESS_NAME = 'Stark Industries'
 GRAPHQL_JWT = {
     'JWT_VERIFY_EXPIRATION': True,
     'JWT_EXPIRATION_DELTA': timedelta(minutes=20),
+    'JWT_CSRF_ROTATION': True,
 }
