@@ -334,6 +334,30 @@ class DeleteEnrollmentNote(graphene.Mutation):
         return DeleteEnrollmentNote(deleted=True)
 
 
+class DeleteEnrollment(graphene.Mutation):
+    class Arguments:
+        enrollment_id = graphene.ID(name='id')
+
+    deleted = graphene.Boolean()
+    parent = graphene.ID()
+    parent_balance = graphene.Float()
+
+    @staticmethod
+    def mutate(root, info, **validated_data):
+        try:
+            enrollment_obj = Enrollment.objects.get(id=validated_data.get('enrollment_id'))
+        except ObjectDoesNotExist:
+            raise GraphQLError('Failed delete mutation. Enrollment does not exist.')
+        if enrollment_obj.student.primary_parent:
+            parent = enrollment_obj.student.primary_parent
+        else:
+            parent = enrollment_obj.student.secondary_parent
+        parent.balance += enrollment_obj.enrollment_balance
+        parent.save()
+        enrollment_obj.delete()
+        return DeleteEnrollment(deleted=True)
+
+
 class Mutation(graphene.ObjectType):
     create_course = CreateCourse.Field()
     create_course_category = CreateCourseCategory.Field()
@@ -344,3 +368,4 @@ class Mutation(graphene.ObjectType):
 
     delete_course_note = DeleteCourseNote.Field()
     delete_enrollment_note = DeleteEnrollmentNote.Field()
+    delete_enrollment = DeleteEnrollment.Field()
