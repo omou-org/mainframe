@@ -339,8 +339,8 @@ class DeleteEnrollment(graphene.Mutation):
         enrollment_id = graphene.ID(name='id')
 
     deleted = graphene.Boolean()
-    parent = graphene.ID(name='parent')
-    parent_balance = graphene.Float(name='parent_balance')
+    parent = graphene.ID()
+    parent_balance = graphene.Float()
 
     @staticmethod
     def mutate(root, info, **validated_data):
