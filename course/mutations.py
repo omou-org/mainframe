@@ -355,7 +355,7 @@ class DeleteEnrollment(graphene.Mutation):
         parent.balance += enrollment_obj.enrollment_balance
         parent.save()
         enrollment_obj.delete()
-        return DeleteEnrollment(deleted=True)
+        return DeleteEnrollment(deleted=True, parent=parent.user.id, parent_balance=parent.balance)
 
 
 class Mutation(graphene.ObjectType):
