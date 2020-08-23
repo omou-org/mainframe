@@ -62,15 +62,17 @@ class DeleteAnnouncement(graphene.Mutation):
         announcement_id = graphene.ID(name='id')
 
     deleted = graphene.Boolean()
+    id= graphene.String()
 
     @staticmethod
     def mutate(root, info, **validated_data):
         try:
             announcement_obj = Announcement.objects.get(id=validated_data.get('announcement_id'))
+            announcement_id = announcement_obj.id
         except ObjectDoesNotExist:
             raise GraphQLError('Failed delete mutation. Announcement does not exist.')
         announcement_obj.delete()
-        return DeleteAnnouncement(deleted=True)
+        return DeleteAnnouncement(deleted=True, id=announcement_id)
         
 
 class MutateParentNotificationSettings(graphene.Mutation):
