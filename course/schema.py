@@ -161,9 +161,7 @@ class Query(object):
         if course_id:
             queryset = queryset.filter(course=course_id)
         if student_ids:
-            for student_id in student_ids:
-                if Enrollment.objects.filter(student_id=student_id).exists():
-                    enrollment_list.append(Enrollment.objects.get(student_id=student_id))
+            enrollment_list = Enrollment.objects.filter(student_id__in=student_ids)
         return enrollment_list or queryset.all()
 
     @login_required
