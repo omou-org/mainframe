@@ -1,3 +1,4 @@
+from datetime import timedelta
 import os
 
 # ===============
@@ -26,3 +27,10 @@ DATABASES = {
 }
 SECRET_KEY = os.environ.get("SECRET_KEY")
 SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY")
+
+# JWT
+GRAPHQL_JWT = {
+    'JWT_VERIFY_EXPIRATION': True,
+    'JWT_EXPIRATION_DELTA': timedelta(minutes=20),
+    'JWT_CSRF_ROTATION': True,
+}
