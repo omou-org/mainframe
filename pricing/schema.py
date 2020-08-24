@@ -117,7 +117,7 @@ def price_quote_total(body):
                     used_discounts.append({"id" : discount.id, "name" : discount.name, "amount" : amount})
 
             # MultiCourseDiscount (sessions on course basis)
-            multicourse_discounts = MultiCourseDiscount.objects.filter(num_sessions__lte = float(course_json["sessions"]))
+            multicourse_difscounts = MultiCourseDiscount.objects.filter(num_sessions__lte = float(course_json["sessions"]))
             for discount in multicourse_discounts.order_by("-num_sessions"):
                 # take highest applicable discount based on session count
                 if discount.id not in disabled_discounts and discount.active:
@@ -131,10 +131,11 @@ def price_quote_total(body):
 
         sub_total += course_sub_total
 
+    # TODO: create base discount for siblings discount as soon as db is created
     # sibling discount
-    if len(course_students) > 1:
-        total_discount_val += 25
-        used_discounts.append(("Siblings Discount", 25))
+    # if len(course_students) > 1:
+    #     total_discount_val += 25
+    #     used_discounts.append(("Siblings Discount", 25))
 
     # PaymentMethodDiscount
     payment_method = body["method"]
