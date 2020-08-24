@@ -333,6 +333,7 @@ class DeleteEnrollmentNote(graphene.Mutation):
         note_obj.delete()
         return DeleteEnrollmentNote(deleted=True)
 
+        
 
 class DeleteEnrollment(graphene.Mutation):
     class Arguments:
@@ -362,7 +363,7 @@ class Mutation(graphene.ObjectType):
     create_course = CreateCourse.Field()
     create_course_category = CreateCourseCategory.Field()
     create_course_note = CreateCourseNote.Field()
-    create_enrollment = CreateEnrollment.Field()
+    create_enrollment = CreateEnrollment.Field()    
     create_enrollments = CreateEnrollments.Field()
     create_enrollment_note = CreateEnrollmentNote.Field()
 

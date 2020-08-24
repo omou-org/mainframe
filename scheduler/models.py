@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth import get_user_model
 
 from account.models import Instructor
 from course.models import Course
@@ -31,6 +32,22 @@ class Session(models.Model):
     sent_payment_reminder = models.BooleanField(default=False)
 
     objects = SessionManager()
+
+    # Timestamps
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class SessionNote(models.Model):
+    subject = models.TextField()
+    body = models.TextField()
+    session = models.ForeignKey(
+        Session,
+        on_delete=models.PROTECT
+    )
+    poster = models.ForeignKey(
+        get_user_model(),
+        on_delete=models.PROTECT,
+    )    
 
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)

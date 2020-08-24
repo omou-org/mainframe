@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.db import models
@@ -7,9 +8,28 @@ from sendgrid.helpers.mail import Mail
 from twilio.rest import Client
 
 from account.models import Parent, Instructor
+from course.models import Course
+
 
 sg = SendGridAPIClient(api_key=settings.SENDGRID_API_KEY)
 twilio = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+
+
+class Announcement(models.Model):
+    subject = models.TextField()
+    body = models.TextField()
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.PROTECT
+    )
+    poster = models.ForeignKey(
+        get_user_model(),
+        on_delete=models.PROTECT,
+    )    
+
+    # Timestamps
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class Email(models.Model):

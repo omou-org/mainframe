@@ -9,13 +9,19 @@ from graphene_django.types import DjangoObjectType, ObjectType
 from graphql_jwt.decorators import login_required
 
 from account.models import InstructorAvailability, InstructorOutOfOffice
+
 from course.models import Course, Enrollment
-from scheduler.models import Session
+from scheduler.models import Session, SessionNote
 
 
 class SessionType(DjangoObjectType):
     class Meta:
         model = Session
+
+
+class SessionNoteType(DjangoObjectType):
+    class Meta:
+        model = SessionNote
 
 
 class ValidateScheduleType(ObjectType):
@@ -28,6 +34,8 @@ class Query(object):
     sessions = List(SessionType, time_frame=String(), view_option=String(),
                     course_id=ID(), time_shift=Int(default_value=0), instructor_id=ID(),
                     student_id=ID(), start_date=String(), end_date=String())
+    session_note = Field(SessionNoteType, note_id=ID())
+    session_notes = List(SessionNoteType, session_id=ID(required=True))
 
     # Schedule validators
     validate_session_schedule = Field(
@@ -110,6 +118,21 @@ class Query(object):
             )
 
         return queryset
+
+    @login_required
+    def resolve_session_note(self, info, **kwargs):
+        note_id = kwargs.get('note_id')
+
+        if note_id:
+            return SessionNote.objects.get(id=note_id)
+        
+        return None
+
+    @login_required
+    def resolve_session_notes(self, info, **kwargs):
+        session_id = kwargs.get('session_id')
+
+        return SessionNote.objects.filter(session_id=session_id)
 
     def resolve_validate_session_schedule(self, info, instructor_id, start_time, end_time, date):
         datetime_obj = datetime.strptime(date, '%Y-%m-%d')

@@ -234,5 +234,3 @@ class Query(object):
         )[:5]
 
         return top_5_categories
-
-
