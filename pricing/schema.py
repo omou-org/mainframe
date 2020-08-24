@@ -117,7 +117,7 @@ def price_quote_total(body):
                     used_discounts.append({"id" : discount.id, "name" : discount.name, "amount" : amount})
 
             # MultiCourseDiscount (sessions on course basis)
-            multicourse_difscounts = MultiCourseDiscount.objects.filter(num_sessions__lte = float(course_json["sessions"]))
+            multicourse_discounts = MultiCourseDiscount.objects.filter(num_sessions__lte = float(course_json["sessions"]))
             for discount in multicourse_discounts.order_by("-num_sessions"):
                 # take highest applicable discount based on session count
                 if discount.id not in disabled_discounts and discount.active:
