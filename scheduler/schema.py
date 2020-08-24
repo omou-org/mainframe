@@ -9,7 +9,8 @@ from graphene_django.types import DjangoObjectType, ObjectType
 from graphql_jwt.decorators import login_required
 
 from account.models import InstructorAvailability, InstructorOutOfOffice
-from course.models import Course
+
+from course.models import Course, Enrollment
 from scheduler.models import Session, SessionNote
 
 
@@ -32,9 +33,8 @@ class Query(object):
     session = Field(SessionType, session_id=ID(required=True))
     sessions = List(SessionType, time_frame=String(), view_option=String(),
                     course_id=ID(), time_shift=Int(default_value=0), instructor_id=ID(),
-                    start_date=String(), end_date=String())
+                    student_id=ID(), start_date=String(), end_date=String())
     session_note = Field(SessionNoteType, note_id=ID())
-
     session_notes = List(SessionNoteType, session_id=ID(required=True))
 
     # Schedule validators
@@ -53,9 +53,10 @@ class Query(object):
     def resolve_session(self, info, session_id):
         return Session.objects.get(id=session_id)
 
+    @login_required
     def resolve_sessions(self, info, time_frame=None, view_option=None,
                          course_id=None, time_shift=0, instructor_id=None,
-                         start_date=None, end_date=None):
+                         student_id=None, start_date=None, end_date=None):
         queryset = Session.objects.all()
 
         if course_id is not None:
@@ -63,6 +64,12 @@ class Query(object):
 
         if instructor_id is not None:
             queryset = queryset.filter(instructor=instructor_id)
+
+        if student_id is not None:
+            # get all courses student is enrolled in
+            courses = [enrollment.course for enrollment in Enrollment.objects.filter(student=student_id)]
+            # filter sessions to only those of courses student is enrolled in
+            queryset = queryset.filter(course__in = courses)
 
         if view_option == 'class':
             queryset = queryset.filter(course__course_type=Course.CLASS)
