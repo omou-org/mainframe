@@ -131,10 +131,11 @@ def price_quote_total(body):
 
         sub_total += course_sub_total
 
+    # TODO: create base discount for siblings discount as soon as db is created
     # sibling discount
-    if len(course_students) > 1:
-        total_discount_val += 25
-        used_discounts.append(("Siblings Discount", 25))
+    # if len(course_students) > 1:
+    #     total_discount_val += 25
+    #     used_discounts.append(("Siblings Discount", 25))
 
     # PaymentMethodDiscount
     payment_method = body["method"]
