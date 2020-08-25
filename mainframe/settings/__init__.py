@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 import importlib
 import os
 import sys
-from datetime import timedelta
 
 
 PROJECT_ROOT = os.path.dirname(__file__)
@@ -184,10 +183,3 @@ SENDGRID_API_KEY = env.SENDGRID_API_KEY
 TWILIO_ACCOUNT_SID = 'test'
 TWILIO_AUTH_TOKEN = 'test'
 BUSINESS_NAME = 'Stark Industries'
-
-# JWT
-GRAPHQL_JWT = {
-    'JWT_VERIFY_EXPIRATION': True,
-    'JWT_EXPIRATION_DELTA': timedelta(minutes=20),
-    'JWT_CSRF_ROTATION': True,
-}
