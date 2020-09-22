@@ -62,7 +62,11 @@ class UserInfo(models.Model):
     class Meta:
         abstract = True
 
-class UserSchoolInfo(models.Model):
+class StudentSchoolInfo(models.Model):
+    student = models.ForeignKey(
+        Student,
+        on_delete=models.PROTECT
+    )
     textbook = models.CharField(max_length=512)
     teacher = models.CharField(max_length=100)
     current_grade = models.CharField(max_length=5)
