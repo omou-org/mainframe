@@ -57,7 +57,8 @@ API_APPS = (
     "pricing.apps.PricingConfig",
     "payment.apps.PaymentConfig",
     "comms.apps.CommsConfig",
-    "log.apps.LogConfig"
+    "log.apps.LogConfig",
+    "onboarding.apps.OnboardingConfig"
 )
 COMMON_APPS = (
     "django.contrib.admin",
