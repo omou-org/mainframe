@@ -18,7 +18,7 @@ class CourseType(DjangoObjectType):
     academic_level_pretty = String()
     class Meta:
         model = Course
-    
+
     def resolve_academic_level_pretty(self, info):
         level_to_pretty = {
             "elementary_lvl": "elementary school",
@@ -107,6 +107,15 @@ class Query(object):
 
         if note_id:
             return CourseNote.objects.get(id=note_id)
+
+        return None
+
+    @login_required
+    def resolve_enrollment(self, info, **kwargs):
+        enrollment_id = kwargs.get('enrollment_id')
+
+        if enrollment_id:
+            return Enrollment.objects.get(id=enrollment_id)
 
         return None
 
