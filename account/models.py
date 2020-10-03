@@ -62,6 +62,17 @@ class UserInfo(models.Model):
     class Meta:
         abstract = True
 
+class StudentSchoolInfo(models.Model):
+    student = models.ForeignKey(
+        Student,
+        on_delete=models.PROTECT
+    )
+    textbook = models.CharField(max_length=512)
+    teacher = models.CharField(max_length=100)
+    current_grade = models.CharField(max_length=5)
+    current_topic = models.CharField(max_length=64)
+    student_strengths=models.CharField(max_length=1024)
+    student_weaknesses=models.CharField(max_length=1024)
 
 class Note(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)

@@ -18,6 +18,7 @@ urlpatterns = [
     path('course/', include('course.urls')),
     path('account/', include('account.urls')),
     path('payment/', include('payment.urls')),
+    path('onboarding/', include('onboarding.urls')),
     path('admin/', admin.site.urls),
     path('graphql', GraphQLView.as_view(graphiql=True)),
     url(r'^$', views.api_root, name='api_root'),

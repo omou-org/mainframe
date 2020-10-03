@@ -11,6 +11,7 @@ from account.models import (
     Note,
     School,
     Student,
+    StudentSchoolInfo,
     Parent,
     Instructor,
     InstructorAvailability,
@@ -25,21 +26,21 @@ class UserType(DjangoObjectType):
     class Meta:
         model = User
 
-
 class NoteType(DjangoObjectType):
     class Meta:
         model = Note
-
 
 class SchoolType(DjangoObjectType):
     class Meta:
         model = School
 
-
 class StudentType(DjangoObjectType):
     class Meta:
         model = Student
 
+class StudentSchoolInfoType(DjangoObjectType):
+    class Meta:
+        model = StudentSchoolInfo
 
 class ParentType(DjangoObjectType):
     student_list = List(ID, source='student_list')
@@ -65,11 +66,9 @@ class InstructorAvailabilityType(DjangoObjectType):
     def resolve_end_datetime(self, info):
         return datetime.combine(date.today(), self.end_time)
 
-
 class InstructorOutOfOfficeType(DjangoObjectType):
     class Meta:
         model = InstructorOutOfOffice
-
 
 class AdminType(DjangoObjectType):
     class Meta:
@@ -84,6 +83,7 @@ class UserInfoType(Union):
 class Query(object):
     note = Field(NoteType, note_id=ID())
     student = Field(StudentType, user_id=ID(), email=String())
+    student_school_info = Field(StudentSchoolInfo, user_id=ID(), name=String())
     school = Field(SchoolType, school_id=ID(), name=String())
     parent = Field(ParentType, user_id=ID(), email=String())
     instructor = Field(InstructorType, user_id=ID(), email=String())
@@ -130,6 +130,16 @@ class Query(object):
             return Student.objects.get(user__email=email)
 
         return None
+    # @login_required
+    # def resolve_instructor_ooo(self, info, **kwargs):
+    #     instructor_id = kwargs.get('instructor_id')
+
+    #     return InstructorOutOfOffice.objects.filter(instructor=instructor_id)
+    
+    @login_required
+    def resolve_student_school_info(self, info, **kwargs):
+        student_id = kwargs.get('student_id')
+        return StudentSchoolInfo.objects.filter(student=student_id)
 
     @login_required
     def resolve_school(self, info, **kwargs):
