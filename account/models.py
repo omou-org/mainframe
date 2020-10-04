@@ -131,6 +131,7 @@ class StudentSchoolInfo(models.Model):
         Student,
         on_delete=models.PROTECT
     )
+    name = models.CharField(max_length=512)
     textbook = models.CharField(max_length=512)
     teacher = models.CharField(max_length=100)
     current_grade = models.CharField(max_length=5)
