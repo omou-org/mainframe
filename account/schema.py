@@ -1,6 +1,6 @@
 import jwt
 from datetime import datetime, date
-
+import graphene
 from graphene import Field, ID, List, String, Union, DateTime
 from graphene_django.types import DjangoObjectType
 from graphql_jwt.decorators import login_required
@@ -83,7 +83,6 @@ class UserInfoType(Union):
 class Query(object):
     note = Field(NoteType, note_id=ID())
     student = Field(StudentType, user_id=ID(), email=String())
-    student_school_info = Field(StudentSchoolInfo, user_id=ID(), name=String())
     school = Field(SchoolType, school_id=ID(), name=String())
     parent = Field(ParentType, user_id=ID(), email=String())
     instructor = Field(InstructorType, user_id=ID(), email=String())
@@ -130,16 +129,6 @@ class Query(object):
             return Student.objects.get(user__email=email)
 
         return None
-    # @login_required
-    # def resolve_instructor_ooo(self, info, **kwargs):
-    #     instructor_id = kwargs.get('instructor_id')
-
-    #     return InstructorOutOfOffice.objects.filter(instructor=instructor_id)
-    
-    @login_required
-    def resolve_student_school_info(self, info, **kwargs):
-        student_id = kwargs.get('student_id')
-        return StudentSchoolInfo.objects.filter(student=student_id)
 
     @login_required
     def resolve_school(self, info, **kwargs):
