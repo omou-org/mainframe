@@ -82,10 +82,10 @@ class Note(models.Model):
 
 class School(models.Model):
     name = models.CharField(max_length=100)
-    phone = models.CharField(max_length=10)
+    phone = models.CharField(max_length=10, blank=True)
     email = models.EmailField(max_length=70, unique=True)
 
-    address = models.CharField(max_length=100)
+    address = models.CharField(max_length=100, blank=True)
     zipcode = models.CharField(max_length=10)
     district = models.CharField(max_length=100, blank=True)
 
