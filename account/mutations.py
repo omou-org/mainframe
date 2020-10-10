@@ -77,6 +77,9 @@ class CreateSchool(graphene.Mutation):
     class Arguments:
         id = graphene.ID()
         name = graphene.String()
+        phone = graphene.String()
+        email = graphene.String()
+        address = graphene.String()
         zipcode = graphene.String()
         district = graphene.String()
 

@@ -82,6 +82,10 @@ class Note(models.Model):
 
 class School(models.Model):
     name = models.CharField(max_length=100)
+    phone = models.CharField(max_length=10)
+    email = models.EmailField(max_length=70, unique=True)
+
+    address = models.CharField(max_length=100)
     zipcode = models.CharField(max_length=10)
     district = models.CharField(max_length=100, blank=True)
 
