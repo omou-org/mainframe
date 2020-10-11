@@ -18,11 +18,12 @@ from pricing.schema import (
 )
 from course.mutations import AcademicLevelEnum, CourseTypeEnum
 
-from graphql_jwt.decorators import login_required, staff_member_required
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE, DELETION
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
+from graphql_jwt.decorators import login_required, staff_member_required
+
 
 
 class CreatePriceRule(graphene.Mutation):
