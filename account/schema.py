@@ -1,6 +1,6 @@
 import jwt
 from datetime import datetime, date
-
+import graphene
 from graphene import Field, ID, List, String, Union, DateTime
 from graphene_django.types import DjangoObjectType
 from graphql_jwt.decorators import login_required
@@ -11,6 +11,7 @@ from account.models import (
     Note,
     School,
     Student,
+    StudentSchoolInfo,
     Parent,
     Instructor,
     InstructorAvailability,
@@ -25,21 +26,21 @@ class UserType(DjangoObjectType):
     class Meta:
         model = User
 
-
 class NoteType(DjangoObjectType):
     class Meta:
         model = Note
-
 
 class SchoolType(DjangoObjectType):
     class Meta:
         model = School
 
-
 class StudentType(DjangoObjectType):
     class Meta:
         model = Student
 
+class StudentSchoolInfoType(DjangoObjectType):
+    class Meta:
+        model = StudentSchoolInfo
 
 class ParentType(DjangoObjectType):
     student_list = List(ID, source='student_list')
@@ -65,11 +66,9 @@ class InstructorAvailabilityType(DjangoObjectType):
     def resolve_end_datetime(self, info):
         return datetime.combine(date.today(), self.end_time)
 
-
 class InstructorOutOfOfficeType(DjangoObjectType):
     class Meta:
         model = InstructorOutOfOffice
-
 
 class AdminType(DjangoObjectType):
     class Meta:
