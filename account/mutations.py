@@ -122,6 +122,7 @@ class CreateStudent(graphene.Mutation):
     created = graphene.Boolean()
 
     @staticmethod
+    @login_required
     def mutate(root, info, user, **validated_data):
         with transaction.atomic():
             # update request
@@ -189,6 +190,7 @@ class CreateParent(graphene.Mutation):
     created = graphene.Boolean()
 
     @staticmethod
+    @login_required
     def mutate(root, info, user, **validated_data):
         with transaction.atomic():
             # update request
@@ -272,6 +274,7 @@ class CreateInstructor(graphene.Mutation):
     created = graphene.Boolean()
 
     @staticmethod
+    @login_required
     def mutate(root, info, user, **validated_data):
         with transaction.atomic():
             # update request
