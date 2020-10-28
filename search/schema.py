@@ -102,19 +102,25 @@ class Query(object):
     
     @login_required
     def resolve_accountSearch(self, info, **kwargs):        
-        # query on profile filter if set else all account types
-        profile = kwargs.get('profile', None)
-        profiles = (['STUDENT', 'INSTRUCTOR', 'PARENT', 'ADMIN'] if profile
-           is None else [profile])
-
         # access control results based on user type
         user_id = info.context.user.id
-        if Student.objects.filter(user=user_id).exists():
-            profiles = ['ADMIN', 'INSTRUCTOR']
-        elif Instructor.objects.filter(user=user_id).exists():
+
+        is_student = Student.objects.filter(user=user_id).exists()
+        is_instructor = Instructor.objects.filter(user=user_id).exists()
+        is_parent = Parent.objects.filter(user=user_id).exists()
+        if is_student:
+            profiles = ['ADMIN', 'INSTRUCTOR', 'PARENT']
+        elif is_instructor:
+            profiles = ['ADMIN', 'PARENT', 'STUDENT']
+        elif is_parent:
             profiles = ['ADMIN', 'INSTRUCTOR', 'STUDENT']
-        elif Parent.objects.filter(user=user_id).exists():
-            profiles = ['ADMIN', 'INSTRUCTOR']
+        else: # admin
+            profiles = ['ADMIN', 'PARENT', 'INSTRUCTOR', 'STUDENT']
+
+        # query on profile filter if set else all account types
+        profile = kwargs.get('profile', None)
+        if profile in profiles: # only use profile if accessible
+            profiles = [profile]
 
         # define filter param to django manager/object mappings
         filterToSearch = {
@@ -122,7 +128,7 @@ class Query(object):
             'INSTRUCTOR' : getattr(InstructorManager, 'search'),
             'PARENT' : getattr(ParentManager, 'search'),
             'ADMIN' : getattr(AdminManager, 'search'),
-        }
+        }    
         filterToModel = {
             'STUDENT' : Student.objects,
             'INSTRUCTOR' : Instructor.objects,
@@ -151,14 +157,56 @@ class Query(object):
             if admin_profile is not None:
                 profile_results = profile_results.filter(admin_type=admin_profile)
 
-            # filter for grade if STUDENT
             if profile == 'STUDENT':
+                # filter for grade if STUDENT
                 try:
                     grade = int(kwargs.get('grade', None))
                     if 1 <= grade and grade <= 13:
                         profile_results = profile_results.filter(grade=grade)
                 except:
                     pass
+
+                # students in instructor's courses
+                if is_instructor:
+                    courses = Course.objects.filter(instructor = user_id)
+                    student_ids = set()
+                    for course in courses:
+                        student_ids.update(course.enrollment_list)
+                    profile_results = profile_results.filter(user_id__in = student_ids)
+
+                # parent's students
+                if is_parent:
+                    parent = Parent.objects.get(user=user_id)
+                    profile_results = profile_results.filter(user_id__in = parent.student_list)
+
+            # parent
+            if profile == 'PARENT':
+                # parents of students in instructor's courses
+                if is_instructor:
+                    # find students
+                    courses = Course.objects.filter(instructor = user_id)
+                    student_ids = set()
+                    for course in courses:
+                        student_ids.update(course.enrollment_list)
+
+                    # students' parents
+                    parent_ids = set()
+                    for student_id in student_ids:
+                        student = Student.objects.get(user_id = student_id)
+                        if student.primary_parent:
+                            parent_ids.add(student.primary_parent.user.id)
+                        if student.secondary_parent:
+                            parent_ids.add(student.secondary_parent.user.id)
+                    profile_results = profile_results.filter(user_id__in = parent_ids)
+
+                # student's parents
+                if is_student:
+                    student = Student.objects.get(user=user_id)
+                    primary_parent_id = None if not student.primary_parent else student.primary_parent.user.id
+                    secondary_parent_id = None if not student.secondary_parent else student.primary_parent.user.id
+                    profile_results = profile_results.filter(user_id__in=[primary_parent_id, secondary_parent_id])
+
+            results = chain(results, profile_results)
 
         # sort results
         sort = kwargs.get('sort', None)
