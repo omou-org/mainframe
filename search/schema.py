@@ -111,7 +111,7 @@ class Query(object):
         if is_student:
             profiles = ['ADMIN', 'INSTRUCTOR', 'PARENT']
         elif is_instructor:
-            profiles = ['ADMIN', 'PARENT', 'STUDENT']
+            profiles = ['ADMIN', 'INSTRUCTOR', 'PARENT', 'STUDENT']
         elif is_parent:
             profiles = ['ADMIN', 'INSTRUCTOR', 'STUDENT']
         else: # admin
