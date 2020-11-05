@@ -67,7 +67,6 @@ class CreateCourse(graphene.Mutation):
     @staticmethod
     @staff_member_required
     def mutate(root, info, **validated_data):
-        print(validated_data)
         # update course
         if validated_data.get('course_id'):
             course = Course.objects.get(id=validated_data.get('course_id'))
