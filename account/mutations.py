@@ -272,6 +272,7 @@ class CreateInstructor(graphene.Mutation):
     created = graphene.Boolean()
 
     @staticmethod
+    @staff_member_required
     def mutate(root, info, user, **validated_data):
         with transaction.atomic():
             # update request
@@ -322,6 +323,7 @@ class CreateInstructor(graphene.Mutation):
                 object_repr=f"{instructor.user.first_name} {instructor.user.last_name}",
                 action_flag=ADDITION
             )
+
             return CreateInstructor(instructor=instructor, created=True)
 
 

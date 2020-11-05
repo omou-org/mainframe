@@ -11,7 +11,7 @@ from graphql_jwt.decorators import login_required
 from account.models import InstructorAvailability, InstructorOutOfOffice
 
 from course.models import Course, Enrollment
-from scheduler.models import Session, SessionNote
+from scheduler.models import Session, SessionNote, Attendance
 
 
 class SessionType(DjangoObjectType):
@@ -29,6 +29,10 @@ class ValidateScheduleType(ObjectType):
     reason = String()
 
 
+class AttendanceType(DjangoObjectType):
+    class Meta:
+        model = Attendance
+
 class Query(object):
     session = Field(SessionType, session_id=ID(required=True))
     sessions = List(SessionType, time_frame=String(), view_option=String(),
@@ -36,6 +40,8 @@ class Query(object):
                     student_id=ID(), start_date=String(), end_date=String())
     session_note = Field(SessionNoteType, note_id=ID())
     session_notes = List(SessionNoteType, session_id=ID(required=True))
+    attendance = Field(AttendanceType, attendance_id=ID(required=True))
+    attendances = List(AttendanceType)
 
     # Schedule validators
     validate_session_schedule = Field(
@@ -125,7 +131,7 @@ class Query(object):
 
         if note_id:
             return SessionNote.objects.get(id=note_id)
-        
+
         return None
 
     @login_required
@@ -233,3 +239,6 @@ class Query(object):
             }
 
         return {'status': True}
+
+    def resolve_attendances(self, info):
+        return Attendance.objects.all()

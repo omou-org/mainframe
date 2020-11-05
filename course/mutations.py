@@ -4,7 +4,7 @@ import pytz
 from datetime import datetime, timezone
 
 import graphene
-from graphene import Boolean, DateTime, Decimal, Field, ID, Int, String, Time
+from graphene import Boolean, Date, Time, Decimal, Field, ID, Int, String, Time
 from graphql import GraphQLError
 from graphql_jwt.decorators import staff_member_required
 
@@ -54,8 +54,8 @@ class CreateCourse(graphene.Mutation):
         # Logistical information
         room = String()
         day_of_week = DayOfWeekEnum()
-        start_date = DateTime()
-        end_date = DateTime()
+        start_date = Date()
+        end_date = Date()
         start_time = Time()
         end_time = Time()
         max_capacity = Int()
@@ -333,7 +333,7 @@ class DeleteEnrollmentNote(graphene.Mutation):
         note_obj.delete()
         return DeleteEnrollmentNote(deleted=True)
 
-        
+
 
 class DeleteEnrollment(graphene.Mutation):
     class Arguments:
@@ -363,7 +363,7 @@ class Mutation(graphene.ObjectType):
     create_course = CreateCourse.Field()
     create_course_category = CreateCourseCategory.Field()
     create_course_note = CreateCourseNote.Field()
-    create_enrollment = CreateEnrollment.Field()    
+    create_enrollment = CreateEnrollment.Field()
     create_enrollments = CreateEnrollments.Field()
     create_enrollment_note = CreateEnrollmentNote.Field()
 

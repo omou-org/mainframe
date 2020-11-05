@@ -6,12 +6,18 @@ from comms.templates import (
     SCHEDULE_UPDATE_INSTRUCTOR_TEMPLATE,
     SCHEDULE_UPDATE_PARENT_TEMPLATE,
 )
-from scheduler.models import Session, SessionNote
-from scheduler.schema import SessionType, SessionNoteType
+from scheduler.models import Session, SessionNote, Attendance
+from scheduler.schema import SessionType, SessionNoteType, AttendanceType
 
-from graphene import Boolean, DateTime, ID, String
+from graphene import Boolean, DateTime, ID, String, Enum
 from graphql_jwt.decorators import staff_member_required
 
+
+class AttendanceStatusEnum(Enum):
+    PRESENT = "present"
+    TARDY = "tardy"
+    ABSENT = "absent"
+    UNSET = "unset"
 
 class CreateSession(graphene.Mutation):
     class Arguments:
@@ -114,8 +120,26 @@ class DeleteSessionNote(graphene.Mutation):
         return DeleteSessionNote(deleted=True)
 
 
+class UpdateAttendance(graphene.Mutation):
+    class Arguments:
+        attendance_id = ID(name='id')
+        status = AttendanceStatusEnum()
+
+    attendance = graphene.Field(AttendanceType)
+
+    @staticmethod
+    def mutate(root, info, **validated_data):
+        attendance, created = Attendance.objects.update_or_create(
+            id=validated_data.pop('attendance_id', None),
+            defaults=validated_data
+        )
+        return UpdateAttendance(attendance=attendance)
+
+
 class Mutation(graphene.ObjectType):
     create_session = CreateSession.Field()
     create_session_note = CreateSessionNote.Field()
 
     delete_session_note = DeleteSessionNote.Field()
+
+    update_attendance = UpdateAttendance.Field()
