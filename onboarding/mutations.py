@@ -5,6 +5,8 @@ from onboarding.models import Business
 from onboarding.schema import BusinessType
 from graphql_jwt.decorators import login_required, staff_member_required
 
+from graphene_file_upload.scalars import Upload
+
 class CreateBusiness(graphene.Mutation):
     class Arguments:
         id = graphene.ID()
@@ -32,6 +34,17 @@ class CreateBusiness(graphene.Mutation):
         )
         return CreateBusiness(business=business, created=created)
 
+class UploadMutation(graphene.Mutation):
+    class Arguments:
+        uploadFile = Upload(required=True)
+    
+    success = graphene.Boolean()
+
+    def mutate(self, info, uploadFile, **kwargs):
+        print("hello world")
+        return UploadMutation(success=True)
+
 
 class Mutation(graphene.ObjectType):
     create_business = CreateBusiness.Field()
+    upload = UploadMutation.Field()

@@ -8,6 +8,7 @@ from rest_framework.authtoken import views as auth_views
 
 from mainframe.api_root import views
 
+from graphene_file_upload.django import FileUploadGraphQLView
 
 GraphQLView.graphiql_template = "graphene_graphiql_explorer/graphiql.html"
 
@@ -20,7 +21,7 @@ urlpatterns = [
     path('payment/', include('payment.urls')),
     path('onboarding/', include('onboarding.urls')),
     path('admin/', admin.site.urls),
-    path('graphql', GraphQLView.as_view(graphiql=True)),
+    path('graphql', FileUploadGraphQLView.as_view(graphiql=True)),
     url(r'^$', views.api_root, name='api_root'),
     url(r'^auth_token/', auth_views.obtain_auth_token),
 ]
