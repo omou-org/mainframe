@@ -41,15 +41,6 @@ class Course(models.Model):
         (HIGH_LVL, "High"),
         (COLLEGE_LVL, "College"),
     )
-    DAYS_OF_WEEK = (
-        ('monday', 'Monday'),
-        ('tuesday', 'Tuesday'),
-        ('wednesday', 'Wednesday'),
-        ('thursday', 'Thursday'),
-        ('friday', 'Friday'),
-        ('saturday', 'Saturday'),
-        ('sunday', 'Sunday'),
-    )
 
     # Course information
     course_type = models.CharField(
@@ -71,12 +62,9 @@ class Course(models.Model):
 
     # Logistical information
     room = models.CharField(max_length=50, null=True, blank=True)
-    day_of_week = models.CharField(max_length=9, choices=DAYS_OF_WEEK, null=True, blank=True)
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
     num_sessions = models.IntegerField(default=0)
-    start_time = models.TimeField()
-    end_time = models.TimeField()
     max_capacity = models.IntegerField(null=True, blank=True)
     is_confirmed = models.BooleanField(default=False)
 
@@ -109,6 +97,26 @@ class Course(models.Model):
     @property
     def enrollment_id_list(self):
         return [enrollment.id for enrollment in self.enrollment_set.all()]
+
+
+class CourseAvailability(models.Model):
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.PROTECT
+    ) 
+
+    DAYS_OF_WEEK = (
+        ('monday', 'Monday'),
+        ('tuesday', 'Tuesday'),
+        ('wednesday', 'Wednesday'),
+        ('thursday', 'Thursday'),
+        ('friday', 'Friday'),
+        ('saturday', 'Saturday'),
+        ('sunday', 'Sunday'),
+    )
+    day_of_week = models.CharField(max_length=9, choices=DAYS_OF_WEEK, null=True, blank=True)
+    start_time = models.TimeField()
+    end_time = models.TimeField()
 
 
 class CourseNote(models.Model):

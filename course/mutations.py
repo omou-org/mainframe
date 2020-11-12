@@ -1,10 +1,10 @@
 import arrow
 import calendar
 import pytz
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import graphene
-from graphene import Boolean, DateTime, Decimal, Field, ID, Int, String, Time
+from graphene import Boolean, DateTime, Decimal, Field, ID, Int, List, String, Time
 from graphql import GraphQLError
 from graphql_jwt.decorators import staff_member_required
 
@@ -14,7 +14,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
 from account.mutations import DayOfWeekEnum
-from course.models import Course, CourseNote, CourseCategory, Enrollment, EnrollmentNote
+from course.models import Course, CourseAvailability, CourseNote, CourseCategory, Enrollment, EnrollmentNote
 from course.schema import (
     CourseType,
     CourseNoteType,
@@ -39,6 +39,13 @@ class AcademicLevelEnum(graphene.Enum):
     COLLEGE_LVL = 'college_lvl'
 
 
+class CourseAvailabilityInput(graphene.InputObjectType):
+    course = ID(name='course')
+    day_of_week = DayOfWeekEnum()
+    start_time = Time()
+    end_time = Time()
+
+
 class CreateCourse(graphene.Mutation):
     class Arguments:
         course_id = ID(name='id')
@@ -53,13 +60,11 @@ class CreateCourse(graphene.Mutation):
 
         # Logistical information
         room = String()
-        day_of_week = DayOfWeekEnum()
         start_date = DateTime()
         end_date = DateTime()
-        start_time = Time()
-        end_time = Time()
         max_capacity = Int()
         is_confirmed = Boolean()
+        availabilities = List(CourseAvailabilityInput)
 
     course = Field(CourseType)
     created = Boolean()
@@ -141,9 +146,17 @@ class CreateCourse(graphene.Mutation):
         course = Course.objects.create(**validated_data)
         course.num_sessions = 0
 
+
+        curr_date = arrow.get(course.start_date)
+        start = curr_date - timedelta(days=curr_date.weekday())
+
+        for availability in validated_data.get('availabilities'):
+            CourseAvailability.objects.create(course=course, **availability)
+
+        
         if course.start_date and course.end_date:
-            course.day_of_week = calendar.day_name[course.start_date.weekday()].lower()
-            current_date = arrow.get(course.start_date)
+            # course.day_of_week = calendar.day_name[course.start_date.weekday()].lower()
+            start_date = arrow.get(course.start_date)
             end_date = arrow.get(course.end_date)
 
             confirmed_end_date = end_date
