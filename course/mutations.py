@@ -58,6 +58,9 @@ class CreateCourse(graphene.Mutation):
         total_tuition = Decimal()
         course_category_id = ID(name='courseCategory')
 
+        course_link = String()
+        course_link_description = String()
+
         # Logistical information
         room = String()
         start_date = DateTime()
@@ -130,6 +133,8 @@ class CreateCourse(graphene.Mutation):
                     current_date = current_date.shift(weeks=+1)
 
             course.save()
+            if validated_data.get('course_link') or validated_data.get('course_link_description'):
+                validated_data['course_link_updated_at'] = datetime.now()
             Course.objects.filter(id=course.id).update(**validated_data)
             course.refresh_from_db()
 
@@ -145,6 +150,8 @@ class CreateCourse(graphene.Mutation):
         # create course
         course = Course.objects.create(**validated_data)
         course.num_sessions = 0
+        if validated_data.get('course_link') or validated_data.get('course_link_description'):
+            course.course_link_updated_at = datetime.now()
 
         # create first week days and course availability models
         days_of_week = []

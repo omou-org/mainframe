@@ -4,6 +4,10 @@ from graphene import Enum, Field, Int, List, ID, Decimal, DateTime, String
 from graphene_django.types import ObjectType, DjangoObjectType
 from graphql_jwt.decorators import login_required
 
+from account.models import (
+    Parent
+)
+
 from course.models import (
     Course,
     CourseCategory,
@@ -73,7 +77,7 @@ class Query(object):
     enrollment = Field(EnrollmentType, enrollment_id=ID())
     enrollment_note = Field(EnrollmentNoteType, note_id=ID())
 
-    courses = List(CourseType, category_id=ID(), course_ids=List(ID), instructor_id=ID())
+    courses = List(CourseType, category_id=ID(), course_ids=List(ID), instructor_id=ID(), parent_id=ID())
     course_categories = List(CourseCategoryType)
     course_notes = List(CourseNoteType, course_id=ID(required=True))
     enrollments = List(EnrollmentType, student_id=ID(), course_id=ID(), student_ids=List(ID))
@@ -133,18 +137,24 @@ class Query(object):
         category_id = kwargs.get('category_id')
         course_ids = kwargs.get('course_ids')
         instructor_id = kwargs.get('instructor_id')
-        course_list = []
+        parent_id = kwargs.get('parent_id')
 
         if category_id:
             return Course.objects.filter(course_category=category_id)
         if course_ids:
-            for course_id in course_ids:
-                if Course.objects.filter(id=course_id).exists():
-                    course_list.append(Course.objects.get(id=course_id))
+            course_ids = [course_id for course_id in course_ids if Course.objects.filter(id=course_id).exists()]
+            return Course.objects.filter(id__in = course_ids) 
         if instructor_id:
             return Course.objects.filter(instructor_id=instructor_id)
-
-        return course_list or Course.objects.all()
+        if parent_id:
+            parent = Parent.objects.get(user_id=parent_id)
+            course_ids = set()
+            for student_id in parent.student_list:
+                for enrollment in Enrollment.objects.filter(student=student_id):
+                    course_ids.add(enrollment.course.id)
+            return Course.objects.filter(id__in = course_ids)
+        
+        return Course.objects.all()
 
     @login_required
     def resolve_course_categories(self, info, **kwargs):

@@ -60,6 +60,15 @@ class Course(models.Model):
     hourly_tuition = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
     total_tuition = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
 
+    course_link = models.URLField(
+        max_length=128, 
+        db_index=True, 
+        null=True, 
+        blank=True
+    )
+    course_link_description = models.CharField(max_length=1000, null=True, blank=True)
+    course_link_updated_at = models.DateTimeField(null=True, blank=True)
+
     # Logistical information
     room = models.CharField(max_length=50, null=True, blank=True)
     start_date = models.DateField(null=True, blank=True)
