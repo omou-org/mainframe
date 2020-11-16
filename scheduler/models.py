@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 
 from account.models import Instructor
-from course.models import Course
+from course.models import Course, CourseAvailability
 
 from scheduler.managers import SessionManager
 
@@ -13,6 +13,10 @@ class Session(models.Model):
     course = models.ForeignKey(
         Course,
         on_delete=models.PROTECT,
+    )
+    availability = models.ForeignKey(
+        CourseAvailability, 
+        on_delete=models.PROTECT
     )
     details = models.CharField(
         max_length=1000,
