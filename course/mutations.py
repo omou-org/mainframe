@@ -146,47 +146,62 @@ class CreateCourse(graphene.Mutation):
         course = Course.objects.create(**validated_data)
         course.num_sessions = 0
 
-
-        curr_date = arrow.get(course.start_date)
-        start = curr_date - timedelta(days=curr_date.weekday())
-
+        # create first week days and course availability models
+        days_of_week = []
+        start_times = []
+        end_times = []
+    
+        today = arrow.get(course.start_date)
+        week_start = today - timedelta(days=today.weekday())
+        weekday_to_shift = {name.lower():i for i, name in enumerate(list(calendar.day_name))}
         for availability in validated_data.get('availabilities'):
             CourseAvailability.objects.create(course=course, **availability)
-
+            days_of_week.append(
+                week_start.shift(days=weekday_to_shift[availability.day_of_week])
+            )
+            start_times.append(availability.start_time)
+            end_times.append(availability.end_time)
         
+        # create sessions for each week till last date passes 
         if course.start_date and course.end_date:
-            # course.day_of_week = calendar.day_name[course.start_date.weekday()].lower()
-            start_date = arrow.get(course.start_date)
+            # start_date = arrow.get(course.start_date)
             end_date = arrow.get(course.end_date)
 
             confirmed_end_date = end_date
-            if course.course_type == 'small_group' or course.course_type == 'tutoring':
-                end_date = end_date.shift(weeks=+30)
+            # if course.course_type == 'small_group' or course.course_type == 'tutoring':
+            #     end_date = end_date.shift(weeks=+30)
 
-            while current_date <= end_date:
-                start_datetime = datetime.combine(
-                    current_date.date(),
-                    course.start_time
-                )
-                end_datetime = datetime.combine(
-                    current_date.date(),
-                    course.end_time
-                )
-                start_datetime = pytz.timezone(
-                    'America/Los_Angeles').localize(start_datetime).astimezone(pytz.utc)
-                end_datetime = pytz.timezone(
-                    'America/Los_Angeles').localize(end_datetime).astimezone(pytz.utc)
+            end_not_reached = True
+            while end_not_reached:
+                # for each week iterate over all availabilities
+                for i in range(len(days_of_week)):
+                    current_date = days_of_week[i]
+                    if today <= current_date and current_date <= end_date:
+                        start_datetime = datetime.combine(
+                            current_date.date(),
+                            start_times[i]
+                        )
+                        end_datetime = datetime.combine(
+                            current_date.date(),
+                            end_times[i]
+                        )
+                        start_datetime = pytz.timezone(
+                            'America/Los_Angeles').localize(start_datetime).astimezone(pytz.utc)
+                        end_datetime = pytz.timezone(
+                            'America/Los_Angeles').localize(end_datetime).astimezone(pytz.utc)
 
-                Session.objects.create(
-                    course=course,
-                    start_datetime=start_datetime,
-                    end_datetime=end_datetime,
-                    instructor=course.instructor,
-                    is_confirmed=course.is_confirmed and current_date <= confirmed_end_date,
-                    title=course.title
-                )
-                course.num_sessions += 1
-                current_date = current_date.shift(weeks=+1)
+                        Session.objects.create(
+                            course=course,
+                            start_datetime=start_datetime,
+                            end_datetime=end_datetime,
+                            instructor=course.instructor,
+                            is_confirmed=course.is_confirmed and current_date <= confirmed_end_date,
+                            title=course.title
+                        )
+                        course.num_sessions += 1
+                    days_of_week[i] = current_date.shift(weeks=+1)
+                    if days_of_week[i] > end_date:
+                        end_not_reached = False
 
         if course.course_type == 'class' and course.num_sessions and course.session_length and course.total_tuition:
             course.hourly_tuition = course.total_tuition / (course.num_sessions * course.session_length)
