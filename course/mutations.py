@@ -1,7 +1,8 @@
 import arrow
 import calendar
+import decimal
 import pytz
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 import graphene
 from graphene import Boolean, DateTime, Decimal, Field, ID, Int, List, String, Time
@@ -40,7 +41,6 @@ class AcademicLevelEnum(graphene.Enum):
 
 
 class CourseAvailabilityInput(graphene.InputObjectType):
-    course = ID(name='course')
     day_of_week = DayOfWeekEnum()
     start_time = Time()
     end_time = Time()
@@ -148,21 +148,31 @@ class CreateCourse(graphene.Mutation):
             return CreateCourse(course=course, created=False)
 
         # create course
+        availabilities = validated_data.pop('availabilities')
+        if not availabilities:
+            raise GraphQLError('Failed course creation mutation. Availabilities does not exist.')
+        
+        print(validated_data)
+
         course = Course.objects.create(**validated_data)
         course.num_sessions = 0
         if validated_data.get('course_link') or validated_data.get('course_link_description'):
             course.course_link_updated_at = datetime.now()
 
         # create first week days and course availability models
+        course_availabilities = []
         days_of_week = []
         start_times = []
         end_times = []
     
-        today = arrow.get(course.start_date)
-        week_start = today - timedelta(days=today.weekday())
+        start_date = arrow.get(course.start_date)
+        week_start = start_date - timedelta(days=start_date.weekday())
         weekday_to_shift = {name.lower():i for i, name in enumerate(list(calendar.day_name))}
-        for availability in validated_data.get('availabilities'):
-            CourseAvailability.objects.create(course=course, **availability)
+
+        for availability in availabilities:
+            course_availabilities.append(
+                CourseAvailability.objects.create(course=course, **availability)
+            )
             days_of_week.append(
                 week_start.shift(days=weekday_to_shift[availability.day_of_week])
             )
@@ -171,7 +181,6 @@ class CreateCourse(graphene.Mutation):
         
         # create sessions for each week till last date passes 
         if course.start_date and course.end_date:
-            # start_date = arrow.get(course.start_date)
             end_date = arrow.get(course.end_date)
 
             confirmed_end_date = end_date
@@ -183,7 +192,12 @@ class CreateCourse(graphene.Mutation):
                 # for each week iterate over all availabilities
                 for i in range(len(days_of_week)):
                     current_date = days_of_week[i]
-                    if today <= current_date and current_date <= end_date:
+
+                    # stop iterating once any current_date exceeds end_date
+                    if current_date > end_date:
+                        end_not_reached = False
+
+                    if start_date <= current_date and current_date <= end_date:
                         start_datetime = datetime.combine(
                             current_date.date(),
                             start_times[i]
@@ -199,19 +213,30 @@ class CreateCourse(graphene.Mutation):
 
                         Session.objects.create(
                             course=course,
+                            availability=course_availabilities[i],
                             start_datetime=start_datetime,
                             end_datetime=end_datetime,
                             instructor=course.instructor,
                             is_confirmed=course.is_confirmed and current_date <= confirmed_end_date,
                             title=course.title
                         )
+                        course_availabilities[i].num_sessions += 1
                         course.num_sessions += 1
                     days_of_week[i] = current_date.shift(weeks=+1)
-                    if days_of_week[i] > end_date:
-                        end_not_reached = False
+        
+        # save updated availability num_sessions 
+        for availability in course_availabilities:
+            availability.save()
 
-        if course.course_type == 'class' and course.num_sessions and course.session_length and course.total_tuition:
-            course.hourly_tuition = course.total_tuition / (course.num_sessions * course.session_length)
+        if course.course_type == 'class' and course.num_sessions and course.total_tuition:
+            # calculate average hourly tuition across all sessions
+            total_hours = decimal.Decimal('0.0')
+            for availability in course_availabilities:
+                duration_sec = (datetime.combine(date.min, availability.end_time) - 
+                                datetime.combine(date.min, availability.start_time)).seconds
+                duration_hours = decimal.Decimal(duration_sec) / (60 * 60)
+                total_hours += duration_hours * availability.num_sessions
+            course.hourly_tuition = course.total_tuition / total_hours
         else:
             course.hourly_tuition = 0
 

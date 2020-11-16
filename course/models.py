@@ -88,18 +88,6 @@ class Course(models.Model):
     objects = CourseManager()
 
     @property
-    def session_length(self):
-        duration_sec = (datetime.combine(date.min, self.end_time) -
-                        datetime.combine(date.min, self.start_time)).seconds
-        duration_hours = Decimal(duration_sec) / (60 * 60)
-        return duration_hours
-
-    @property
-    def hourly_tutition(self):
-        if self.num_sessions > 0 and self.session_length > 0:
-            return self.total_tuition / (self.num_sessions * self.session_length)
-
-    @property
     def enrollment_list(self):
         return [enrollment.student.user.id for enrollment in self.enrollment_set.all()]
 
@@ -112,7 +100,8 @@ class CourseAvailability(models.Model):
     course = models.ForeignKey(
         Course,
         on_delete=models.PROTECT
-    ) 
+    )
+    num_sessions = models.IntegerField(default=0)
 
     DAYS_OF_WEEK = (
         ('monday', 'Monday'),
