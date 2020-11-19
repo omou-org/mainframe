@@ -19,6 +19,11 @@ from course.models import (
 from scheduler.models import Session
 
 
+class CourseAvailabilityType(DjangoObjectType):
+    class Meta:
+        model = CourseAvailability
+
+
 class CourseType(DjangoObjectType):
     active_availability_list = List(CourseAvailabilityType, source='active_availability_list')
     availability_list = List(CourseAvailabilityType, source='availability_list')
@@ -36,11 +41,6 @@ class CourseType(DjangoObjectType):
         }
         academic_name = level_to_pretty.get(self.academic_level)
         return academic_name
-
-
-class CourseAvailabilityType(DjangoObjectType):
-    class Meta:
-        model = CourseAvailability
 
 
 class CourseCategoryType(DjangoObjectType):

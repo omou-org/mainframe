@@ -88,43 +88,53 @@ class CreateCourse(graphene.Mutation):
 
                 # erase future to be replaced
                 Session.objects.filter(
-                    course=course,
-                    start_datetime__gte=now
+                    Q(course=course) &
+                    Q(start_datetime__date__gte=now)
                 ).delete()
                 
                 # set old availabilities that can't be reused to false
                 for availability in CourseAvailability.objects.filter(course=course):
-                    availability.available = False
-                    availability.save()
+                    availability.active = False
+                    availability.num_sessions = Session.objects.filter(availability_id=availability).count()
+                    if availability.num_sessions == 0:
+                        availability.delete()
+                    else:
+                        availability.save()
 
                 # create first week days and course availability models
                 course_availabilities = []
                 days_of_week = []
+                start_dates = []
                 start_times = []
                 end_times = []
                 weekday_to_shift = {name.lower():i for i, name in enumerate(list(calendar.day_name))}
                 for availability in availabilities:
-                    CourseAvailability.objects.filter(
-                        Q(course=course.id) &
-                        Q(day_of_week=availability['day_of_week']) &
-                        Q(start_time=availability['start_time']) &
-                        Q(end_time=availability['end_time'])
-                        )
+                    # set active if already exists
+                    isAvailable = CourseAvailability.objects.filter(
+                                Q(course=course.id) &
+                                Q(day_of_week=availability['day_of_week']) &
+                                Q(start_time=availability['start_time']) &
+                                Q(end_time=availability['end_time'])
+                                )
+                    if isAvailable:
+                        availability = isAvailable[0]
+                        availability.active = True
+                        availability.save()
+                    else:
+                        availability = CourseAvailability.objects.create(course=course, **availability)
 
-
-                    start_date = arrow.get(now)
                     # if old availability, start from where last session left off
+                    start_date = max(arrow.get(now), arrow.get(course.start_date))
                     old_sessions = Session.objects.filter(availability=availability)
                     if old_sessions:
-                        start_date = min(start_date, old_sessions.latest('start_datetime'))
+                        start_date = min(
+                            start_date,
+                            arrow.get(old_sessions.latest('start_datetime').start_datetime))
                     start_week = start_date - timedelta(days=start_date.weekday())
 
-                    course_availabilities.append(
-                        CourseAvailability.objects.create(course=course, **availability)
-                    )
-                    days_of_week.append(
-                        start_week.shift(days=weekday_to_shift[availability.day_of_week])
-                    )
+                    course_availabilities.append(availability)
+                    days_of_week.append(start_week.shift(days=weekday_to_shift[availability.day_of_week]))
+                    start_dates.append(start_date)
                     start_times.append(availability.start_time)
                     end_times.append(availability.end_time)
             
@@ -142,7 +152,7 @@ class CreateCourse(graphene.Mutation):
                         if current_date > end_date:
                             end_reached_count+=1
 
-                        if start_date <= current_date and current_date <= end_date:
+                        if start_dates[i] <= current_date and current_date <= end_date:
                             start_datetime = datetime.combine(
                                 current_date.date(),
                                 start_times[i]
@@ -167,17 +177,15 @@ class CreateCourse(graphene.Mutation):
                             )
                         days_of_week[i] = current_date.shift(weeks=+1)
                 
-                    # save updated availability num_sessions 
-                    for availability in course_availabilities:
-                        availability.num_sessions = Session.objects.filter(availability=availability).count()
-                        availability.save()
-
-            course.num_sessions = Session.objects.filter(course=course.id).count()
-            course.save()
+                # save updated availability num_sessions 
+                for availability in course_availabilities:
+                    availability.num_sessions = Session.objects.filter(availability=availability).count()
+                    availability.save()
+                course.num_sessions = Session.objects.filter(course=course.id).count()
 
             if validated_data.get('course_link') or validated_data.get('course_link_description'):
-                validated_data['course_link_updated_at'] = datetime.now()
-
+                course.course_link_updated_at = now
+            course.save()
             course.refresh_from_db()
 
             LogEntry.objects.log_action(
