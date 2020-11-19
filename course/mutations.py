@@ -151,9 +151,9 @@ class CreateCourse(graphene.Mutation):
         availabilities = validated_data.pop('availabilities')
         if not availabilities:
             raise GraphQLError('Failed course creation mutation. Availabilities does not exist.')
+        if validated_data.get("hourly_tuition") and validated_data.get("total_tuition"):
+            raise GraphQLError('Failed course creation mutation. Cannot specify both hourly_tuition and total_tuition')
         
-        print(validated_data)
-
         course = Course.objects.create(**validated_data)
         course.num_sessions = 0
         if validated_data.get('course_link') or validated_data.get('course_link_description'):
@@ -228,15 +228,19 @@ class CreateCourse(graphene.Mutation):
         for availability in course_availabilities:
             availability.save()
 
-        if course.course_type == 'class' and course.num_sessions and course.total_tuition:
-            # calculate average hourly tuition across all sessions
+        if course.course_type == 'class' and course.num_sessions:
+            # calculate total hours across all sessions
             total_hours = decimal.Decimal('0.0')
             for availability in course_availabilities:
                 duration_sec = (datetime.combine(date.min, availability.end_time) - 
                                 datetime.combine(date.min, availability.start_time)).seconds
                 duration_hours = decimal.Decimal(duration_sec) / (60 * 60)
                 total_hours += duration_hours * availability.num_sessions
-            course.hourly_tuition = course.total_tuition / total_hours
+
+            if course.total_tuition:
+                course.hourly_tuition = course.total_tuition / total_hours
+            elif course.hourly_tuition:
+                course.total_tuition = course.hourly_tuition * total_hours
         else:
             course.hourly_tuition = 0
 
