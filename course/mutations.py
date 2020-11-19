@@ -182,10 +182,7 @@ class CreateCourse(graphene.Mutation):
         # create sessions for each week till last date passes 
         if course.start_date and course.end_date:
             end_date = arrow.get(course.end_date)
-
             confirmed_end_date = end_date
-            # if course.course_type == 'small_group' or course.course_type == 'tutoring':
-            #     end_date = end_date.shift(weeks=+30)
 
             end_not_reached = True
             while end_not_reached:

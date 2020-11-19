@@ -10,6 +10,7 @@ from account.models import (
 
 from course.models import (
     Course,
+    CourseAvailability,
     CourseCategory,
     CourseNote,
     Enrollment,
@@ -19,6 +20,9 @@ from scheduler.models import Session
 
 
 class CourseType(DjangoObjectType):
+    active_availability_list = List(CourseAvailabilityType, source='active_availability_list')
+    availability_list = List(CourseAvailabilityType, source='availability_list')
+
     academic_level_pretty = String()
     class Meta:
         model = Course
@@ -32,6 +36,11 @@ class CourseType(DjangoObjectType):
         }
         academic_name = level_to_pretty.get(self.academic_level)
         return academic_name
+
+
+class CourseAvailabilityType(DjangoObjectType):
+    class Meta:
+        model = CourseAvailability
 
 
 class CourseCategoryType(DjangoObjectType):
@@ -72,12 +81,14 @@ class PopularCategoryType(ObjectType):
 
 class Query(object):
     course = Field(CourseType, course_id=ID())
+    course_availability = Field(CourseAvailabilityType, availability_id=ID())
     course_category = Field(CourseCategoryType, category_id=ID())
     course_note = Field(CourseNoteType, note_id=ID())
     enrollment = Field(EnrollmentType, enrollment_id=ID())
     enrollment_note = Field(EnrollmentNoteType, note_id=ID())
 
     courses = List(CourseType, category_id=ID(), course_ids=List(ID), instructor_id=ID(), parent_id=ID())
+    course_availabilities = List(CourseAvailabilityType, course_id=ID(), availability_ids=List(ID))
     course_categories = List(CourseCategoryType)
     course_notes = List(CourseNoteType, course_id=ID(required=True))
     enrollments = List(EnrollmentType, student_id=ID(), course_id=ID(), student_ids=List(ID))
@@ -86,6 +97,28 @@ class Query(object):
     # custom methods
     num_recent_sessions = Int(timeframe=LookbackTimeframe(required=True))
     popular_categories = List(PopularCategoryType, timeframe=LookbackTimeframe(required=True))
+
+    @login_required
+    def resolve_course_availability(self, info, **kwargs):
+        availability_id = kwargs.get('availability_id')
+
+        if availability_id:
+            return CourseAvailability.objects.get(id=availability_id)
+
+        return None
+
+    @login_required
+    def resolve_course_availabilities(self, info, **kwargs):
+        course_id = kwargs.get('course_id')
+        availability_ids = kwargs.get('availability_ids')
+
+        if course_id:
+            return CourseAvailability.objects.filter(course_id=course_id)
+
+        if availability_ids:
+             return CourseAvailability.objects.filter(id__in=availability_ids)
+
+        return None
 
     @login_required
     def resolve_course(self, info, **kwargs):
