@@ -77,65 +77,115 @@ class CreateCourse(graphene.Mutation):
     def mutate(root, info, **validated_data):
         # update course
         if validated_data.get('course_id'):
+            availabilities = validated_data.pop('availabilities')
+
             course = Course.objects.get(id=validated_data.get('course_id'))
-            now = datetime.now()
-            sessions = Session.objects.filter(
-                course=course,
-                start_datetime__gte=now
-            )
-
-            for session in sessions:
-                pacific_tz = pytz.timezone('America/Los_Angeles')
-                utc_start_datetime = session.start_datetime.replace(tzinfo=timezone.utc).astimezone(tz=pacific_tz)
-                utc_end_datetime = session.start_datetime.replace(tzinfo=timezone.utc).astimezone(tz=pacific_tz)
-                start_datetime = datetime.combine(
-                    utc_start_datetime.date(),
-                    validated_data.get('start_time', course.start_time)
-                )
-                end_datetime = datetime.combine(
-                    utc_end_datetime.date(),
-                    validated_data.get('end_time', course.end_time)
-                )
-                session.start_datetime = pacific_tz.localize(start_datetime).astimezone(pytz.utc)
-                session.end_datetime = pacific_tz.localize(end_datetime).astimezone(pytz.utc)
-                session.save()
-
-            if 'end_date' in validated_data or validated_data.get('is_confirmed', False):
-                latest_session = sessions.latest('start_datetime')
-                if len(sessions) == 0 and validated_data.get('is_confirmed', False):
-                    current_date = arrow.get(validated_data['start_date'])
-                else:
-                    current_date = arrow.get(
-                        latest_session.start_datetime.date()).shift(weeks=+1)
-                end_date = arrow.get(validated_data['end_date'])
-                while current_date <= end_date:
-                    start_datetime = datetime.combine(
-                        current_date.date(),
-                        validated_data.get('start_time', course.start_time)
-                    )
-                    end_datetime = datetime.combine(
-                        current_date.date(),
-                        validated_data.get('end_time', course.end_time)
-                    )
-                    start_datetime = pytz.timezone(
-                        'America/Los_Angeles').localize(start_datetime).astimezone(pytz.utc)
-                    end_datetime = pytz.timezone(
-                        'America/Los_Angeles').localize(end_datetime).astimezone(pytz.utc)
-
-                    Session.objects.create(
-                        course=course,
-                        start_datetime=start_datetime,
-                        end_datetime=end_datetime,
-                        instructor=validated_data.get('instructor', course.instructor),
-                        is_confirmed=True
-                    )
-                    course.num_sessions += 1
-                    current_date = current_date.shift(weeks=+1)
-
-            course.save()
-            if validated_data.get('course_link') or validated_data.get('course_link_description'):
-                validated_data['course_link_updated_at'] = datetime.now()
             Course.objects.filter(id=course.id).update(**validated_data)
+            course.refresh_from_db()
+
+            if availabilities:
+                now = datetime.now()
+
+                # erase future to be replaced
+                Session.objects.filter(
+                    Q(course=course) &
+                    Q(start_datetime__date__gte=now)
+                ).delete()
+                
+                # set old availabilities that can't be reused to false
+                for availability in CourseAvailability.objects.filter(course=course):
+                    availability.active = False
+                    availability.num_sessions = Session.objects.filter(availability_id=availability).count()
+                    if availability.num_sessions == 0:
+                        availability.delete()
+                    else:
+                        availability.save()
+
+                # create first week days and course availability models
+                course_availabilities = []
+                days_of_week = []
+                start_dates = []
+                start_times = []
+                end_times = []
+                weekday_to_shift = {name.lower():i for i, name in enumerate(list(calendar.day_name))}
+                for availability in availabilities:
+                    # set active if already exists
+                    isAvailable = CourseAvailability.objects.filter(
+                                Q(course=course.id) &
+                                Q(day_of_week=availability['day_of_week']) &
+                                Q(start_time=availability['start_time']) &
+                                Q(end_time=availability['end_time'])
+                                )
+                    if isAvailable:
+                        availability = isAvailable[0]
+                        availability.active = True
+                        availability.save()
+                    else:
+                        availability = CourseAvailability.objects.create(course=course, **availability)
+
+                    # if old availability, start from where last session left off
+                    start_date = max(arrow.get(now), arrow.get(course.start_date))
+                    old_sessions = Session.objects.filter(availability=availability)
+                    if old_sessions:
+                        start_date = min(
+                            start_date,
+                            arrow.get(old_sessions.latest('start_datetime').start_datetime))
+                    start_week = start_date - timedelta(days=start_date.weekday())
+
+                    course_availabilities.append(availability)
+                    days_of_week.append(start_week.shift(days=weekday_to_shift[availability.day_of_week]))
+                    start_dates.append(start_date)
+                    start_times.append(availability.start_time)
+                    end_times.append(availability.end_time)
+            
+                # create sessions for each week till last date passes 
+                end_date = arrow.get(course.end_date)
+
+                end_reached_count = 0
+                while end_reached_count < len(days_of_week):
+                    end_reached_count = 0
+                    # for each week iterate over all availabilities
+                    for i in range(len(days_of_week)):
+                        current_date = days_of_week[i]
+
+                        # stop iterating once any current_date exceeds end_date
+                        if current_date > end_date:
+                            end_reached_count+=1
+
+                        if start_dates[i] <= current_date and current_date <= end_date:
+                            start_datetime = datetime.combine(
+                                current_date.date(),
+                                start_times[i]
+                            )
+                            end_datetime = datetime.combine(
+                                current_date.date(),
+                                end_times[i]
+                            )
+                            start_datetime = pytz.timezone(
+                                'America/Los_Angeles').localize(start_datetime).astimezone(pytz.utc)
+                            end_datetime = pytz.timezone(
+                                'America/Los_Angeles').localize(end_datetime).astimezone(pytz.utc)
+
+                            Session.objects.create(
+                                course=course,
+                                availability=course_availabilities[i],
+                                start_datetime=start_datetime,
+                                end_datetime=end_datetime,
+                                instructor=course.instructor,
+                                is_confirmed=course.is_confirmed and current_date <= end_date,
+                                title=course.title
+                            )
+                        days_of_week[i] = current_date.shift(weeks=+1)
+                
+                # save updated availability num_sessions 
+                for availability in course_availabilities:
+                    availability.num_sessions = Session.objects.filter(availability=availability).count()
+                    availability.save()
+                course.num_sessions = Session.objects.filter(course=course.id).count()
+
+            if validated_data.get('course_link') or validated_data.get('course_link_description'):
+                course.course_link_updated_at = now
+            course.save()
             course.refresh_from_db()
 
             LogEntry.objects.log_action(
@@ -166,7 +216,7 @@ class CreateCourse(graphene.Mutation):
         end_times = []
     
         start_date = arrow.get(course.start_date)
-        week_start = start_date - timedelta(days=start_date.weekday())
+        start_week = start_date - timedelta(days=start_date.weekday())
         weekday_to_shift = {name.lower():i for i, name in enumerate(list(calendar.day_name))}
 
         for availability in availabilities:
@@ -174,7 +224,7 @@ class CreateCourse(graphene.Mutation):
                 CourseAvailability.objects.create(course=course, **availability)
             )
             days_of_week.append(
-                week_start.shift(days=weekday_to_shift[availability.day_of_week])
+                start_week.shift(days=weekday_to_shift[availability.day_of_week])
             )
             start_times.append(availability.start_time)
             end_times.append(availability.end_time)
@@ -182,10 +232,7 @@ class CreateCourse(graphene.Mutation):
         # create sessions for each week till last date passes 
         if course.start_date and course.end_date:
             end_date = arrow.get(course.end_date)
-
             confirmed_end_date = end_date
-            # if course.course_type == 'small_group' or course.course_type == 'tutoring':
-            #     end_date = end_date.shift(weeks=+30)
 
             end_not_reached = True
             while end_not_reached:

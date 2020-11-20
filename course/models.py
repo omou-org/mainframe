@@ -3,6 +3,7 @@ from decimal import Decimal
 from math import floor
 
 from django.db import models
+from django.db.models import Q
 from django.utils.functional import cached_property
 from account.models import Instructor, Student
 
@@ -88,6 +89,14 @@ class Course(models.Model):
     objects = CourseManager()
 
     @property
+    def active_availability_list(self):
+        return CourseAvailability.objects.filter(Q(course=self.id) & Q(active=True))
+
+    @property
+    def availability_list(self):
+        return CourseAvailability.objects.filter(course=self.id)
+
+    @property
     def enrollment_list(self):
         return [enrollment.student.user.id for enrollment in self.enrollment_set.all()]
 
@@ -115,6 +124,8 @@ class CourseAvailability(models.Model):
     day_of_week = models.CharField(max_length=9, choices=DAYS_OF_WEEK, null=True, blank=True)
     start_time = models.TimeField()
     end_time = models.TimeField()
+
+    active = models.BooleanField(default=True)
 
 
 class CourseNote(models.Model):
