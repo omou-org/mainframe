@@ -1,12 +1,15 @@
 from rest_framework import serializers
+from .onboarding import Upload
 
 class UploadSerializer(serializers.Serializer):
-    upload = serializers.FileField()
+    upload_file = serializers.FileField()
 
     def create(self, validated_data):
+        print("inside create method")
+        print("datazz: ", validated_data)
         return Upload(**validated_data)
     
-    def process(self, validated_data):
+    def save(self, validated_data):
         print("data", validated_data)
 
 def process_uploads():

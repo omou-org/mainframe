@@ -1,3 +1,3 @@
 class Upload():
-    def __init__(self, upload):
-        self.upload = upload
+    def __init__(self, upload_file):
+        self.upload_file = upload_file

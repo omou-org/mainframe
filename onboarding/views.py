@@ -16,11 +16,12 @@ class FileUpload(APIView):
     # parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request, format=None):
-        upload_file = Upload(upload = request.data["upload"])
         print("data", request.data)
-        serializer = UploadSerializer(upload_file)
+        # upload_file = Upload(upload_file = request.data["upload_file"])
+        serializer = UploadSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            # serializer.process()
+            print(serializer.data)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return HttpResponse("failed")
 

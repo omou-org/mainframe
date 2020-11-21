@@ -34,17 +34,17 @@ class CreateBusiness(graphene.Mutation):
         )
         return CreateBusiness(business=business, created=created)
 
-class UploadMutation(graphene.Mutation):
-    class Arguments:
-        uploadFile = Upload(required=True)
+# class UploadMutation(graphene.Mutation):
+#     class Arguments:
+#         uploadFile = Upload(required=True)
     
-    success = graphene.Boolean()
+#     success = graphene.Boolean()
 
-    def mutate(self, info, uploadFile, **kwargs):
-        print("hello world")
-        return UploadMutation(success=True)
+#     def mutate(self, info, uploadFile, **kwargs):
+#         print("hello world")
+#         return UploadMutation(success=True)
 
 
 class Mutation(graphene.ObjectType):
     create_business = CreateBusiness.Field()
-    upload = UploadMutation.Field()
+    # upload = UploadMutation.Field()
