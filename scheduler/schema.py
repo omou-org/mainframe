@@ -41,7 +41,7 @@ class Query(object):
     session_note = Field(SessionNoteType, note_id=ID())
     session_notes = List(SessionNoteType, session_id=ID(required=True))
     attendance = Field(AttendanceType, attendance_id=ID(required=True))
-    attendances = List(AttendanceType)
+    attendances = List(AttendanceType, course_id=ID())
 
     # Schedule validators
     validate_session_schedule = Field(
@@ -140,6 +140,7 @@ class Query(object):
 
         return SessionNote.objects.filter(session_id=session_id)
 
+    @login_required
     def resolve_validate_session_schedule(self, info, instructor_id, start_time, end_time, date):
         datetime_obj = datetime.strptime(date, '%Y-%m-%d')
         day_of_week = calendar.day_name[datetime_obj.weekday()].lower()
@@ -201,6 +202,7 @@ class Query(object):
 
         return {'status': True}
 
+    @login_required
     def resolve_validate_course_schedule(self, info, instructor_id, start_time, end_time, start_date, end_date):
         start_datetime_obj = datetime.strptime(start_date, '%Y-%m-%d')
         day_of_week = calendar.day_name[start_datetime_obj.weekday()].lower()
@@ -240,5 +242,14 @@ class Query(object):
 
         return {'status': True}
 
-    def resolve_attendances(self, info):
-        return Attendance.objects.all()
+    @login_required
+    def resolve_attendance(self, info, attendance_id):
+        return Attendance.objects.get(id=attendance_id)
+
+    @login_required
+    def resolve_attendances(self, info, course_id=None):
+        queryset = Attendance.objects.all()
+        if course_id is not None:
+            queryset = queryset.filter(session__course=course_id)
+
+        return queryset
