@@ -12,6 +12,11 @@ from .serializers import UploadSerializer
 # from rest_framework import MultiPartParser
 from .onboarding import Upload
 
+from openpyxl import load_workbook
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+
+
 class FileUpload(APIView):
     # parser_classes = [MultiPartParser, FormParser]
 
@@ -20,8 +25,13 @@ class FileUpload(APIView):
         # upload_file = Upload(upload_file = request.data["upload_file"])
         serializer = UploadSerializer(data=request.data)
         if serializer.is_valid():
-            # serializer.process()
-            print(serializer.data)
+            # print(serializer["upload_file"])
+            path = default_storage.save('tmp/curr.xlsx', ContentFile(serializer["upload_file"]))
+            # wb = load_workbook(filename=serializer["upload_file"])
+            # print(wb)
+            
+            # f = serializer.save(serializer["upload_file"])
+            # print(f)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return HttpResponse("failed")
 

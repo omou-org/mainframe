@@ -8,9 +8,6 @@ class UploadSerializer(serializers.Serializer):
         print("inside create method")
         print("datazz: ", validated_data)
         return Upload(**validated_data)
-    
-    def save(self, validated_data):
-        print("data", validated_data)
 
 def process_uploads():
 # error = False
