@@ -162,9 +162,15 @@ class Parent(UserInfo):
     objects = ParentManager()
 
     @property
-    def student_list(self):
+    def student_id_list(self):
         return [student.user.id for student in self.student_primary_parent.all().union(
             self.student_secondary_parent.all())]
+    
+    @property
+    def student_list(self):
+        student_ids = [student.user.id for student in self.student_primary_parent.all().union(
+            self.student_secondary_parent.all())]
+        return Student.objects.filter(user_id__in = student_ids)
 
 
 class Instructor(UserInfo):

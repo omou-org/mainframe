@@ -3,6 +3,7 @@ from decimal import Decimal
 from math import floor
 
 from django.db import models
+from django.db.models import Q
 from django.utils.functional import cached_property
 from account.models import Instructor, Student
 
@@ -41,15 +42,6 @@ class Course(models.Model):
         (HIGH_LVL, "High"),
         (COLLEGE_LVL, "College"),
     )
-    DAYS_OF_WEEK = (
-        ('monday', 'Monday'),
-        ('tuesday', 'Tuesday'),
-        ('wednesday', 'Wednesday'),
-        ('thursday', 'Thursday'),
-        ('friday', 'Friday'),
-        ('saturday', 'Saturday'),
-        ('sunday', 'Sunday'),
-    )
 
     # Course information
     course_type = models.CharField(
@@ -69,14 +61,20 @@ class Course(models.Model):
     hourly_tuition = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
     total_tuition = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
 
+    course_link = models.URLField(
+        max_length=128, 
+        db_index=True, 
+        null=True, 
+        blank=True
+    )
+    course_link_description = models.CharField(max_length=1000, null=True, blank=True)
+    course_link_updated_at = models.DateTimeField(null=True, blank=True)
+
     # Logistical information
     room = models.CharField(max_length=50, null=True, blank=True)
-    day_of_week = models.CharField(max_length=9, choices=DAYS_OF_WEEK, null=True, blank=True)
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
     num_sessions = models.IntegerField(default=0)
-    start_time = models.TimeField()
-    end_time = models.TimeField()
     max_capacity = models.IntegerField(null=True, blank=True)
     is_confirmed = models.BooleanField(default=False)
 
@@ -91,16 +89,12 @@ class Course(models.Model):
     objects = CourseManager()
 
     @property
-    def session_length(self):
-        duration_sec = (datetime.combine(date.min, self.end_time) -
-                        datetime.combine(date.min, self.start_time)).seconds
-        duration_hours = Decimal(duration_sec) / (60 * 60)
-        return duration_hours
+    def active_availability_list(self):
+        return CourseAvailability.objects.filter(Q(course=self.id) & Q(active=True))
 
     @property
-    def hourly_tutition(self):
-        if self.num_sessions > 0 and self.session_length > 0:
-            return self.total_tuition / (self.num_sessions * self.session_length)
+    def availability_list(self):
+        return CourseAvailability.objects.filter(course=self.id)
 
     @property
     def enrollment_list(self):
@@ -109,6 +103,29 @@ class Course(models.Model):
     @property
     def enrollment_id_list(self):
         return [enrollment.id for enrollment in self.enrollment_set.all()]
+
+
+class CourseAvailability(models.Model):
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.PROTECT
+    )
+    num_sessions = models.IntegerField(default=0)
+
+    DAYS_OF_WEEK = (
+        ('monday', 'Monday'),
+        ('tuesday', 'Tuesday'),
+        ('wednesday', 'Wednesday'),
+        ('thursday', 'Thursday'),
+        ('friday', 'Friday'),
+        ('saturday', 'Saturday'),
+        ('sunday', 'Sunday'),
+    )
+    day_of_week = models.CharField(max_length=9, choices=DAYS_OF_WEEK, null=True, blank=True)
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+
+    active = models.BooleanField(default=True)
 
 
 class CourseNote(models.Model):

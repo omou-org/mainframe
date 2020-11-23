@@ -43,7 +43,8 @@ class StudentSchoolInfoType(DjangoObjectType):
         model = StudentSchoolInfo
 
 class ParentType(DjangoObjectType):
-    student_list = List(ID, source='student_list')
+    student_id_list = List(ID, source='student_id_list')
+    student_list = List(StudentType, source='student_list')
 
     class Meta:
         model = Parent
