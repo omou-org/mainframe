@@ -75,24 +75,27 @@ class CreateCourse(graphene.Mutation):
     @staticmethod
     @staff_member_required
     def mutate(root, info, **validated_data):
+        if validated_data.get("hourly_tuition") and validated_data.get("total_tuition"):
+            raise GraphQLError('Failed course mutation. Cannot specify both hourly_tuition and total_tuition')
+
         # update course
         if validated_data.get('course_id'):
-            availabilities = validated_data.pop('availabilities')
+            availabilities = validated_data.pop('availabilities', None)
 
             course = Course.objects.get(id=validated_data.get('course_id'))
             Course.objects.filter(id=course.id).update(**validated_data)
             course.refresh_from_db()
 
-            if availabilities:
-                now = datetime.now()
+            now = datetime.now()
 
+            if availabilities:
                 # erase future to be replaced
                 Session.objects.filter(
                     Q(course=course) &
                     Q(start_datetime__date__gte=now)
                 ).delete()
 
-                # set old availabilities that can't be reused to false
+                # set old availabilities to false and delete those with no functions
                 for availability in CourseAvailability.objects.filter(course=course):
                     availability.active = False
                     availability.num_sessions = Session.objects.filter(availability_id=availability).count()
@@ -183,8 +186,25 @@ class CreateCourse(graphene.Mutation):
                     availability.save()
                 course.num_sessions = Session.objects.filter(course=course.id).count()
 
+            # course link updates
             if validated_data.get('course_link') or validated_data.get('course_link_description'):
                 course.course_link_updated_at = now
+
+            # tuition update if course
+            if course.course_type == 'class' and course.num_sessions:
+                total_hours = decimal.Decimal('0.0')
+                for availability in course_availabilities:
+                    duration_sec = (datetime.combine(date.min, availability.end_time) -
+                                    datetime.combine(date.min, availability.start_time)).seconds
+                    duration_hours = decimal.Decimal(duration_sec) / (60 * 60)
+                    total_hours += duration_hours * availability.num_sessions
+
+                if validated_data.get("total_tuition"):
+                    course.hourly_tuition = course.total_tuition / total_hours
+                else:
+                    # else use new/old hourly tuition
+                    course.total_tuition = course.hourly_tuition * total_hours
+
             course.save()
             course.refresh_from_db()
 
@@ -198,11 +218,9 @@ class CreateCourse(graphene.Mutation):
             return CreateCourse(course=course, created=False)
 
         # create course
-        availabilities = validated_data.pop('availabilities')
+        availabilities = validated_data.pop('availabilities', None)
         if not availabilities:
-            raise GraphQLError('Failed course creation mutation. Availabilities does not exist.')
-        if validated_data.get("hourly_tuition") and validated_data.get("total_tuition"):
-            raise GraphQLError('Failed course creation mutation. Cannot specify both hourly_tuition and total_tuition')
+            raise GraphQLError('Failed course creation mutation. Availabilities unprovided.')
 
         course = Course.objects.create(**validated_data)
         course.num_sessions = 0
