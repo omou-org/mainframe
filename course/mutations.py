@@ -94,7 +94,7 @@ class CreateCourse(graphene.Mutation):
                     Q(course=course) &
                     Q(start_datetime__date__gte=now)
                 ).delete()
-                
+
                 # set old availabilities to false and delete those with no functions
                 for availability in CourseAvailability.objects.filter(course=course):
                     availability.active = False
@@ -140,8 +140,8 @@ class CreateCourse(graphene.Mutation):
                     start_dates.append(start_date)
                     start_times.append(availability.start_time)
                     end_times.append(availability.end_time)
-            
-                # create sessions for each week till last date passes 
+
+                # create sessions for each week till last date passes
                 end_date = arrow.get(course.end_date)
 
                 end_reached_count = 0
@@ -179,8 +179,8 @@ class CreateCourse(graphene.Mutation):
                                 title=course.title
                             )
                         days_of_week[i] = current_date.shift(weeks=+1)
-                
-                # save updated availability num_sessions 
+
+                # save updated availability num_sessions
                 for availability in course_availabilities:
                     availability.num_sessions = Session.objects.filter(availability=availability).count()
                     availability.save()
@@ -194,7 +194,7 @@ class CreateCourse(graphene.Mutation):
             if course.course_type == 'class' and course.num_sessions:
                 total_hours = decimal.Decimal('0.0')
                 for availability in course_availabilities:
-                    duration_sec = (datetime.combine(date.min, availability.end_time) - 
+                    duration_sec = (datetime.combine(date.min, availability.end_time) -
                                     datetime.combine(date.min, availability.start_time)).seconds
                     duration_hours = decimal.Decimal(duration_sec) / (60 * 60)
                     total_hours += duration_hours * availability.num_sessions
@@ -204,7 +204,7 @@ class CreateCourse(graphene.Mutation):
                 else:
                     # else use new/old hourly tuition
                     course.total_tuition = course.hourly_tuition * total_hours
-            
+
             course.save()
             course.refresh_from_db()
 
@@ -221,7 +221,7 @@ class CreateCourse(graphene.Mutation):
         availabilities = validated_data.pop('availabilities', None)
         if not availabilities:
             raise GraphQLError('Failed course creation mutation. Availabilities unprovided.')
-        
+
         course = Course.objects.create(**validated_data)
         course.num_sessions = 0
         if validated_data.get('course_link') or validated_data.get('course_link_description'):
@@ -232,7 +232,7 @@ class CreateCourse(graphene.Mutation):
         days_of_week = []
         start_times = []
         end_times = []
-    
+
         start_date = arrow.get(course.start_date)
         start_week = start_date - timedelta(days=start_date.weekday())
         weekday_to_shift = {name.lower():i for i, name in enumerate(list(calendar.day_name))}
@@ -246,8 +246,8 @@ class CreateCourse(graphene.Mutation):
             )
             start_times.append(availability.start_time)
             end_times.append(availability.end_time)
-        
-        # create sessions for each week till last date passes 
+
+        # create sessions for each week till last date passes
         if course.start_date and course.end_date:
             end_date = arrow.get(course.end_date)
             confirmed_end_date = end_date
@@ -288,8 +288,8 @@ class CreateCourse(graphene.Mutation):
                         course_availabilities[i].num_sessions += 1
                         course.num_sessions += 1
                     days_of_week[i] = current_date.shift(weeks=+1)
-        
-        # save updated availability num_sessions 
+
+        # save updated availability num_sessions
         for availability in course_availabilities:
             availability.save()
 
@@ -297,7 +297,7 @@ class CreateCourse(graphene.Mutation):
             # calculate total hours across all sessions
             total_hours = decimal.Decimal('0.0')
             for availability in course_availabilities:
-                duration_sec = (datetime.combine(date.min, availability.end_time) - 
+                duration_sec = (datetime.combine(date.min, availability.end_time) -
                                 datetime.combine(date.min, availability.start_time)).seconds
                 duration_hours = decimal.Decimal(duration_sec) / (60 * 60)
                 total_hours += duration_hours * availability.num_sessions
@@ -461,7 +461,7 @@ class DeleteEnrollmentNote(graphene.Mutation):
         note_obj.delete()
         return DeleteEnrollmentNote(deleted=True)
 
-        
+
 
 class DeleteEnrollment(graphene.Mutation):
     class Arguments:
@@ -491,7 +491,7 @@ class Mutation(graphene.ObjectType):
     create_course = CreateCourse.Field()
     create_course_category = CreateCourseCategory.Field()
     create_course_note = CreateCourseNote.Field()
-    create_enrollment = CreateEnrollment.Field()    
+    create_enrollment = CreateEnrollment.Field()
     create_enrollments = CreateEnrollments.Field()
     create_enrollment_note = CreateEnrollmentNote.Field()
 

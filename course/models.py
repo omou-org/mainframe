@@ -193,6 +193,26 @@ class Enrollment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
+def create_enrollment_attendances(instance, created, raw, **kwargs):
+    from scheduler.models import Attendance
+
+    if not created or raw:
+        return
+
+    if instance.course and instance.attendance_set.count() == 0:
+        for session in instance.course.session_set.all():
+            Attendance.objects.create(
+                enrollment=instance,
+                session=session,
+            )
+
+
+models.signals.post_save.connect(
+    create_enrollment_attendances, sender=Enrollment,
+    dispatch_uid='create_enrollment_attendances'
+)
+
+
 class EnrollmentNote(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     title = models.TextField(blank=True)
@@ -203,4 +223,3 @@ class EnrollmentNote(models.Model):
     )
     important = models.BooleanField(default=False)
     complete = models.BooleanField(default=False)
-

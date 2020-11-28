@@ -11,7 +11,7 @@ from graphql_jwt.decorators import login_required
 from account.models import InstructorAvailability, InstructorOutOfOffice
 
 from course.models import Course, Enrollment
-from scheduler.models import Session, SessionNote
+from scheduler.models import Session, SessionNote, Attendance
 
 
 class SessionType(DjangoObjectType):
@@ -29,6 +29,10 @@ class ValidateScheduleType(ObjectType):
     reason = String()
 
 
+class AttendanceType(DjangoObjectType):
+    class Meta:
+        model = Attendance
+
 class Query(object):
     session = Field(SessionType, session_id=ID(required=True))
     sessions = List(SessionType, time_frame=String(), view_option=String(),
@@ -36,6 +40,8 @@ class Query(object):
                     student_id=ID(), start_date=String(), end_date=String())
     session_note = Field(SessionNoteType, note_id=ID())
     session_notes = List(SessionNoteType, session_id=ID(required=True))
+    attendance = Field(AttendanceType, attendance_id=ID(required=True))
+    attendances = List(AttendanceType, course_id=ID())
 
     # Schedule validators
     validate_session_schedule = Field(
@@ -125,7 +131,7 @@ class Query(object):
 
         if note_id:
             return SessionNote.objects.get(id=note_id)
-        
+
         return None
 
     @login_required
@@ -134,6 +140,7 @@ class Query(object):
 
         return SessionNote.objects.filter(session_id=session_id)
 
+    @login_required
     def resolve_validate_session_schedule(self, info, instructor_id, start_time, end_time, date):
         datetime_obj = datetime.strptime(date, '%Y-%m-%d')
         day_of_week = calendar.day_name[datetime_obj.weekday()].lower()
@@ -195,6 +202,7 @@ class Query(object):
 
         return {'status': True}
 
+    @login_required
     def resolve_validate_course_schedule(self, info, instructor_id, start_time, end_time, start_date, end_date):
         start_datetime_obj = datetime.strptime(start_date, '%Y-%m-%d')
         day_of_week = calendar.day_name[start_datetime_obj.weekday()].lower()
@@ -233,3 +241,15 @@ class Query(object):
             }
 
         return {'status': True}
+
+    @login_required
+    def resolve_attendance(self, info, attendance_id):
+        return Attendance.objects.get(id=attendance_id)
+
+    @login_required
+    def resolve_attendances(self, info, course_id=None):
+        queryset = Attendance.objects.all()
+        if course_id is not None:
+            queryset = queryset.filter(session__course=course_id)
+
+        return queryset
