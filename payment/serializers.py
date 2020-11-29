@@ -128,8 +128,11 @@ class PaymentSerializer(serializers.ModelSerializer):
                     "title": registration.enrollment.course.title,
                     "start_date": registration.attendance_start_date.strftime("%Y-%m-%d"),
                     "end_date": registration.enrollment.course.end_date.strftime("%Y-%m-%d"),
-                    "start_time": registration.enrollment.course.start_time.strftime("%H:%M"),
-                    "end_time": registration.enrollment.course.end_time.strftime("%H:%M"),
+                    "availabilities": [{
+                        "day_of_week": availability.day_of_week,
+                        "start_time": availability.start_time.strftime("%H:%M"),
+                        "end_time": availability.end_time.strftime("%H:%M"),
+                    } for availability in registration.enrollment.course.active_availability_list],
                     "instructor": {
                         "first_name": registration.enrollment.course.instructor.user.first_name,
                         "last_name": registration.enrollment.course.instructor.user.last_name
