@@ -15,6 +15,7 @@ from course.models import (
     CourseNote,
     Enrollment,
     EnrollmentNote,
+    Interest,
 )
 from scheduler.models import Session
 
@@ -67,6 +68,11 @@ class EnrollmentNoteType(DjangoObjectType):
         model = EnrollmentNote
 
 
+class InterestType(DjangoObjectType):
+    class Meta:
+        model = Interest
+
+
 class LookbackTimeframe(Enum):
     YESTERDAY = 1
     LAST_WEEK = 2
@@ -86,6 +92,7 @@ class Query(object):
     course_note = Field(CourseNoteType, note_id=ID())
     enrollment = Field(EnrollmentType, enrollment_id=ID())
     enrollment_note = Field(EnrollmentNoteType, note_id=ID())
+    interest = Field(InterestType, interest_id=ID())
 
     courses = List(CourseType, category_id=ID(), course_ids=List(ID), instructor_id=ID(), parent_id=ID())
     course_availabilities = List(CourseAvailabilityType, course_id=ID(), availability_ids=List(ID))
@@ -93,6 +100,7 @@ class Query(object):
     course_notes = List(CourseNoteType, course_id=ID(required=True))
     enrollments = List(EnrollmentType, student_id=ID(), course_id=ID(), student_ids=List(ID))
     enrollment_notes = List(EnrollmentNoteType, enrollment_id=ID(required=True))
+    interests = List(InterestType, parent_id=ID(), course_ids=List(ID))
 
     # custom methods
     num_recent_sessions = Int(timeframe=LookbackTimeframe(required=True))
@@ -163,6 +171,15 @@ class Query(object):
         if note_id:
             return Enrollment.objects.get(id=note_id)
 
+        return None
+
+    @login_required
+    def resolve_interest(self, info, **kwargs):
+        interest_id = kwargs.get('interest_id')
+
+        if interest_id:
+            return Interest.objects.get(id=interest_id)
+        
         return None
 
     @login_required
@@ -286,3 +303,16 @@ class Query(object):
         )[:5]
 
         return top_5_categories
+    
+    @login_required
+    def resolve_interests(self, info, **kwargs):
+        parent_id = kwargs.get('parent_id')
+        course_id = kwargs.get('course_id')
+
+        if parent_id:
+            return Interest.objects.filter(parent_user_id=parent_id)
+        
+        if course_id:
+            return Interest.objects.filter(course=course_id)
+        
+        return None
