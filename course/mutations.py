@@ -15,13 +15,16 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
 from account.mutations import DayOfWeekEnum
-from course.models import Course, CourseAvailability, CourseNote, CourseCategory, Enrollment, EnrollmentNote
+from comms.models import Email
+from comms.templates import INTEREST_LIST_TEMPLATE
+from course.models import Course, CourseAvailability, CourseNote, CourseCategory, Enrollment, EnrollmentNote, Interest
 from course.schema import (
     CourseType,
     CourseNoteType,
     CourseCategoryType,
     EnrollmentType,
     EnrollmentNoteType,
+    InterestType,
 )
 from scheduler.models import Session
 from pricing.models import PriceRule
@@ -462,7 +465,6 @@ class DeleteEnrollmentNote(graphene.Mutation):
         return DeleteEnrollmentNote(deleted=True)
 
 
-
 class DeleteEnrollment(graphene.Mutation):
     class Arguments:
         enrollment_id = graphene.ID(name='id')
@@ -483,8 +485,54 @@ class DeleteEnrollment(graphene.Mutation):
             parent = enrollment_obj.student.secondary_parent
         parent.balance += enrollment_obj.enrollment_balance
         parent.save()
+        was_full = enrollment_obj.course.is_full
         enrollment_obj.delete()
+
+        enrollment_deadline_active = (
+            not enrollment_obj.course.enrollment_deadline or
+            datetime.now() < enrollment_obj.course.enrollment_deadline
+        )
+        if was_full and enrollment_deadline_active:            
+            for interest in Interest.objects.filter(course=enrollment_obj.course):
+                Email.objects.create(
+                    template_id=INTEREST_LIST_TEMPLATE,
+                    recipient=interest.parent.user.email,
+                    data={
+                        "course_name": enrollment_obj.course.title,
+                        "user_name": interest.parent.user.first_name
+                    }
+                )
+
         return DeleteEnrollment(deleted=True, parent=parent.user.id, parent_balance=parent.balance)
+
+
+class CreateInterest(graphene.Mutation):
+    class Arguments:
+        parent_id = ID(name='parent', required=True)
+        course_id = ID(name='course', required=True)
+
+    interest = graphene.Field(InterestType)
+
+    @staticmethod
+    def mutate(root, info, **validated_data):
+        interest = Interest.objects.create(**validated_data)
+        return CreateInterest(interest=interest)
+
+
+class DeleteInterest(graphene.Mutation):
+    class Arguments:
+        interest_id = graphene.ID(name='id')
+
+    deleted = graphene.Boolean()
+
+    @staticmethod
+    def mutate(root, info, **validated_data):
+        try:
+            interest_obj = Interest.objects.get(id=validated_data.get('interest_id'))
+        except ObjectDoesNotExist:
+            raise GraphQLError('Failed delete mutation. Interest does not exist.')
+        interest_obj.delete()
+        return DeleteInterest(deleted=True)
 
 
 class Mutation(graphene.ObjectType):
@@ -494,6 +542,9 @@ class Mutation(graphene.ObjectType):
     create_enrollment = CreateEnrollment.Field()
     create_enrollments = CreateEnrollments.Field()
     create_enrollment_note = CreateEnrollmentNote.Field()
+
+    create_interest = CreateInterest.Field()
+    delete_interest = DeleteInterest.Field()
 
     delete_course_note = DeleteCourseNote.Field()
     delete_enrollment_note = DeleteEnrollmentNote.Field()
