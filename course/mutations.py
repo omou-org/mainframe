@@ -485,23 +485,23 @@ class DeleteEnrollment(graphene.Mutation):
             parent = enrollment_obj.student.secondary_parent
         parent.balance += enrollment_obj.enrollment_balance
         parent.save()
-        was_full = enrollment_obj.course.is_full
+        # was_full = enrollment_obj.course.is_full
         enrollment_obj.delete()
 
-        enrollment_deadline_active = (
-            not enrollment_obj.course.enrollment_deadline or
-            datetime.now() < enrollment_obj.course.enrollment_deadline
-        )
-        if was_full and enrollment_deadline_active:            
-            for interest in Interest.objects.filter(course=enrollment_obj.course):
-                Email.objects.create(
-                    template_id=INTEREST_LIST_TEMPLATE,
-                    recipient=interest.parent.user.email,
-                    data={
-                        "course_name": enrollment_obj.course.title,
-                        "user_name": interest.parent.user.first_name
-                    }
-                )
+        # enrollment_deadline_active = (
+        #     not enrollment_obj.course.enrollment_deadline or
+        #     datetime.now() < enrollment_obj.course.enrollment_deadline
+        # )
+        # if was_full and enrollment_deadline_active:
+            # for interest in Interest.objects.filter(course=enrollment_obj.course):
+            #     Email.objects.create(
+            #         template_id=INTEREST_LIST_TEMPLATE,
+            #         recipient=interest.parent.user.email,
+            #         data={
+            #             "course_name": enrollment_obj.course.title,
+            #             "user_name": interest.parent.user.first_name
+            #         }
+            #     )
 
         return DeleteEnrollment(deleted=True, parent=parent.user.id, parent_balance=parent.balance)
 
