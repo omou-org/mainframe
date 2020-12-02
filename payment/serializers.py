@@ -128,8 +128,11 @@ class InvoiceSerializer(serializers.ModelSerializer):
                     "title": registration.enrollment.course.title,
                     "start_date": registration.attendance_start_date.strftime("%Y-%m-%d"),
                     "end_date": registration.enrollment.course.end_date.strftime("%Y-%m-%d"),
-                    "start_time": registration.enrollment.course.start_time.strftime("%H:%M"),
-                    "end_time": registration.enrollment.course.end_time.strftime("%H:%M"),
+                    # TODO migrate sendgrid template to availability list 
+                    # "availabilityList": {
+                    #     "start_time": registration.enrollment.course.start_time.strftime("%H:%M"),
+                    #     "end_time": registration.enrollment.course.end_time.strftime("%H:%M"),
+                    # },
                     "instructor": {
                         "first_name": registration.enrollment.course.instructor.user.first_name,
                         "last_name": registration.enrollment.course.instructor.user.last_name
