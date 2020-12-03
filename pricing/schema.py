@@ -85,7 +85,6 @@ def price_quote_total(body):
 
     # extract tutoring costs (assuming category/level combo exists)
     for tutor_json in body.get("tutoring", []):
-        print(Q(course_type = "tutoring"))
         tutoring_price_rules = PriceRule.objects.filter(
             Q(category = tutor_json["category_id"]) &
             Q(academic_level = tutor_json["academic_level"]) &

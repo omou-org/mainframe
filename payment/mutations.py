@@ -38,8 +38,8 @@ class CreateInvoice(graphene.Mutation):
     @staff_member_required
     def mutate(root, info, **validated_data):
         data = validated_data
-        data.update(price_quote_total(data))
-
+        data.update(price_quote_total(data))    
+        
         discounts = data.pop("discounts")
         data["deductions"] = []
         for discount in discounts:
@@ -49,7 +49,7 @@ class CreateInvoice(graphene.Mutation):
                     "amount": discount["amount"]
                 }
             )
-        
+
         serializer = InvoiceSerializer(data=data, context={'user_id': info.context.user.id})
         serializer.is_valid(raise_exception=True)
         invoice = serializer.save()
