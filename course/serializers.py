@@ -8,7 +8,7 @@ from django.db.models import Q
 from rest_framework import serializers
 
 from course.models import EnrollmentNote, CourseNote, Course, CourseCategory, Enrollment
-from payment.serializers import PaymentSerializer
+from payment.serializers import InvoiceSerializer
 from pricing.models import PriceRule
 from scheduler.models import Session
 
@@ -224,7 +224,7 @@ class CourseCategorySerializer(serializers.ModelSerializer):
 
 
 class EnrollmentSerializer(serializers.ModelSerializer):
-    payment_list = PaymentSerializer(read_only=True, many=True)
+    invoice_list = InvoiceSerializer(read_only=True, many=True)
 
     class Meta:
         model = Enrollment

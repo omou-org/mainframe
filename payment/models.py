@@ -6,7 +6,7 @@ from course.models import Enrollment
 from pricing.models import Discount
 
 
-class Payment(models.Model):
+class Invoice(models.Model):
     parent = models.ForeignKey(Parent, on_delete=models.PROTECT)
     sub_total = models.DecimalField(max_digits=6, decimal_places=2)
     price_adjustment = models.DecimalField(
@@ -17,6 +17,7 @@ class Payment(models.Model):
     total = models.DecimalField(max_digits=6, decimal_places=2)
     account_balance = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
     discount_total = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
+    payment_status = models.BooleanField(default=False)
 
     CASH = 'cash'
     CREDIT_CARD = 'credit_card'
@@ -45,9 +46,9 @@ class Payment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
-# Deduction associates a Payment with a Discount
+# Deduction associates an Invoice with a Discount
 class Deduction(models.Model):
-    payment = models.ForeignKey(Payment, on_delete=models.CASCADE)
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, default=None)
     discount = models.ForeignKey(Discount, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
 
@@ -56,9 +57,9 @@ class Deduction(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
-# Registration associates a Payment with an Enrollment
+# Registration associates an Invoice with an Enrollment
 class Registration(models.Model):
-    payment = models.ForeignKey(Payment, on_delete=models.CASCADE)
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, default=None)
     enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE)
     num_sessions = models.IntegerField()
     attendance_start_date = models.DateTimeField(default=timezone.now)
