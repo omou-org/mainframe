@@ -160,23 +160,32 @@ class Enrollment(models.Model):
 
         total_balance = 0
         paid_balance = 0
-        total_paid_sessions = sum(registration.num_sessions for registration in self.registration_set.all())
+        total_paid_sessions = sum(
+            registration.num_sessions
+            for registration in self.registration_set.all()
+            if registration.invoice.payment_status
+            )
+        
         for session in past_sessions:
             session_length_sec = (session.end_datetime - session.start_datetime).seconds
             session_length_hours = Decimal(session_length_sec) / (60 * 60)
             session_balance = Decimal(session_length_hours) * self.course.hourly_tuition
-        
+
             if total_paid_sessions > 0:
                 paid_balance += session_balance
             total_balance += session_balance
 
             total_paid_sessions-=1
-        
+
         return Decimal(total_balance-paid_balance)
 
     @property
     def sessions_left(self):
-        total_paid_sessions = sum(registration.num_sessions for registration in self.registration_set.all())
+        total_paid_sessions = sum(
+            registration.num_sessions
+            for registration in self.registration_set.all()
+            if registration.invoice.payment_status
+            )
         return self.course.num_sessions - total_paid_sessions
 
     @property
@@ -212,7 +221,6 @@ def create_enrollment_attendances(instance, created, raw, **kwargs):
                 enrollment=instance,
                 session=session,
             )
-
 
 models.signals.post_save.connect(
     create_enrollment_attendances, sender=Enrollment,
