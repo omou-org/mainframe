@@ -8,7 +8,7 @@ from account.models import Parent
 from comms.models import Email
 from comms.templates import PAYMENT_CONFIRM_TEMPLATE
 from course.models import Enrollment
-from payment.models import Payment, Registration, Deduction
+from payment.models import Invoice, Registration, Deduction
 from pricing.serializers import DiscountSerializer
 
 
@@ -31,7 +31,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
         read_only_fields = (
             'id',
-            'payment',
+            'invoice',
             'updated_at',
             'created_at',
         )
@@ -39,7 +39,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'attendance_start_date',
-            'payment',
+            'invoice',
             'enrollment',
             'num_sessions',
             'enrollment_details',
@@ -56,14 +56,14 @@ class DeductionSerializer(serializers.ModelSerializer):
 
         read_only_fields = (
             'id',
-            'payment',
+            'invoice',
             'updated_at',
             'created_at',
         )
 
         fields = (
             'id',
-            'payment',
+            'invoice',
             'discount',
             'amount',
             'discount_details',
@@ -72,7 +72,7 @@ class DeductionSerializer(serializers.ModelSerializer):
         )
 
 
-class PaymentSerializer(serializers.ModelSerializer):
+class InvoiceSerializer(serializers.ModelSerializer):
     registrations = RegistrationSerializer(many=True, source='registration_set')
     deductions = DeductionSerializer(many=True, source='deduction_set')
 
@@ -80,8 +80,7 @@ class PaymentSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         registrations = validated_data.pop("registration_set")
         deductions = validated_data.pop("deduction_set")
-
-        payment = Payment.objects.create(
+        invoice = Invoice.objects.create(
             **validated_data,
         )
 
@@ -94,7 +93,7 @@ class PaymentSerializer(serializers.ModelSerializer):
         # create deductions
         for deduction in deductions:
             Deduction.objects.create(
-                payment=payment,
+                invoice=invoice,
                 discount=deduction["discount"],
                 amount=deduction["amount"]
             )
@@ -103,7 +102,7 @@ class PaymentSerializer(serializers.ModelSerializer):
         registration_objs = []
         for registration in registrations:
             registration_obj = Registration.objects.create(
-                payment=payment,
+                invoice=invoice,
                 enrollment=registration["enrollment"],
                 num_sessions=registration["num_sessions"]
             )
@@ -118,11 +117,11 @@ class PaymentSerializer(serializers.ModelSerializer):
             )
 
         payment_data = {
-            "parent_name": payment.parent.user.first_name,
+            "parent_name": invoice.parent.user.first_name,
             "business_name": settings.BUSINESS_NAME,
-            "receipt_text": f"You've paid {payment.total} for {len(registrations)} classes",
-            "total_tuition": float(payment.total),
-            "payment_id": payment.id,
+            "receipt_text": f"You've paid {invoice.total} for {len(registrations)} classes",
+            "total_tuition": float(invoice.total),
+            "payment_id": invoice.id,
             "enrollments": {
                 "course": [{
                     "title": registration.enrollment.course.title,
@@ -143,14 +142,14 @@ class PaymentSerializer(serializers.ModelSerializer):
 
         Email.objects.create(
             template_id=PAYMENT_CONFIRM_TEMPLATE,
-            recipient=payment.parent.user.email,
+            recipient=invoice.parent.user.email,
             data=payment_data
         )
 
-        return payment
+        return invoice
 
     class Meta:
-        model = Payment
+        model = Invoice
 
         fields = (
             'id',
@@ -163,6 +162,7 @@ class PaymentSerializer(serializers.ModelSerializer):
             'method',
             'registrations',
             'deductions',
+            'payment_status',
             'updated_at',
             'created_at'
         )

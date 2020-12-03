@@ -2,13 +2,13 @@ from django.contrib.admin.models import LogEntry, ADDITION
 from django.contrib.contenttypes.models import ContentType
 
 import graphene
-from graphene import Field, ID, Int, List, String, Float
+from graphene import Field, ID, Int, List, String, Float, Boolean
 from graphql import GraphQLError
 
 from account.models import Parent
-from payment.models import Payment, RegistrationCart
-from payment.serializers import PaymentSerializer
-from payment.schema import PaymentType, CartType
+from payment.models import Invoice, RegistrationCart
+from payment.serializers import InvoiceSerializer
+from payment.schema import InvoiceType, CartType
 from pricing.schema import price_quote_total, ClassQuote, TutoringQuote
 
 from graphql_jwt.decorators import login_required, staff_member_required
@@ -19,7 +19,7 @@ class EnrollmentQuote(graphene.InputObjectType):
     num_sessions = Int()
 
 
-class CreatePayment(graphene.Mutation):
+class CreateInvoice(graphene.Mutation):
     class Arguments:
         method = String(required=True)
         disabled_discounts = List(ID)
@@ -28,16 +28,18 @@ class CreatePayment(graphene.Mutation):
         tutoring = List(TutoringQuote)
         parent = ID(required=True)
         registrations = List(EnrollmentQuote)
+        payment_status = Boolean(name="isPaid")
     
-    payment = Field(PaymentType)
+    invoice = Field(InvoiceType)
+    created = Boolean()
 
     @staticmethod
     @login_required
     @staff_member_required
     def mutate(root, info, **validated_data):
         data = validated_data
-        data.update(price_quote_total(data))
-
+        data.update(price_quote_total(data))    
+        
         discounts = data.pop("discounts")
         data["deductions"] = []
         for discount in discounts:
@@ -47,19 +49,19 @@ class CreatePayment(graphene.Mutation):
                     "amount": discount["amount"]
                 }
             )
-        
-        serializer = PaymentSerializer(data=data, context={'user_id': info.context.user.id})
+
+        serializer = InvoiceSerializer(data=data, context={'user_id': info.context.user.id})
         serializer.is_valid(raise_exception=True)
-        payment = serializer.save()
+        invoice = serializer.save()
 
         LogEntry.objects.log_action(
             user_id=info.context.user.id,
-            content_type_id=ContentType.objects.get_for_model(Payment).pk,
-            object_id=payment.id,
-            object_repr=f"{payment.parent.user.first_name} {payment.parent.user.last_name}, {payment.method}",
+            content_type_id=ContentType.objects.get_for_model(Invoice).pk,
+            object_id=invoice.id,
+            object_repr=f"{invoice.parent.user.first_name} {invoice.parent.user.last_name}, {invoice.method}",
             action_flag=ADDITION
         )
-        return CreatePayment(payment=payment)
+        return CreateInvoice(invoice=invoice)
 
 
 class CreateRegistrationCart(graphene.Mutation):
@@ -86,5 +88,5 @@ class CreateRegistrationCart(graphene.Mutation):
 
 
 class Mutation(graphene.ObjectType):
-    create_payment = CreatePayment.Field()
+    create_invoice = CreateInvoice.Field()
     create_registration_cart = CreateRegistrationCart.Field()
