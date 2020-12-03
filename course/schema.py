@@ -310,7 +310,7 @@ class Query(object):
         course_id = kwargs.get('course_id')
 
         if parent_id:
-            return Interest.objects.filter(parent_user_id=parent_id)
+            return Interest.objects.filter(parent__user__id=parent_id)
         
         if course_id:
             return Interest.objects.filter(course=course_id)
