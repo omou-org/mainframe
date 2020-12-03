@@ -9,10 +9,13 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     "mainframe-dev.us-west-1.elasticbeanstalk.com",
+    "mainframe-env.eba-yszaihyi.us-west-1.elasticbeanstalk.com",
     "api.omoulearning.com",
     "development.omoulearning.com",
     "localhost",
     "172.31.13.236",
+    "172.31.16.196",
+    "172.31.20.69",
 ]
 
 DATABASES = {

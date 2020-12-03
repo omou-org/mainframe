@@ -5,7 +5,7 @@ from math import floor
 from django.db import models
 from django.db.models import Q
 from django.utils.functional import cached_property
-from account.models import Instructor, Student
+from account.models import Instructor, Parent, Student
 
 from course.managers import CourseManager
 
@@ -77,6 +77,7 @@ class Course(models.Model):
     num_sessions = models.IntegerField(default=0)
     max_capacity = models.IntegerField(null=True, blank=True)
     is_confirmed = models.BooleanField(default=False)
+    enrollment_deadline = models.DateField(null=True, blank=True)
 
     # One-to-many relationship with CourseCategory
     course_category = models.ForeignKey(
@@ -87,6 +88,10 @@ class Course(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     objects = CourseManager()
+
+    @property
+    def is_full(self):
+        return self.max_capacity == Enrollment.objects.filter(course=self.id).count()
 
     @property
     def active_availability_list(self):
@@ -225,3 +230,12 @@ class EnrollmentNote(models.Model):
     )
     important = models.BooleanField(default=False)
     complete = models.BooleanField(default=False)
+
+
+class Interest(models.Model):
+    parent = models.ForeignKey(Parent, on_delete=models.PROTECT)
+    course = models.ForeignKey(Course, on_delete=models.PROTECT)
+
+    # Timestamps
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
