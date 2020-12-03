@@ -100,7 +100,7 @@ class Query(object):
     course_notes = List(CourseNoteType, course_id=ID(required=True))
     enrollments = List(EnrollmentType, student_id=ID(), course_id=ID(), student_ids=List(ID))
     enrollment_notes = List(EnrollmentNoteType, enrollment_id=ID(required=True))
-    interests = List(InterestType, parent_id=ID(), course_ids=List(ID))
+    interests = List(InterestType, parent_id=ID(), course_id=ID())
 
     # custom methods
     num_recent_sessions = Int(timeframe=LookbackTimeframe(required=True))
