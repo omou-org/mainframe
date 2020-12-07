@@ -14,6 +14,9 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
+from mainframe.permissions import IsEmployee
+from django_graphene_permissions import permissions_checker
+
 from account.mutations import DayOfWeekEnum
 from comms.models import Email
 from comms.templates import INTEREST_LIST_TEMPLATE
@@ -76,7 +79,7 @@ class CreateCourse(graphene.Mutation):
     created = Boolean()
 
     @staticmethod
-    @staff_member_required
+    @permissions_checker([IsEmployee])
     def mutate(root, info, **validated_data):
         if validated_data.get("hourly_tuition") and validated_data.get("total_tuition"):
             raise GraphQLError('Failed course mutation. Cannot specify both hourly_tuition and total_tuition')
