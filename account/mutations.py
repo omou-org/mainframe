@@ -325,6 +325,7 @@ class CreateInstructor(graphene.Mutation):
                 object_repr=f"{instructor.user.first_name} {instructor.user.last_name}",
                 action_flag=ADDITION
             )
+
             return CreateInstructor(instructor=instructor, created=True)
 
 

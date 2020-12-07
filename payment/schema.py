@@ -7,16 +7,16 @@ import arrow
 from course.schema import EnrollmentType
 from course.models import Course, Enrollment
 from payment.models import (
-    Payment,
+    Invoice,
     Deduction,
     Registration,
     RegistrationCart
 )
 
 
-class PaymentType(DjangoObjectType):
+class InvoiceType(DjangoObjectType):
     class Meta:
-        model = Payment
+        model = Invoice
 
 
 class DeductionType(DjangoObjectType):
@@ -35,22 +35,22 @@ class CartType(DjangoObjectType):
 
 
 class Query(object):
-    payment = Field(PaymentType, payment_id=ID())
+    invoice = Field(InvoiceType, invoice_id=ID())
     deduction = Field(DeductionType, deduction_id=ID())
     registration = Field(RegistrationType, registration_id=ID())
     registration_cart = Field(CartType, cart_id=ID(), parent_id=ID())
 
-    payments = List(PaymentType, parent_id=ID(), start_date=String(), end_date=String())
-    deductions = List(DeductionType, payment_id=ID())
-    registrations = List(RegistrationType, payment_id=ID())
+    invoices = List(InvoiceType, parent_id=ID(), start_date=String(), end_date=String())
+    deductions = List(DeductionType, invoice_id=ID())
+    registrations = List(RegistrationType, invoice_id=ID())
 
     unpaid_sessions = List(EnrollmentType)
 
-    def resolve_payment(self, info, **kwargs):
-        payment_id = kwargs.get('payment_id')
+    def resolve_invoice(self, info, **kwargs):
+        invoice_id = kwargs.get('invoice_id')
 
-        if payment_id:
-            return Payment.objects.get(id=payment_id)
+        if invoice_id:
+            return Invoice.objects.get(id=invoice_id)
 
         return None
 
@@ -82,38 +82,38 @@ class Query(object):
 
         return None
 
-    def resolve_payments(self, info, **kwargs):
+    def resolve_invoices(self, info, **kwargs):
         parent_id = kwargs.get('parent_id')
         start_date = kwargs.get('start_date')
         end_date = kwargs.get('end_date')
 
         if parent_id:
             if start_date and end_date:
-                return Payment.objects.filter(
+                return Invoice.objects.filter(
                     created_at__gt=arrow.get(start_date).datetime,
                     created_at__lt=arrow.get(end_date).datetime,
                     parent=parent_id
                 )
-            return Payment.objects.filter(parent=parent_id)
+            return Invoice.objects.filter(parent=parent_id)
         if start_date and end_date:
-            return Payment.objects.filter(
+            return Invoice.objects.filter(
                 created_at__gt=datetime.date(start_date),
                 created_at__lt=datetime.date(end_date)
             )
-        return Payment.objects.all()
+        return Invoice.objects.all()
 
     def resolve_deductions(self, info, **kwargs):
-        payment_id = kwargs.get('payment_id')
+        invoice_id = kwargs.get('invoice_id')
 
-        if payment_id:
-            return Deduction.objects.filter(payament=payment_id)
+        if invoice_id:
+            return Deduction.objects.filter(payament=invoice_id)
         return Deduction.objects.all()
 
     def resolve_registrations(self, info, **kwargs):
-        payment_id = kwargs.get('payment_id')
+        invoice_id = kwargs.get('invoice_id')
 
-        if payment_id:
-            return Registration.objects.filter(payament=payment_id)
+        if invoice_id:
+            return Registration.objects.filter(payament=invoice_id)
         return Registration.objects.all()
 
     def resolve_unpaid_sessions(self, info, **kwargs):

@@ -63,6 +63,7 @@ class UserInfo(models.Model):
         abstract = True
 
 
+
 class Note(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     title = models.TextField(blank=True)
@@ -125,7 +126,19 @@ class Student(UserInfo):
     def enrollment_id_list(self):
         return [enrollment.id for enrollment in self.enrollment_set.all()]
 
-
+class StudentSchoolInfo(models.Model):
+    student = models.ForeignKey(
+        Student,
+        on_delete=models.PROTECT
+    )
+    name = models.CharField(max_length=512)
+    textbook = models.CharField(max_length=512)
+    teacher = models.CharField(max_length=100)
+    current_grade = models.CharField(max_length=5)
+    current_topic = models.CharField(max_length=64)
+    student_strengths=models.CharField(max_length=1024)
+    student_weaknesses=models.CharField(max_length=1024)
+    
 class Parent(UserInfo):
     MOTHER_REL = "mother"
     FATHER_REL = "father"
@@ -149,9 +162,15 @@ class Parent(UserInfo):
     objects = ParentManager()
 
     @property
-    def student_list(self):
+    def student_id_list(self):
         return [student.user.id for student in self.student_primary_parent.all().union(
             self.student_secondary_parent.all())]
+    
+    @property
+    def student_list(self):
+        student_ids = [student.user.id for student in self.student_primary_parent.all().union(
+            self.student_secondary_parent.all())]
+        return Student.objects.filter(user_id__in = student_ids)
 
 
 class Instructor(UserInfo):

@@ -1,7 +1,7 @@
 import jwt
 from datetime import datetime, date
-
-from graphene import Field, ID, List, String, Union, DateTime
+import graphene
+from graphene import Field, ID, List, String, Boolean, Union, DateTime
 from graphene_django.types import DjangoObjectType
 from graphql_jwt.decorators import login_required
 from django.conf import settings
@@ -11,6 +11,7 @@ from account.models import (
     Note,
     School,
     Student,
+    StudentSchoolInfo,
     Parent,
     Instructor,
     InstructorAvailability,
@@ -25,24 +26,25 @@ class UserType(DjangoObjectType):
     class Meta:
         model = User
 
-
 class NoteType(DjangoObjectType):
     class Meta:
         model = Note
-
 
 class SchoolType(DjangoObjectType):
     class Meta:
         model = School
 
-
 class StudentType(DjangoObjectType):
     class Meta:
         model = Student
 
+class StudentSchoolInfoType(DjangoObjectType):
+    class Meta:
+        model = StudentSchoolInfo
 
 class ParentType(DjangoObjectType):
-    student_list = List(ID, source='student_list')
+    student_id_list = List(ID, source='student_id_list')
+    student_list = List(StudentType, source='student_list')
 
     class Meta:
         model = Parent
@@ -65,11 +67,9 @@ class InstructorAvailabilityType(DjangoObjectType):
     def resolve_end_datetime(self, info):
         return datetime.combine(date.today(), self.end_time)
 
-
 class InstructorOutOfOfficeType(DjangoObjectType):
     class Meta:
         model = InstructorOutOfOffice
-
 
 class AdminType(DjangoObjectType):
     class Meta:
@@ -89,7 +89,7 @@ class Query(object):
     instructor = Field(InstructorType, user_id=ID(), email=String())
     admin = Field(AdminType, user_id=ID(), email=String())
     user_info = Field(UserInfoType, user_id=ID(), user_name=String())
-    user_type = Field(String, user_name=String())
+    user_type = Field(String, user_id=ID(), user_name=String(), admin_types=Boolean())
     email_from_token = Field(String, token=String())
 
     notes = List(NoteType, user_id=ID(required=True))
@@ -184,18 +184,34 @@ class Query(object):
         return None
 
     def resolve_user_type(self, info, **kwargs):
+        user_id = kwargs.get('user_id')
         user_name = kwargs.get('user_name')
+        admin_types = kwargs.get('admin_types')
 
         if user_name:
             if Student.objects.filter(user__email=user_name).exists():
-                return "Student"
+                return "STUDENT"
             if Instructor.objects.filter(user__email=user_name).exists():
-                return "Instructor"
+                return "INSTRUCTOR"
             if Parent.objects.filter(user__email=user_name).exists():
-                return "Parent"
+                return "PARENT"
             if Admin.objects.filter(user__email=user_name).exists():
-                return "Admin"
+                if admin_types:
+                    return Admin.objects.get(user__email=user_name).admin_type.upper()
+                return "ADMIN"
         
+        if user_id:
+            if Student.objects.filter(user=user_id).exists():
+                return "STUDENT"
+            if Instructor.objects.filter(user=user_id).exists():
+                return "INSTRUCTOR"
+            if Parent.objects.filter(user=user_id).exists():
+                return "PARENT"
+            if Admin.objects.filter(user=user_id).exists():
+                if admin_types:
+                    return Admin.objects.get(user=user_id).admin_type.upper()
+                return "ADMIN"
+
         return None
 
     @login_required

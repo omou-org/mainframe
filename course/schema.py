@@ -4,21 +4,35 @@ from graphene import Enum, Field, Int, List, ID, Decimal, DateTime, String
 from graphene_django.types import ObjectType, DjangoObjectType
 from graphql_jwt.decorators import login_required
 
+from account.models import (
+    Parent
+)
+
 from course.models import (
     Course,
+    CourseAvailability,
     CourseCategory,
     CourseNote,
     Enrollment,
     EnrollmentNote,
+    Interest,
 )
 from scheduler.models import Session
 
 
+class CourseAvailabilityType(DjangoObjectType):
+    class Meta:
+        model = CourseAvailability
+
+
 class CourseType(DjangoObjectType):
+    active_availability_list = List(CourseAvailabilityType, source='active_availability_list')
+    availability_list = List(CourseAvailabilityType, source='availability_list')
+
     academic_level_pretty = String()
     class Meta:
         model = Course
-    
+
     def resolve_academic_level_pretty(self, info):
         level_to_pretty = {
             "elementary_lvl": "elementary school",
@@ -54,6 +68,11 @@ class EnrollmentNoteType(DjangoObjectType):
         model = EnrollmentNote
 
 
+class InterestType(DjangoObjectType):
+    class Meta:
+        model = Interest
+
+
 class LookbackTimeframe(Enum):
     YESTERDAY = 1
     LAST_WEEK = 2
@@ -68,20 +87,46 @@ class PopularCategoryType(ObjectType):
 
 class Query(object):
     course = Field(CourseType, course_id=ID())
+    course_availability = Field(CourseAvailabilityType, availability_id=ID())
     course_category = Field(CourseCategoryType, category_id=ID())
     course_note = Field(CourseNoteType, note_id=ID())
     enrollment = Field(EnrollmentType, enrollment_id=ID())
     enrollment_note = Field(EnrollmentNoteType, note_id=ID())
+    interest = Field(InterestType, interest_id=ID())
 
-    courses = List(CourseType, category_id=ID(), course_ids=List(ID), instructor_id=ID())
+    courses = List(CourseType, category_id=ID(), course_ids=List(ID), instructor_id=ID(), parent_id=ID())
+    course_availabilities = List(CourseAvailabilityType, course_id=ID(), availability_ids=List(ID))
     course_categories = List(CourseCategoryType)
     course_notes = List(CourseNoteType, course_id=ID(required=True))
     enrollments = List(EnrollmentType, student_id=ID(), course_id=ID(), student_ids=List(ID))
     enrollment_notes = List(EnrollmentNoteType, enrollment_id=ID(required=True))
+    interests = List(InterestType, parent_id=ID(), course_id=ID())
 
     # custom methods
     num_recent_sessions = Int(timeframe=LookbackTimeframe(required=True))
     popular_categories = List(PopularCategoryType, timeframe=LookbackTimeframe(required=True))
+
+    @login_required
+    def resolve_course_availability(self, info, **kwargs):
+        availability_id = kwargs.get('availability_id')
+
+        if availability_id:
+            return CourseAvailability.objects.get(id=availability_id)
+
+        return None
+
+    @login_required
+    def resolve_course_availabilities(self, info, **kwargs):
+        course_id = kwargs.get('course_id')
+        availability_ids = kwargs.get('availability_ids')
+
+        if course_id:
+            return CourseAvailability.objects.filter(course_id=course_id)
+
+        if availability_ids:
+             return CourseAvailability.objects.filter(id__in=availability_ids)
+
+        return None
 
     @login_required
     def resolve_course(self, info, **kwargs):
@@ -111,6 +156,15 @@ class Query(object):
         return None
 
     @login_required
+    def resolve_enrollment(self, info, **kwargs):
+        enrollment_id = kwargs.get('enrollment_id')
+
+        if enrollment_id:
+            return Enrollment.objects.get(id=enrollment_id)
+
+        return None
+
+    @login_required
     def resolve_enrollment_note(self, info, **kwargs):
         note_id = kwargs.get('note_id')
 
@@ -120,22 +174,37 @@ class Query(object):
         return None
 
     @login_required
+    def resolve_interest(self, info, **kwargs):
+        interest_id = kwargs.get('interest_id')
+
+        if interest_id:
+            return Interest.objects.get(id=interest_id)
+        
+        return None
+
+    @login_required
     def resolve_courses(self, info, **kwargs):
         category_id = kwargs.get('category_id')
         course_ids = kwargs.get('course_ids')
         instructor_id = kwargs.get('instructor_id')
-        course_list = []
+        parent_id = kwargs.get('parent_id')
 
         if category_id:
             return Course.objects.filter(course_category=category_id)
         if course_ids:
-            for course_id in course_ids:
-                if Course.objects.filter(id=course_id).exists():
-                    course_list.append(Course.objects.get(id=course_id))
+            course_ids = [course_id for course_id in course_ids if Course.objects.filter(id=course_id).exists()]
+            return Course.objects.filter(id__in = course_ids) 
         if instructor_id:
             return Course.objects.filter(instructor_id=instructor_id)
-
-        return course_list or Course.objects.all()
+        if parent_id:
+            parent = Parent.objects.get(user_id=parent_id)
+            course_ids = set()
+            for student_id in parent.student_list:
+                for enrollment in Enrollment.objects.filter(student=student_id):
+                    course_ids.add(enrollment.course.id)
+            return Course.objects.filter(id__in = course_ids)
+        
+        return Course.objects.all()
 
     @login_required
     def resolve_course_categories(self, info, **kwargs):
@@ -234,3 +303,16 @@ class Query(object):
         )[:5]
 
         return top_5_categories
+    
+    @login_required
+    def resolve_interests(self, info, **kwargs):
+        parent_id = kwargs.get('parent_id')
+        course_id = kwargs.get('course_id')
+
+        if parent_id:
+            return Interest.objects.filter(parent__user__id=parent_id)
+        
+        if course_id:
+            return Interest.objects.filter(course=course_id)
+        
+        return None
