@@ -4,6 +4,7 @@ import uuid
 
 import graphene
 from django.db import transaction
+from django.db.models import Q
 from django.contrib.auth.models import User
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE, DELETION
 from django.contrib.contenttypes.models import ContentType
@@ -554,45 +555,29 @@ class RequestPasswordReset(graphene.Mutation):
 
 class ResetPassword(graphene.Mutation):
     class Arguments:
-        token = graphene.String(required=True)
+        user_id = graphene.ID()
+        username = graphene.ID()
         new_password = graphene.String(required=True)
-        set_student = graphene.Boolean()
-        set_instructor = graphene.Boolean()
 
     status = graphene.String()
 
     @staticmethod
-    def mutate(root, info, token, new_password, set_student=False, set_instructor=False):
-        try:
-            email = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])['email']
-            user = User.objects.get(email=email)
-            user.set_password(new_password)
-            user.save()
-        except Exception:
-            return ResetPassword(status='failed')
+    @staff_member_required
+    def mutate(root, info, **validated_data):
+        user_obj = User.objects.filter(
+            Q(id = validated_data.get('user_id', None)) |
+            Q(username = validated_data.get('username', None))
+        )
 
-        if set_instructor:
-            instructor = Instructor.objects.get(user__email=email)
-            Email.objects.create(
-                template_id=WELCOME_INSTRUCTOR_TEMPLATE,
-                recipient=email,
-                data={
-                    'instructor_name': instructor.user.first_name,
-                    'business_name': settings.BUSINESS_NAME,
-                }
-            )
-        elif set_student:
-            student = Student.objects.get(user__email=email)
-            Email.objects.create(
-                template_id=WELCOME_STUDENT_TEMPLATE,
-                recipient=email,
-                data={
-                    'student_name': student.user.first_name,
-                    'business_name': settings.BUSINESS_NAME,
-                }
-            )
+        if user_obj.exists():
+            status = 'success'
+            user_obj = user_obj[0]
+            user_obj.set_password(validated_data.get('new_password'))
+            user_obj.save()
+        else:
+            status = 'failure'
 
-        return ResetPassword(status='success')
+        return ResetPassword(status=status)
 
 
 class InviteStudent(graphene.Mutation):
