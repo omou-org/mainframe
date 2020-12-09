@@ -97,12 +97,12 @@ class CreateCourse(graphene.Mutation):
             if availabilities:
                 # erase future to be replaced
                 Session.objects.filter(
-                    Q(course=course) &
+                    Q(course__id=course.id) &
                     Q(start_datetime__date__gte=now)
                 ).delete()
 
                 # set old availabilities to false and delete those with no functions
-                for availability in CourseAvailability.objects.filter(course=course):
+                for availability in CourseAvailability.objects.filter(course__id=course.id):
                     availability.active = False
                     availability.num_sessions = Session.objects.filter(availability_id=availability).count()
                     if availability.num_sessions == 0:
@@ -120,12 +120,12 @@ class CreateCourse(graphene.Mutation):
                 for availability in availabilities:
                     # set active if already exists
                     isAvailable = CourseAvailability.objects.filter(
-                                Q(course=course.id) &
+                                Q(course__id=course.id) &
                                 Q(day_of_week=availability['day_of_week']) &
                                 Q(start_time=availability['start_time']) &
                                 Q(end_time=availability['end_time'])
                                 )
-                    if isAvailable:
+                    if isAvailable.exists():
                         availability = isAvailable[0]
                         availability.active = True
                         availability.save()
@@ -191,6 +191,10 @@ class CreateCourse(graphene.Mutation):
                     availability.num_sessions = Session.objects.filter(availability=availability).count()
                     availability.save()
                 course.num_sessions = Session.objects.filter(course=course.id).count()
+
+            else:
+                # if no availabilities specified, use old active ones
+                course_availabilities = CourseAvailability.objects.filter(Q(course__id=course.id) & Q(active=True))
 
             # course link updates
             if validated_data.get('course_link') or validated_data.get('course_link_description'):
