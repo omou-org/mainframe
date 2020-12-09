@@ -43,7 +43,7 @@ class CreateSession(graphene.Mutation):
 
         # send email for updated schedule
         if not created and 'start_datetime' in validated_data:
-            for enrollment in session.course.enrollment_set:
+            for enrollment in session.course.enrollment_set.all():
                 parent = enrollment.student.primary_parent
                 Email.objects.create(
                     template_id=SCHEDULE_UPDATE_PARENT_TEMPLATE,

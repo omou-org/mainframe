@@ -102,7 +102,7 @@ class CreateCourse(graphene.Mutation):
                 ).delete()
 
                 # set old availabilities to false and delete those with no functions
-                for availability in CourseAvailability.objects.filter(course=course):
+                for availability in CourseAvailability.objects.filter(course__id=course.id):
                     availability.active = False
                     availability.num_sessions = Session.objects.filter(availability_id=availability).count()
                     if availability.num_sessions == 0:
@@ -125,7 +125,7 @@ class CreateCourse(graphene.Mutation):
                                 Q(start_time=availability['start_time']) &
                                 Q(end_time=availability['end_time'])
                                 )
-                    if isAvailable:
+                    if isAvailable.exists():
                         availability = isAvailable[0]
                         availability.active = True
                         availability.save()
@@ -191,6 +191,9 @@ class CreateCourse(graphene.Mutation):
                     availability.num_sessions = Session.objects.filter(availability=availability).count()
                     availability.save()
                 course.num_sessions = Session.objects.filter(course=course.id).count()
+
+            else:
+                course_availabilities = CourseAvailability.objects.filter(course=course.id)
 
             # course link updates
             if validated_data.get('course_link') or validated_data.get('course_link_description'):
