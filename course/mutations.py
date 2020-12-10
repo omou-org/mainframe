@@ -199,6 +199,7 @@ class CreateCourse(graphene.Mutation):
             # course link updates
             if validated_data.get('course_link') or validated_data.get('course_link_description'):
                 course.course_link_updated_at = now
+                course.course_link_user = info.context.user
 
             # tuition update if course
             if course.course_type == 'class' and course.num_sessions:
@@ -236,6 +237,7 @@ class CreateCourse(graphene.Mutation):
         course.num_sessions = 0
         if validated_data.get('course_link') or validated_data.get('course_link_description'):
             course.course_link_updated_at = datetime.now()
+            course.course_link_user = info.context.user
 
         # create first week days and course availability models
         course_availabilities = []

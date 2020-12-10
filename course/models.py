@@ -2,6 +2,7 @@ from datetime import date, datetime, timezone
 from decimal import Decimal
 from math import floor
 
+from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.utils.functional import cached_property
@@ -68,6 +69,7 @@ class Course(models.Model):
         blank=True
     )
     course_link_description = models.CharField(max_length=1000, null=True, blank=True)
+    course_link_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True, blank=True)
     course_link_updated_at = models.DateTimeField(null=True, blank=True)
 
     # Logistical information
