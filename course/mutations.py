@@ -45,6 +45,12 @@ class AcademicLevelEnum(graphene.Enum):
     HIGH_LVL = 'high_lvl'
     COLLEGE_LVL = 'college_lvl'
 
+class InviteStatusEnum(graphene.Enum):
+    SENT = "sent"
+    UNSENT = "unsent"
+    ACCEPTED = "accepted"
+    INVALID_EMAIL = "invalid_email"
+
 
 class CourseAvailabilityInput(graphene.InputObjectType):
     day_of_week = DayOfWeekEnum()
@@ -409,6 +415,7 @@ class CreateEnrollment(graphene.Mutation):
     class Arguments:
         student_id = ID(name='student', required=True)
         course_id = ID(name='course', required=True)
+        invite_status = InviteStatusEnum()
 
     enrollment = graphene.Field(EnrollmentType)
 
