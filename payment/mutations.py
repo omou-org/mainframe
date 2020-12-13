@@ -67,7 +67,7 @@ class CreateInvoice(graphene.Mutation):
                 course = enrollment.course
                 line_items.append({
                     'name': course.title,
-                    'amount': int(course.total_tuition * 100),
+                    'amount': round(course.total_tuition * registration["num_sessions"] / course.num_sessions),
                     'currency': 'usd',
                     'quantity': 1,
                 })
