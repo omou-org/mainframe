@@ -47,7 +47,7 @@ class Command(BaseCommand):
                 )
 
             # parent reminders
-            for enrollment in session.course.enrollment_set:
+            for enrollment in session.course.enrollment_set.all():
                 primary_parent = enrollment.student.primary_parent
                 parent_settings = ParentNotificationSettings.objects.get(parent=primary_parent)
                 if parent_settings.session_reminder_email:

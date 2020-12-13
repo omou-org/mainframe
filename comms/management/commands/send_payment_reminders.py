@@ -23,7 +23,7 @@ class Command(BaseCommand):
         )
 
         for session in sessions:
-            for enrollment in session.course.enrollment_set:
+            for enrollment in session.course.enrollment_set.all():
                 # must be last paid session
                 if enrollment.sessions_left != 1:
                     continue

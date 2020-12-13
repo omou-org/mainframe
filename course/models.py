@@ -2,6 +2,7 @@ from datetime import date, datetime, timezone
 from decimal import Decimal
 from math import floor
 
+from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.utils.functional import cached_property
@@ -68,6 +69,7 @@ class Course(models.Model):
         blank=True
     )
     course_link_description = models.CharField(max_length=1000, null=True, blank=True)
+    course_link_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True, blank=True)
     course_link_updated_at = models.DateTimeField(null=True, blank=True)
 
     # GAPI
@@ -154,31 +156,42 @@ class Enrollment(models.Model):
 
     @cached_property
     def enrollment_balance(self):
-        balance = 0
-        for registration in self.registration_set.all():
-            balance += (registration.num_sessions * self.course.hourly_tuition *
-                        self.course.session_length)
-
         earliest_attendance = self.registration_set.earliest(
             'attendance_start_date').attendance_start_date
         past_sessions = self.course.session_set.filter(
             start_datetime__gte=earliest_attendance,
             start_datetime__lte=datetime.now(timezone.utc),
         )
+
+        total_balance = 0
+        paid_balance = 0
+        total_paid_sessions = sum(
+            registration.num_sessions
+            for registration in self.registration_set.all()
+            if registration.invoice.payment_status
+            )
+        
         for session in past_sessions:
             session_length_sec = (session.end_datetime - session.start_datetime).seconds
             session_length_hours = Decimal(session_length_sec) / (60 * 60)
-            balance -= Decimal(session_length_hours) * self.course.hourly_tuition
+            session_balance = Decimal(session_length_hours) * self.course.hourly_tuition
 
-        return balance
+            if total_paid_sessions > 0:
+                paid_balance += session_balance
+            total_balance += session_balance
+
+            total_paid_sessions-=1
+
+        return Decimal(total_balance-paid_balance)
 
     @property
     def sessions_left(self):
-        if self.course.hourly_tuition:
-            return floor(self.enrollment_balance /
-                         (self.course.session_length * self.course.hourly_tuition))
-        else:
-            return 0
+        total_paid_sessions = sum(
+            registration.num_sessions
+            for registration in self.registration_set.all()
+            if registration.invoice.payment_status
+            )
+        return self.course.num_sessions - total_paid_sessions
 
     @property
     def last_paid_session_datetime(self):
@@ -213,7 +226,6 @@ def create_enrollment_attendances(instance, created, raw, **kwargs):
                 enrollment=instance,
                 session=session,
             )
-
 
 models.signals.post_save.connect(
     create_enrollment_attendances, sender=Enrollment,

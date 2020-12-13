@@ -14,6 +14,9 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
+from mainframe.permissions import IsEmployee
+from django_graphene_permissions import permissions_checker
+
 from account.mutations import DayOfWeekEnum
 from comms.models import Email
 from comms.templates import INTEREST_LIST_TEMPLATE
@@ -78,7 +81,7 @@ class CreateCourse(graphene.Mutation):
     created = Boolean()
 
     @staticmethod
-    @staff_member_required
+    @permissions_checker([IsEmployee])
     def mutate(root, info, **validated_data):
         if validated_data.get("hourly_tuition") and validated_data.get("total_tuition"):
             raise GraphQLError('Failed course mutation. Cannot specify both hourly_tuition and total_tuition')
@@ -96,12 +99,12 @@ class CreateCourse(graphene.Mutation):
             if availabilities:
                 # erase future to be replaced
                 Session.objects.filter(
-                    Q(course=course) &
+                    Q(course__id=course.id) &
                     Q(start_datetime__date__gte=now)
                 ).delete()
 
                 # set old availabilities to false and delete those with no functions
-                for availability in CourseAvailability.objects.filter(course=course):
+                for availability in CourseAvailability.objects.filter(course__id=course.id):
                     availability.active = False
                     availability.num_sessions = Session.objects.filter(availability_id=availability).count()
                     if availability.num_sessions == 0:
@@ -119,12 +122,12 @@ class CreateCourse(graphene.Mutation):
                 for availability in availabilities:
                     # set active if already exists
                     isAvailable = CourseAvailability.objects.filter(
-                                Q(course=course.id) &
+                                Q(course__id=course.id) &
                                 Q(day_of_week=availability['day_of_week']) &
                                 Q(start_time=availability['start_time']) &
                                 Q(end_time=availability['end_time'])
                                 )
-                    if isAvailable:
+                    if isAvailable.exists():
                         availability = isAvailable[0]
                         availability.active = True
                         availability.save()
@@ -191,9 +194,14 @@ class CreateCourse(graphene.Mutation):
                     availability.save()
                 course.num_sessions = Session.objects.filter(course=course.id).count()
 
+            else:
+                # if no availabilities specified, use old active ones
+                course_availabilities = CourseAvailability.objects.filter(Q(course__id=course.id) & Q(active=True))
+
             # course link updates
             if validated_data.get('course_link') or validated_data.get('course_link_description'):
                 course.course_link_updated_at = now
+                course.course_link_user = info.context.user
 
             # tuition update if course
             if course.course_type == 'class' and course.num_sessions:
@@ -231,6 +239,7 @@ class CreateCourse(graphene.Mutation):
         course.num_sessions = 0
         if validated_data.get('course_link') or validated_data.get('course_link_description'):
             course.course_link_updated_at = datetime.now()
+            course.course_link_user = info.context.user
 
         # create first week days and course availability models
         course_availabilities = []
