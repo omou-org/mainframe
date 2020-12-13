@@ -72,9 +72,6 @@ class Course(models.Model):
     course_link_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True, blank=True)
     course_link_updated_at = models.DateTimeField(null=True, blank=True)
 
-    # GAPI
-    google_enrollment_code = models.CharField(max_length=7, null=True, blank=True)
-
     # Logistical information
     room = models.CharField(max_length=50, null=True, blank=True)
     start_date = models.DateField(null=True, blank=True)
