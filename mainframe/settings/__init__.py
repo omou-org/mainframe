@@ -181,6 +181,7 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 SENDGRID_API_KEY = env.SENDGRID_API_KEY
+STRIPE_API_KEY = env.STRIPE_API_KEY
 TWILIO_ACCOUNT_SID = 'test'
 TWILIO_AUTH_TOKEN = 'test'
 BUSINESS_NAME = 'Stark Industries'

@@ -30,6 +30,7 @@ DATABASES = {
 }
 SECRET_KEY = os.environ.get("SECRET_KEY")
 SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY")
+STRIPE_API_KEY = os.environ.get("STRIP_API_KEY")
 
 # JWT
 GRAPHQL_JWT = {

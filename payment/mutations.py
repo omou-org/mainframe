@@ -1,11 +1,14 @@
 from django.contrib.admin.models import LogEntry, ADDITION
 from django.contrib.contenttypes.models import ContentType
+from django.conf import settings
 
 import graphene
+import stripe
 from graphene import Field, ID, Int, List, String, Float, Boolean
 from graphql import GraphQLError
 
 from account.models import Parent
+from course.models import Enrollment
 from payment.models import Invoice, RegistrationCart
 from payment.serializers import InvoiceSerializer
 from payment.schema import InvoiceType, CartType
@@ -31,11 +34,12 @@ class CreateInvoice(graphene.Mutation):
         payment_status = Boolean(name="isPaid")
     
     invoice = Field(InvoiceType)
+    stripe_connected_account = String()
+    stripe_checkout_id = String()
     created = Boolean()
 
     @staticmethod
     @login_required
-    @staff_member_required
     def mutate(root, info, **validated_data):
         data = validated_data
         data.update(price_quote_total(data))    
@@ -54,6 +58,29 @@ class CreateInvoice(graphene.Mutation):
         serializer.is_valid(raise_exception=True)
         invoice = serializer.save()
 
+        stripe_checkout_id = None
+        if validated_data['method'] == 'credit_card':
+            stripe.api_key = settings.STRIPE_API_KEY
+            line_items = []
+            for registration in data["registrations"]:
+                enrollment = Enrollment.objects.get(id=registration["enrollment"])
+                course = enrollment.course
+                line_items.append({
+                    'name': course.title,
+                    'amount': int(course.total_tuition * 100),
+                    'currency': 'usd',
+                    'quantity': 1,
+                })
+
+            session = stripe.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=line_items,
+                success_url=f'http://localhost:3000/registration/receipt/{invoice.id}/',
+                cancel_url='http://localhost:3000/registration/cart/',
+                stripe_account='acct_1HqSAYETk4EmXsx3',
+            )
+            stripe_checkout_id = session.id
+
         LogEntry.objects.log_action(
             user_id=info.context.user.id,
             content_type_id=ContentType.objects.get_for_model(Invoice).pk,
@@ -61,7 +88,12 @@ class CreateInvoice(graphene.Mutation):
             object_repr=f"{invoice.parent.user.first_name} {invoice.parent.user.last_name}, {invoice.method}",
             action_flag=ADDITION
         )
-        return CreateInvoice(invoice=invoice)
+        return CreateInvoice(
+            invoice=invoice,
+            stripe_connected_account='acct_1HqSAYETk4EmXsx3',
+            stripe_checkout_id=stripe_checkout_id,
+            created=True
+        )
 
 
 class CreateRegistrationCart(graphene.Mutation):
