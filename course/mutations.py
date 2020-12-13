@@ -67,6 +67,8 @@ class CreateCourse(graphene.Mutation):
         course_link = String()
         course_link_description = String()
 
+        google_class_code = String()
+
         # Logistical information
         room = String()
         start_date = DateTime()
