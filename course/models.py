@@ -151,8 +151,24 @@ class CourseNote(models.Model):
 
 
 class Enrollment(models.Model):
+    SENT = "sent"
+    UNSENT = "unsent"
+    ACCEPTED = "accepted"
+    INVALID_EMAIL = "invalid_email"
+    STATUS_CHOICES = (
+        (SENT, "Sent"),
+        (UNSENT, "Unsent"),
+        (ACCEPTED, "Accepted"),
+        (INVALID_EMAIL, "Invalid_Email"),
+    )
+    
     student = models.ForeignKey(Student, on_delete=models.PROTECT)
     course = models.ForeignKey(Course, on_delete=models.PROTECT)
+    invite_status = models.CharField(
+        max_length=13,
+        choices=STATUS_CHOICES, 
+        default=UNSENT,
+    )
 
     @cached_property
     def enrollment_balance(self):
