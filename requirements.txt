@@ -15,4 +15,5 @@ pandas~=0.25.3
 psycopg2~=2.8.2
 psycopg2-binary~=2.8.3
 sendgrid~=6.2.1
+stripe>=2.48.0,<3.0
 twilio~=6.41.0
