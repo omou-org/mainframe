@@ -37,7 +37,7 @@ clean-venv:
 .PHONY: requirements
 requirements:
 	source "$(VENV_PATH)/bin/activate"; \
-	for f in `ls requirements/` ; do pip install -r requirements/$$f ; done
+	pip install -r requirements.txt
 
 .PHONY: clean-requirements
 clean-requirements:
