@@ -47,6 +47,7 @@ clean-requirements:
 .PHONY: startdb
 startdb:
 	docker-compose -p $(PROJ) -f docker/docker-compose.yml up -d --no-recreate
+	$(PYTHON) manage.py migrate
 
 .PHONY: cleandb
 cleandb:

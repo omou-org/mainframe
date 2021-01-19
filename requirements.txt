@@ -1,11 +1,12 @@
+PyJWT==1.7.1
 apache-airflow~=1.10.10
 arrow~=0.15.4
 django~=2.2.3
 django-filter~=2.2.0
-django-graphql-jwt~=0.3.1
 django-localflavor-us~=1.1
 djangorestframework~=3.9.4
 django-cors-headers~=3.0.2
+django-graphene-permissions~=0.0.4
 graphene-django~=2.10.1
 graphene-graphiql-explorer~=0.0.1
 gunicorn~=19.9.0
@@ -17,3 +18,4 @@ psycopg2-binary~=2.8.3
 sendgrid~=6.2.1
 stripe>=2.48.0,<3.0
 twilio~=6.41.0
+django-graphql-jwt~=0.3.1

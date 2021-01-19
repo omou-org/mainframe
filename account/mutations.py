@@ -39,9 +39,7 @@ from comms.templates import (
     RESET_PASSWORD_TEMPLATE,
     INVITE_INSTRUCTOR_TEMPLATE,
     INVITE_STUDENT_TEMPLATE,
-    WELCOME_INSTRUCTOR_TEMPLATE,
     WELCOME_PARENT_TEMPLATE,
-    WELCOME_STUDENT_TEMPLATE,
 )
 
 
@@ -99,6 +97,24 @@ class UserInput(graphene.InputObjectType):
     last_name = graphene.String()
     email = graphene.String()
     password = graphene.String()
+
+
+class StudentInput(graphene.InputObjectType):
+    # User fields
+    user = UserInput(required=True)
+    gender = GenderEnum()
+    birth_date = graphene.Date()
+    address = graphene.String()
+    city = graphene.String()
+    phone_number = graphene.String()
+    state = graphene.String()
+    zipcode = graphene.String()
+
+    # Student fields
+    grade = graphene.Int()
+    school_id = graphene.ID(name='school')
+    primary_parent_id = graphene.ID(name='primaryParent')
+    secondary_parent_id = graphene.ID(name='secondaryParent')
 
 
 class CreateStudent(graphene.Mutation):
@@ -169,6 +185,66 @@ class CreateStudent(graphene.Mutation):
                 action_flag=ADDITION
             )
             return CreateStudent(student=student, created=True)
+
+
+class CreateStudents(graphene.Mutation):
+    class Arguments:
+        students = graphene.List(StudentInput, required=True)
+
+    students = graphene.List(StudentType)
+    created = graphene.Boolean()
+
+    @login_required
+    @staticmethod
+    def mutate(root, info, students):
+        student_list = []
+        for student_data in students:
+            user = student_data.pop('user')
+            with transaction.atomic():
+                # update request
+                if user.get('id'):
+                    user_id = user.pop('id')
+                    User.objects.filter(id=user_id).update(**user)
+                    Student.objects.filter(user__id=user_id).update(**student_data)
+                    student = Student.objects.get(user__id=user_id)
+                    student.refresh_from_db()
+                    student.save()
+
+                    LogEntry.objects.log_action(
+                        user_id=info.context.user.id,
+                        content_type_id=ContentType.objects.get_for_model(Student).pk,
+                        object_id=student.user.id,
+                        object_repr=f"{student.user.first_name} {student.user.last_name}",
+                        action_flag=CHANGE
+                    )
+                    return CreateStudent(student=student, created=False)
+
+                # create user and token
+                user_object = User.objects.create_user(
+                    username=uuid.uuid4(),
+                    password='password',
+                    first_name=user['first_name'],
+                    last_name=user['last_name'],
+                    email=user.get('email')
+                )
+                Token.objects.get_or_create(user=user_object)
+
+                # create account
+                student = Student.objects.create(
+                    user=user_object,
+                    account_type='student',
+                    **student_data
+                )
+
+                LogEntry.objects.log_action(
+                    user_id=info.context.user.id,
+                    content_type_id=ContentType.objects.get_for_model(Student).pk,
+                    object_id=student.user.id,
+                    object_repr=f"{student.user.first_name} {student.user.last_name}",
+                    action_flag=ADDITION
+                )
+                student_list.append(student)
+        return CreateStudents(students=student_list, created=True)
 
 
 class CreateParent(graphene.Mutation):
@@ -642,6 +718,7 @@ class InviteInstructor(graphene.Mutation):
 class Mutation(graphene.ObjectType):
     create_school = CreateSchool.Field()
     create_student = CreateStudent.Field()
+    create_students = CreateStudents.Field()
     create_parent = CreateParent.Field()
     create_instructor = CreateInstructor.Field()
     create_admin = CreateAdmin.Field()
