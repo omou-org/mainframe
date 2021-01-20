@@ -8,7 +8,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 
 from account.models import (
-    Note,
+    AccountNote,
     School,
     Student,
     StudentSchoolInfo,
@@ -28,7 +28,7 @@ class UserType(DjangoObjectType):
 
 class AccountNoteType(DjangoObjectType):
     class Meta:
-        model = Note
+        model = AccountNote
 
 class SchoolType(DjangoObjectType):
     class Meta:
@@ -114,7 +114,7 @@ class Query(object):
         note_id = kwargs.get('note_id')
 
         if note_id:
-            return Note.objects.get(id=note_id)
+            return AccountNote.objects.get(id=note_id)
 
         return None
 
@@ -245,7 +245,7 @@ class Query(object):
     def resolve_account_notes(self, info, **kwargs):
         user_id = kwargs.get('user_id')
 
-        return Note.objects.filter(user=user_id)
+        return AccountNote.objects.filter(user=user_id)
 
     def resolve_students(self, info, **kwargs):
         grade = kwargs.get('grade')
