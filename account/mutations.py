@@ -15,7 +15,7 @@ from graphql_jwt.decorators import login_required, staff_member_required
 from rest_framework.authtoken.models import Token
 
 from account.models import (
-    Note,
+    AccountNote,
     Admin,
     Student,
     School,
@@ -25,7 +25,7 @@ from account.models import (
     InstructorOutOfOffice,
 )
 from account.schema import (
-    NoteType,
+    AccountNoteType,
     AdminType,
     ParentType,
     SchoolType,
@@ -575,17 +575,17 @@ class CreateAccountNote(graphene.Mutation):
         important = graphene.Boolean()
         complete = graphene.Boolean()
 
-    note = graphene.Field(NoteType)
+    account_note = graphene.Field(AccountNoteType)
     created = graphene.Boolean()
 
     @staticmethod
     @staff_member_required
     def mutate(root, info, **validated_data):
-        note, created = Note.objects.update_or_create(
+        account_note, created = AccountNote.objects.update_or_create(
             id=validated_data.pop('note_id', None),
             defaults=validated_data
         )
-        return CreateAccountNote(note=note, created=created)
+        return CreateAccountNote(account_note=account_note, created=created)
 
 
 class DeleteAccountNote(graphene.Mutation):
@@ -597,7 +597,7 @@ class DeleteAccountNote(graphene.Mutation):
     @staticmethod
     def mutate(root, info, **validated_data):
         try:
-            note_obj = Note.objects.get(id=validated_data.get('note_id'))
+            note_obj = AccountNote.objects.get(id=validated_data.get('note_id'))
         except ObjectDoesNotExist:
             raise GraphQLError('Failed delete mutation. PriceRule does not exist.')
         note_obj.delete()

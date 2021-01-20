@@ -26,7 +26,7 @@ class UserType(DjangoObjectType):
     class Meta:
         model = User
 
-class NoteType(DjangoObjectType):
+class AccountNoteType(DjangoObjectType):
     class Meta:
         model = Note
 
@@ -82,7 +82,7 @@ class UserInfoType(Union):
 
 
 class Query(object):
-    note = Field(NoteType, note_id=ID())
+    account_note = Field(AccountNoteType, note_id=ID())
     student = Field(StudentType, user_id=ID(), email=String())
     school = Field(SchoolType, school_id=ID(), name=String())
     parent = Field(ParentType, user_id=ID(), email=String())
@@ -92,7 +92,7 @@ class Query(object):
     user_type = Field(String, user_id=ID(), user_name=String(), admin_types=Boolean())
     email_from_token = Field(String, token=String())
 
-    notes = List(NoteType, user_id=ID(required=True))
+    account_notes = List(AccountNoteType, user_id=ID(required=True))
     students = List(StudentType, grade=ID())
     schools = List(SchoolType, district=String())
     parents = List(ParentType)
@@ -110,7 +110,7 @@ class Query(object):
     )
 
     @login_required
-    def resolve_note(self, info, **kwargs):
+    def resolve_account_note(self, info, **kwargs):
         note_id = kwargs.get('note_id')
 
         if note_id:
@@ -242,7 +242,7 @@ class Query(object):
         return None
 
     @login_required
-    def resolve_notes(self, info, **kwargs):
+    def resolve_account_notes(self, info, **kwargs):
         user_id = kwargs.get('user_id')
 
         return Note.objects.filter(user=user_id)

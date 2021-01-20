@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from account.models import (
-    Note,
+    AccountNote,
     Admin,
     Student,
     Parent,
@@ -14,7 +14,7 @@ from account.models import (
     InstructorOutOfOffice,
 )
 from account.serializers import (
-    NoteSerializer,
+    AccountNoteSerializer,
     AdminSerializer,
     StudentSerializer,
     ParentSerializer,
@@ -29,8 +29,8 @@ from mainframe.permissions import ReadOnly, IsDev
 class NoteViewSet(viewsets.ModelViewSet):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsDev | (IsAuthenticated & (IsAdminUser | ReadOnly))]
-    queryset = Note.objects.all()
-    serializer_class = NoteSerializer
+    queryset = AccountNote.objects.all()
+    serializer_class = AccountNoteSerializer
 
     def list(self, request):
         """
@@ -38,7 +38,7 @@ class NoteViewSet(viewsets.ModelViewSet):
         """
         user_id = request.query_params.get("user_id", None)
         queryset = self.get_queryset().filter(user__id=user_id)
-        serializer = NoteSerializer(queryset, many=True)
+        serializer = AccountNoteSerializer(queryset, many=True)
         return Response(serializer.data)
 
 
