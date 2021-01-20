@@ -10,7 +10,7 @@ from comms.models import Email
 
 
 from account.models import (
-    Note,
+    AccountNote,
     Admin,
     Student,
     School,
@@ -21,10 +21,10 @@ from account.models import (
 )
 
 
-class NoteSerializer(serializers.ModelSerializer):
+class AccountNoteSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Note
+        model = AccountNote
         read_only_fields = (
             'id',
             'timestamp',

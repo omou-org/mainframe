@@ -15,7 +15,7 @@ from graphql_jwt.decorators import login_required, staff_member_required
 from rest_framework.authtoken.models import Token
 
 from account.models import (
-    Note,
+    AccountNote,
     Admin,
     Student,
     School,
@@ -25,7 +25,7 @@ from account.models import (
     InstructorOutOfOffice,
 )
 from account.schema import (
-    NoteType,
+    AccountNoteType,
     AdminType,
     ParentType,
     SchoolType,
@@ -566,7 +566,7 @@ class CreateAdmin(graphene.Mutation):
             return CreateAdmin(admin=admin)
 
 
-class CreateNote(graphene.Mutation):
+class CreateAccountNote(graphene.Mutation):
     class Arguments:
         note_id = graphene.ID(name='id')
         user_id = graphene.ID()
@@ -575,20 +575,20 @@ class CreateNote(graphene.Mutation):
         important = graphene.Boolean()
         complete = graphene.Boolean()
 
-    note = graphene.Field(NoteType)
+    account_note = graphene.Field(AccountNoteType)
     created = graphene.Boolean()
 
     @staticmethod
     @staff_member_required
     def mutate(root, info, **validated_data):
-        note, created = Note.objects.update_or_create(
+        account_note, created = AccountNote.objects.update_or_create(
             id=validated_data.pop('note_id', None),
             defaults=validated_data
         )
-        return CreateNote(note=note, created=created)
+        return CreateAccountNote(account_note=account_note, created=created)
 
 
-class DeleteNote(graphene.Mutation):
+class DeleteAccountNote(graphene.Mutation):
     class Arguments:
         note_id = graphene.ID(name='id')
 
@@ -597,11 +597,11 @@ class DeleteNote(graphene.Mutation):
     @staticmethod
     def mutate(root, info, **validated_data):
         try:
-            note_obj = Note.objects.get(id=validated_data.get('note_id'))
+            note_obj = AccountNote.objects.get(id=validated_data.get('note_id'))
         except ObjectDoesNotExist:
             raise GraphQLError('Failed delete mutation. PriceRule does not exist.')
         note_obj.delete()
-        return DeleteNote(deleted=True)
+        return DeleteAccountNote(deleted=True)
 
 
 class RequestPasswordReset(graphene.Mutation):
@@ -722,7 +722,7 @@ class Mutation(graphene.ObjectType):
     create_parent = CreateParent.Field()
     create_instructor = CreateInstructor.Field()
     create_admin = CreateAdmin.Field()
-    create_note = CreateNote.Field()
+    create_account_note = CreateAccountNote.Field()
 
     create_instructor_availability = CreateInstructorAvailability.Field()
     create_instructor_availabilities = CreateInstructorAvailabilities.Field()
@@ -731,7 +731,7 @@ class Mutation(graphene.ObjectType):
 
     # delete endpoints
     delete_instructor_ooo = DeleteInstructorOOO.Field()
-    delete_note = DeleteNote.Field()
+    delete_account_note = DeleteAccountNote.Field()
 
     # Auth endpoints
     request_password_reset = RequestPasswordReset.Field()
