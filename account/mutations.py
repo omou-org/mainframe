@@ -722,7 +722,7 @@ class Mutation(graphene.ObjectType):
     create_parent = CreateParent.Field()
     create_instructor = CreateInstructor.Field()
     create_admin = CreateAdmin.Field()
-    create_note = CreateAccountNote.Field()
+    create_account_note = CreateAccountNote.Field()
 
     create_instructor_availability = CreateInstructorAvailability.Field()
     create_instructor_availabilities = CreateInstructorAvailabilities.Field()
@@ -731,7 +731,7 @@ class Mutation(graphene.ObjectType):
 
     # delete endpoints
     delete_instructor_ooo = DeleteInstructorOOO.Field()
-    delete_note = DeleteAccountNote.Field()
+    delete_account_note = DeleteAccountNote.Field()
 
     # Auth endpoints
     request_password_reset = RequestPasswordReset.Field()
