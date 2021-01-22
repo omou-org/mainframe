@@ -1,7 +1,7 @@
 from django.urls import include, path
 from rest_framework import routers
-from . import views
+from .views import FileUpload
 
 urlpatterns = [
-    path('import', views.upload)
+    path('import', FileUpload.as_view())
 ]
