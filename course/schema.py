@@ -198,6 +198,7 @@ class Query(object):
             if Instructor.objects.filter(user_id=user_id).exists():
                 return Course.objects.filter(instructor_id=user_id)
             if Parent.objects.filter(user_id=user_id).exists():
+                parent = Parent.objects.get(user_id=user_id)
                 student_course_ids = set()
                 for student_id in parent.student_list:
                     for enrollment in Enrollment.objects.filter(student=student_id):
