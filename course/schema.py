@@ -5,7 +5,8 @@ from graphene_django.types import ObjectType, DjangoObjectType
 from graphql_jwt.decorators import login_required
 
 from account.models import (
-    Parent
+    Parent,
+    Instructor
 )
 
 from course.models import (
@@ -94,7 +95,7 @@ class Query(object):
     enrollment_note = Field(EnrollmentNoteType, note_id=ID())
     interest = Field(InterestType, interest_id=ID())
 
-    courses = List(CourseType, category_id=ID(), course_ids=List(ID), instructor_id=ID(), parent_id=ID())
+    courses = List(CourseType, category_id=ID(), course_ids=List(ID), user_id=ID())
     course_availabilities = List(CourseAvailabilityType, course_id=ID(), availability_ids=List(ID))
     course_categories = List(CourseCategoryType)
     course_notes = List(CourseNoteType, course_id=ID(required=True))
@@ -186,24 +187,23 @@ class Query(object):
     def resolve_courses(self, info, **kwargs):
         category_id = kwargs.get('category_id')
         course_ids = kwargs.get('course_ids')
-        instructor_id = kwargs.get('instructor_id')
-        parent_id = kwargs.get('parent_id')
+        user_id = kwargs.get('user_id')
 
         if category_id:
             return Course.objects.filter(course_category=category_id)
         if course_ids:
             course_ids = [course_id for course_id in course_ids if Course.objects.filter(id=course_id).exists()]
             return Course.objects.filter(id__in = course_ids) 
-        if instructor_id:
-            return Course.objects.filter(instructor_id=instructor_id)
-        if parent_id:
-            parent = Parent.objects.get(user_id=parent_id)
-            course_ids = set()
-            for student_id in parent.student_list:
-                for enrollment in Enrollment.objects.filter(student=student_id):
-                    course_ids.add(enrollment.course.id)
-            return Course.objects.filter(id__in = course_ids)
-        
+        if user_id:
+            if Instructor.objects.filter(user_id=user_id).exists():
+                return Course.objects.filter(instructor_id=user_id)
+            if Parent.objects.filter(user_id=user_id).exists():
+                parent = Parent.objects.get(user_id=user_id)
+                student_course_ids = set()
+                for student_id in parent.student_list:
+                    for enrollment in Enrollment.objects.filter(student=student_id):
+                        student_course_ids.add(enrollment.course.id)
+                return Course.objects.filter(id__in = student_course_ids) 
         return Course.objects.all()
 
     @login_required
