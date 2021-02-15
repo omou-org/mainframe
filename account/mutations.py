@@ -631,29 +631,22 @@ class RequestPasswordReset(graphene.Mutation):
 
 class ResetPassword(graphene.Mutation):
     class Arguments:
-        user_id = graphene.ID()
-        username = graphene.ID()
+        token = graphene.String(required=True)
         new_password = graphene.String(required=True)
 
     status = graphene.String()
 
     @staticmethod
-    @staff_member_required
-    def mutate(root, info, **validated_data):
-        user_obj = User.objects.filter(
-            Q(id = validated_data.get('user_id', None)) |
-            Q(username = validated_data.get('username', None))
-        )
+    def mutate(root, info, token, new_password):
+        try:
+            email = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])["email"]
+            user = User.objects.get(email=email)
+            user.set_password(new_password)
+            user.save()
+        except Exception:
+            return ResetPassword(status="failed")
 
-        if user_obj.exists():
-            status = 'success'
-            user_obj = user_obj[0]
-            user_obj.set_password(validated_data.get('new_password'))
-            user_obj.save()
-        else:
-            status = 'failure'
-
-        return ResetPassword(status=status)
+        return ResetPassword(status="success")
 
 
 class InviteStudent(graphene.Mutation):
