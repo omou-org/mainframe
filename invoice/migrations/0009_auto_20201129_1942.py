@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('account', '0043_auto_20201003_1659'),
         ('course', '0030_courseavailability_active'),
-        ('payment', '0008_registrationcart'),
+        ('invoice', '0008_registrationcart'),
     ]
 
     operations = [

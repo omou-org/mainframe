@@ -17,7 +17,19 @@ class Invoice(models.Model):
     total = models.DecimalField(max_digits=6, decimal_places=2)
     account_balance = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
     discount_total = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
-    payment_status = models.BooleanField(default=False)
+
+    PAID = 'paid'
+    UNPAID = 'unpaid'
+    CANCELLED = 'cancelled'
+    PAYMENT_CHOICES = (
+        (PAID, 'Paid'),
+        (UNPAID, 'Unpaid'),
+        (CANCELLED, 'Cancelled')
+    )
+    payment_status = models.CharField(
+        max_length=20,
+        choices=PAYMENT_CHOICES,
+    )
 
     CASH = 'cash'
     CREDIT_CARD = 'credit_card'
