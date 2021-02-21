@@ -17,7 +17,7 @@ urlpatterns = [
     path('search/', include('search.urls')),
     path('course/', include('course.urls')),
     path('account/', include('account.urls')),
-    path('payment/', include('payment.urls')),
+    path('payment/', include('invoice.urls')),
     path('onboarding/', include('onboarding.urls')),
     path('admin/', admin.site.urls),
     path('graphql', GraphQLView.as_view(graphiql=True)),

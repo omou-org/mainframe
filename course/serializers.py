@@ -8,7 +8,7 @@ from django.db.models import Q
 from rest_framework import serializers
 
 from course.models import EnrollmentNote, CourseNote, Course, CourseCategory, Enrollment
-from payment.serializers import InvoiceSerializer
+from invoice.serializers import InvoiceSerializer
 from pricing.models import PriceRule
 from scheduler.models import Session
 
