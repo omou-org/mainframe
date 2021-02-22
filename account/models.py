@@ -63,7 +63,6 @@ class UserInfo(models.Model):
         abstract = True
 
 
-
 class AccountNote(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     title = models.TextField(blank=True)

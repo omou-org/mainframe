@@ -42,7 +42,7 @@ class CreateInvoice(graphene.Mutation):
     @login_required
     def mutate(root, info, **validated_data):
         data = validated_data
-        data.update(price_quote_total(data))    
+        data.update(price_quote_total(data))
         
         discounts = data.pop("discounts")
         data["deductions"] = []

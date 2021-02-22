@@ -4,6 +4,7 @@ from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 from account.models import Admin, Instructor
 
+
 class ReadOnly(BasePermission):
     def has_permission(self, request, view):
         return request.method in SAFE_METHODS
