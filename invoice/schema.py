@@ -12,6 +12,7 @@ from invoice.models import (
     Registration,
     RegistrationCart
 )
+from invoice.mutations import PaymentChoiceEnum
 
 
 class InvoiceType(DjangoObjectType):
@@ -40,7 +41,7 @@ class Query(object):
     registration = Field(RegistrationType, registration_id=ID())
     registration_cart = Field(CartType, cart_id=ID(), parent_id=ID())
 
-    invoices = List(InvoiceType, parent_id=ID(), start_date=String(), end_date=String())
+    invoices = List(InvoiceType, parent_id=ID(), start_date=String(), end_date=String(), payment_status=PaymentChoiceEnum())
     deductions = List(DeductionType, invoice_id=ID())
     registrations = List(RegistrationType, invoice_id=ID())
 
@@ -86,21 +87,21 @@ class Query(object):
         parent_id = kwargs.get('parent_id')
         start_date = kwargs.get('start_date')
         end_date = kwargs.get('end_date')
+        payment_status = kwargs.get('payment_status')
+
+        invoices = Invoice.objects.all()
 
         if parent_id:
-            if start_date and end_date:
-                return Invoice.objects.filter(
-                    created_at__gt=arrow.get(start_date).datetime,
-                    created_at__lt=arrow.get(end_date).datetime,
-                    parent=parent_id
-                )
-            return Invoice.objects.filter(parent=parent_id)
+            invoices = invoices.filter(parent=parent_id)
         if start_date and end_date:
-            return Invoice.objects.filter(
+            invoices = invoices.filter(
                 created_at__gt=datetime.date(start_date),
                 created_at__lt=datetime.date(end_date)
             )
-        return Invoice.objects.all()
+        if payment_status:
+            invoices = invoices.filter(payment_status=payment_status)
+
+        return invoices
 
     def resolve_deductions(self, info, **kwargs):
         invoice_id = kwargs.get('invoice_id')

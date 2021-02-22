@@ -22,6 +22,12 @@ class EnrollmentQuote(graphene.InputObjectType):
     num_sessions = Int()
 
 
+class PaymentChoiceEnum(graphene.Enum):
+    PAID = 'paid'
+    UNPAID = 'unpaid'
+    CANCELLED = 'cancelled'
+
+
 class CreateInvoice(graphene.Mutation):
     class Arguments:
         method = String(required=True)
@@ -31,7 +37,7 @@ class CreateInvoice(graphene.Mutation):
         tutoring = List(TutoringQuote)
         parent = ID(required=True)
         registrations = List(EnrollmentQuote)
-        payment_status = Boolean(name="isPaid")
+        payment_status = PaymentChoiceEnum()
     
     invoice = Field(InvoiceType)
     stripe_connected_account = String()
