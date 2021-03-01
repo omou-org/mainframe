@@ -5,6 +5,7 @@ from django_localflavor_us.us_states import US_STATES
 from django.conf import settings
 
 from account.managers import StudentManager, ParentManager, InstructorManager, AdminManager
+from onboarding.models import Business
 
 
 class UserInfo(models.Model):
@@ -31,6 +32,11 @@ class UserInfo(models.Model):
     )
     STATE_CHOICES = tuple(sorted(US_STATES, key=lambda obj: obj[1]))
 
+    business = models.ForeignKey(
+        Business,
+        on_delete=models.PROTECT,
+        default=0
+    )
     user = models.OneToOneField(
         get_user_model(),
         on_delete=models.PROTECT,
