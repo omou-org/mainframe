@@ -42,7 +42,7 @@ from scheduler.schema import (
 
 
 def paginate(results, page, size):
-    if page is not None and size is not None:
+    if page and size:
         try:
             size = int(size)
             page = int(page)
