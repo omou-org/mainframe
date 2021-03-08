@@ -11,7 +11,7 @@ from account.models import Parent
 from course.models import Enrollment
 from invoice.models import Invoice, RegistrationCart
 from invoice.serializers import InvoiceSerializer
-from invoice.schema import InvoiceType, CartType
+from invoice.schema import PaymentChoiceEnum, InvoiceType, CartType
 from pricing.schema import price_quote_total, ClassQuote, TutoringQuote
 
 from graphql_jwt.decorators import login_required, staff_member_required
@@ -20,12 +20,6 @@ from graphql_jwt.decorators import login_required, staff_member_required
 class EnrollmentQuote(graphene.InputObjectType):     
     enrollment = Int()
     num_sessions = Int()
-
-
-class PaymentChoiceEnum(graphene.Enum):
-    PAID = 'paid'
-    UNPAID = 'unpaid'
-    CANCELLED = 'cancelled'
 
 
 class CreateInvoice(graphene.Mutation):

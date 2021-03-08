@@ -1,4 +1,4 @@
-from graphene import Field, ID, List, String
+from graphene import Enum, Field, Int, ID, List, ObjectType, String
 from graphene_django.types import DjangoObjectType
 from graphql_jwt.decorators import login_required
 
@@ -8,6 +8,7 @@ from django.db.models.functions import Cast
 from datetime import datetime
 import arrow
 
+from account.models import Parent
 from course.schema import EnrollmentType
 from course.models import Course, Enrollment
 from invoice.models import (
@@ -16,8 +17,13 @@ from invoice.models import (
     Registration,
     RegistrationCart
 )
-from invoice.mutations import PaymentChoiceEnum
 from search.schema import paginate
+
+
+class PaymentChoiceEnum(Enum):
+    PAID = 'paid'
+    UNPAID = 'unpaid'
+    CANCELLED = 'cancelled'
 
 
 class InvoiceType(DjangoObjectType):
@@ -40,13 +46,18 @@ class CartType(DjangoObjectType):
         model = RegistrationCart
 
 
+class InvoiceResults(ObjectType):
+    results = List(InvoiceType, required=True)
+    total = Int()
+
+
 class Query(object):
     invoice = Field(InvoiceType, invoice_id=ID())
     deduction = Field(DeductionType, deduction_id=ID())
     registration = Field(RegistrationType, registration_id=ID())
     registration_cart = Field(CartType, cart_id=ID(), parent_id=ID())
 
-    invoices = List(InvoiceType,
+    invoices = Field(InvoiceResults,
                     query=String(),
                     start_date=String(),
                     end_date=String(),
@@ -111,12 +122,14 @@ class Query(object):
         if query: # parent name and/or invoice id
             for token in query.split():
                 if all(char.isdigit() for char in token):
-                    invoices = invoices.annotate(id_str=Cast('id', CharField()).filter(id_str__startswith=token))
+                    invoices = invoices.annotate(id_str=Cast('id', CharField())).filter(id_str__startswith=token)
                 else:
+                    print(token)
+                    print([a.parent.user.__dict__ for a in invoices])
                     invoices = invoices.filter(
-                        Q(parent__user__first_name__contains = token) |
-                        Q(parent__user__last_name__contains = token) |
-                        Q(parent__user__username = token)
+                        Q(parent__user__first_name__icontains = token) |
+                        Q(parent__user__last_name__icontains = token) |
+                        Q(parent__user__username__iexact = token)
                     )
 
         if start_date and end_date:
@@ -128,8 +141,8 @@ class Query(object):
         if payment_status:
             invoices = invoices.filter(payment_status=payment_status)
 
-        invoices = paginate(invoices, kwargs.get('page'), kwargs.get('page_size'))
-        return invoices
+        paginated = paginate(invoices, kwargs.get('page'), kwargs.get('page_size'))
+        return InvoiceResults(results=paginated, total=invoices.count())
 
     def resolve_deductions(self, info, **kwargs):
         invoice_id = kwargs.get('invoice_id')
