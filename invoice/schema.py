@@ -121,8 +121,8 @@ class Query(object):
 
         if start_date and end_date:
             invoices = invoices.filter(
-                created_at__gt=datetime.date(start_date),
-                created_at__lt=datetime.date(end_date)
+                created_at__gt=arrow.get(start_date).datetime,
+                created_at__lt=arrow.get(end_date).datetime
             )
         
         if payment_status:
