@@ -2,7 +2,7 @@ from graphene import Field, ID, List, String
 from graphene_django.types import DjangoObjectType
 from graphql_jwt.decorators import login_required
 
-from django.db.models import Q, StringField
+from django.db.models import Q, CharField
 from django.db.models.functions import Cast
 
 from datetime import datetime
@@ -111,7 +111,7 @@ class Query(object):
         if query: # parent name and/or invoice id
             for token in query.split():
                 if all(char.isdigit() for char in token):
-                    invoices = invoices.annotate(id_str=Cast('id', StringField()).filter(id_str__startswith=token))
+                    invoices = invoices.annotate(id_str=Cast('id', CharField()).filter(id_str__startswith=token))
                 else:
                     invoices = invoices.filter(
                         Q(parent__user__first_name__contains = token) |
