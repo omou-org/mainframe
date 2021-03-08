@@ -111,7 +111,7 @@ class Query(object):
         if query: # parent name and/or invoice id
             for token in query.split():
                 if all(char.isdigit() for char in token):
-                    invoices = invoices.annotate(id_str=Cast('id', StringField()).filter(id_str__startswith=token)
+                    invoices = invoices.annotate(id_str=Cast('id', StringField()).filter(id_str__startswith=token))
                 else:
                     invoices = invoices.filter(
                         Q(parent__user__first_name__contains = token) |
