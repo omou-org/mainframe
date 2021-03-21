@@ -9,7 +9,7 @@
 You can use this [helper](https://crontab.guru/), or just google "crontab tutorial".
 
 ## Can I view logs of my jobs when testing locally?
-Yes, you can include a redirect to a log file when defining your job, as shown in the example. Bear in mind you'll to first create the directory that the log file will be living in (`mkdir -p /tmp/mainframe/comms` for example) before it can write to it.
+Yes, you can include a redirect to a log file when defining your job, as shown in the example. Bear in mind you'll have to first create the directory that the log file will be living in (`mkdir -p /tmp/mainframe/comms` for example) before it can write to it.
 
 ## I'm still running into issues or I have a different question!
 Ping Jerry on Teams and I can help you out.
