@@ -64,3 +64,7 @@ loaddb:
 	python manage.py migrate_summit_enrollments
 	python manage.py migrate_summit_tutoring
 	python manage.py migrate_summit_tutoring_enrollments
+
+.PHONY: cronjobs
+cronjobs:
+	python manage.py crontab add

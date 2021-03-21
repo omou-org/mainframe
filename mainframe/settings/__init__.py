@@ -67,6 +67,7 @@ COMMON_APPS = (
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_crontab",
     "django_filters",
     "graphene_django",
     "graphene_graphiql_explorer",
@@ -185,3 +186,11 @@ STRIPE_API_KEY = env.STRIPE_API_KEY
 TWILIO_ACCOUNT_SID = 'test'
 TWILIO_AUTH_TOKEN = 'test'
 BUSINESS_NAME = 'Stark Industries'
+
+# Cronjobs
+CRONJOBS = [
+    ('* * * * *', 'comms.cronjobs.example.run', '>> /tmp/mainframe/comms/example.log'),  # Every minute
+    ('0 8 * * *', 'comms.cronjobs.send_session_reminders.run', '>> /tmp/mainframe/comms/send_session_reminders.log')  # every day at 8 AM
+]
+CRONTAB_COMMAND_PREFIX = 'DJANGO_ENV_MODULE=mainframe.settings.local'
+CRONTAB_COMMAND_SUFFIX = '2>&1'
