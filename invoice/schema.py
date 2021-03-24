@@ -124,8 +124,6 @@ class Query(object):
                 if all(char.isdigit() for char in token):
                     invoices = invoices.annotate(id_str=Cast('id', CharField())).filter(id_str__startswith=token)
                 else:
-                    print(token)
-                    print([a.parent.user.__dict__ for a in invoices])
                     invoices = invoices.filter(
                         Q(parent__user__first_name__icontains = token) |
                         Q(parent__user__last_name__icontains = token) |
