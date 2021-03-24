@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='invoice',
             name='payment_status',
-            field=models.CharField(choices=[('paid', 'Paid'), ('unpaid', 'Unpaid'), ('cancelled', 'Cancelled')], max_length=20),
+            field=models.CharField(choices=[('paid', 'Paid'), ('unpaid', 'Unpaid'), ('canceled', 'Canceled')], max_length=20),
         ),
     ]

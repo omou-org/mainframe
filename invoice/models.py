@@ -20,11 +20,11 @@ class Invoice(models.Model):
 
     PAID = 'paid'
     UNPAID = 'unpaid'
-    CANCELLED = 'cancelled'
+    CANCELED = 'canceled'
     PAYMENT_CHOICES = (
         (PAID, 'Paid'),
         (UNPAID, 'Unpaid'),
-        (CANCELLED, 'Cancelled')
+        (CANCELED, 'canceled')
     )
     payment_status = models.CharField(
         max_length=20,

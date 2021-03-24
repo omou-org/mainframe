@@ -23,7 +23,7 @@ from search.schema import paginate
 class PaymentChoiceEnum(Enum):
     PAID = 'paid'
     UNPAID = 'unpaid'
-    CANCELLED = 'cancelled'
+    CANCELED = 'canceled'
 
 
 class InvoiceType(DjangoObjectType):
