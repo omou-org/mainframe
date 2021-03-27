@@ -139,7 +139,7 @@ class Query(object):
         if payment_status:
             invoices = invoices.filter(payment_status=payment_status)
 
-        invoices = invoices.order_by('id')
+        invoices = invoices.order_by('-id')
         paginated = paginate(invoices, kwargs.get('page'), kwargs.get('page_size'))
         return InvoiceResults(results=paginated, total=invoices.count())
 
