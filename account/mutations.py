@@ -520,6 +520,7 @@ class CreateAdmin(graphene.Mutation):
         phone_number = graphene.String()
         state = graphene.String()
         zipcode = graphene.String()
+        google_auth_enabled = graphene.Boolean()
 
         # Admin fields
         admin_type = AdminTypeEnum(required=True)
