@@ -67,9 +67,11 @@ class InstructorAvailabilityType(DjangoObjectType):
     def resolve_end_datetime(self, info):
         return datetime.combine(date.today(), self.end_time)
 
+
 class InstructorOutOfOfficeType(DjangoObjectType):
     class Meta:
         model = InstructorOutOfOffice
+
 
 class AdminType(DjangoObjectType):
     class Meta:

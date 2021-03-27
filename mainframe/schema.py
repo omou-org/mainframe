@@ -11,6 +11,7 @@ from search import schema as search_schema
 from pricing import schema as pricing_schema, mutations as pricing_mutations
 from log import schema as log_schema
 
+
 class Query(account_schema.Query, comms_schema.Query, course_schema.Query,
             payment_schema.Query, scheduler_schema.Query, search_schema.Query,
             pricing_schema.Query, log_schema.Query, onboarding_schema.Query,
