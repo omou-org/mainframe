@@ -24,7 +24,7 @@ class Invoice(models.Model):
     PAYMENT_CHOICES = (
         (PAID, 'Paid'),
         (UNPAID, 'Unpaid'),
-        (CANCELED, 'canceled')
+        (CANCELED, 'Canceled')
     )
     payment_status = models.CharField(
         max_length=20,

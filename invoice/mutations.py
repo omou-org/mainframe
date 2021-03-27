@@ -43,28 +43,36 @@ class CreateInvoice(graphene.Mutation):
     @login_required
     def mutate(root, info, **validated_data):
         data = validated_data
-        data.update(price_quote_total(data))
-
-        discounts = data.pop("discounts")
-        data["deductions"] = []
-        for discount in discounts:
-            data["deductions"].append(
-                {
-                    "discount": discount["id"],
-                    "amount": discount["amount"]
-                }
-            )
 
         # update invoice
         if data.get('invoice_id'):
-            invoice = Invoice.objects.get(id=data.get('invoice_id'))
-            serializer = InvoiceSerializer(invoice, data=data)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-           
+            # only admins may update an invoice
+            if not Admin.objects.filter(user__id = info.context.user.id).exists():
+                raise GraphQLError("Failed Mutation. Only Admins may update Invoices.")
+
+            # can only update method or payment_status
+            data = {key: data[key] for key in ('method', 'payment_status', 'invoice_id') if key in data}
+
+            # update
+            invoice = Invoice.objects.get(id=data.pop('invoice_id'))
+            Invoice.objects.filter(id=invoice.id).update(**data)
             invoice.refresh_from_db()
+
             operation = CHANGE
         else:
+            # compute price quote
+            data.update(price_quote_total(data))
+
+            discounts = data.pop("discounts")
+            data["deductions"] = []
+            for discount in discounts:
+                data["deductions"].append(
+                    {
+                        "discount": discount["id"],
+                        "amount": discount["amount"]
+                    }
+                )
+
             serializer = InvoiceSerializer(data=data, context={'user_id': info.context.user.id})
             serializer.is_valid(raise_exception=True)
             invoice = serializer.save()
@@ -84,12 +92,12 @@ class CreateInvoice(graphene.Mutation):
         if validated_data['method'] == 'credit_card':
             stripe.api_key = settings.STRIPE_API_KEY
             line_items = []
-            for registration in data["registrations"]:
-                enrollment = Enrollment.objects.get(id=registration["enrollment"])
+            for registration in invoice.registration_set.all():
+                enrollment = registration.enrollment
                 course = enrollment.course
                 line_items.append({
                     'name': course.title,
-                    'amount': round(course.total_tuition * registration["num_sessions"] / course.num_sessions),
+                    'amount': round(course.total_tuition * registration.num_sessions / course.num_sessions),
                     'currency': 'usd',
                     'quantity': 1,
                 })
