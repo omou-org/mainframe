@@ -7,12 +7,12 @@ from rest_framework.views import APIView
 from mainframe.permissions import ReadOnly, IsDev
 from course.models import Course, Enrollment
 from course.serializers import EnrollmentSerializer
-from payment.models import Invoice
-from payment.serializers import InvoiceSerializer
+from invoice.models import Invoice
+from invoice.serializers import InvoiceSerializer
 from pricing.views import price_quote_total
 
 
-class PaymentViewSet(viewsets.ModelViewSet):
+class InvoiceViewSet(viewsets.ModelViewSet):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsDev | (IsAuthenticated & (IsAdminUser | ReadOnly))]
     queryset = Invoice.objects.all()

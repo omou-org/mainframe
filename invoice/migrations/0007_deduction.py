@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('pricing', '0011_auto_20200102_1921'),
-        ('payment', '0006_auto_20200225_0608'),
+        ('invoice', '0006_auto_20200225_0608'),
     ]
 
     operations = [
@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('discount', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='pricing.Discount')),
-                ('payment', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='payment.Payment')),
+                ('payment', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='invoice.Payment')),
             ],
         ),
     ]

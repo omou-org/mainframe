@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('account', '0043_auto_20201003_1659'),
         ('course', '0030_courseavailability_active'),
-        ('payment', '0008_registrationcart'),
+        ('invoice', '0008_registrationcart'),
     ]
 
     operations = [
@@ -42,7 +42,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='invoice',
             name='enrollments',
-            field=models.ManyToManyField(related_name='payment_list', through='payment.Registration', to='course.Enrollment'),
+            field=models.ManyToManyField(related_name='payment_list', through='invoice.Registration', to='course.Enrollment'),
         ),
         migrations.AddField(
             model_name='invoice',
@@ -52,11 +52,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='deduction',
             name='invoice',
-            field=models.ForeignKey(default=None, on_delete=django.db.models.deletion.CASCADE, to='payment.Invoice'),
+            field=models.ForeignKey(default=None, on_delete=django.db.models.deletion.CASCADE, to='invoice.Invoice'),
         ),
         migrations.AddField(
             model_name='registration',
             name='invoice',
-            field=models.ForeignKey(default=None, on_delete=django.db.models.deletion.CASCADE, to='payment.Invoice'),
+            field=models.ForeignKey(default=None, on_delete=django.db.models.deletion.CASCADE, to='invoice.Invoice'),
         ),
     ]

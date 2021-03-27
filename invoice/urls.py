@@ -1,9 +1,9 @@
 from django.urls import include, path
 from rest_framework import routers
-from payment import views
+from invoice import views
 
 router = routers.DefaultRouter()
-router.register(r'payment', views.PaymentViewSet)
+router.register(r'invoice', views.InvoiceViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

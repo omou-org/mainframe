@@ -55,7 +55,7 @@ API_APPS = (
     "scheduler.apps.SchedulerConfig",
     "search.apps.SearchConfig",
     "pricing.apps.PricingConfig",
-    "payment.apps.PaymentConfig",
+    "invoice.apps.InvoiceConfig",
     "comms.apps.CommsConfig",
     "log.apps.LogConfig",
     "onboarding.apps.OnboardingConfig"

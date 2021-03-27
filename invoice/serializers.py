@@ -8,7 +8,7 @@ from account.models import Parent
 from comms.models import Email
 from comms.templates import PAYMENT_CONFIRM_TEMPLATE
 from course.models import Enrollment
-from payment.models import Invoice, Registration, Deduction
+from invoice.models import Invoice, Registration, Deduction
 from pricing.serializers import DiscountSerializer
 
 

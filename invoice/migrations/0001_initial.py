@@ -34,13 +34,13 @@ class Migration(migrations.Migration):
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('enrollment', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='course.Enrollment')),
-                ('payment', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='payment.Payment')),
+                ('payment', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='invoice.Payment')),
             ],
         ),
         migrations.AddField(
             model_name='payment',
             name='enrollments',
-            field=models.ManyToManyField(through='payment.Registration', to='course.Enrollment'),
+            field=models.ManyToManyField(through='invoice.Registration', to='course.Enrollment'),
         ),
         migrations.AddField(
             model_name='payment',
