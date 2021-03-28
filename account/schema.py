@@ -213,7 +213,7 @@ class Query(object):
             if Admin.objects.filter(user=user_id).exists():
                 admin = Admin.objects.get(user__email=user_name)
                 if admin_types:
-                    return Admin.objects.get(user=user_id).admin_type.upper()
+                    return UserType(user_type=admin.admin_type.upper(),google_auth_enabled=admin.google_auth_enabled)
                 return UserType(user_type="ADMIN",google_auth_enabled=admin.google_auth_enabled)
 
         return None
