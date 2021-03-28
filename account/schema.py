@@ -274,6 +274,7 @@ class Query(object):
             return Admin.objects.filter(admin_type=admin_type)
         return Admin.objects.all()
 
+    @login_required
     def resolve_parents(self, info, **kwargs):
         return Parent.objects.all()
 

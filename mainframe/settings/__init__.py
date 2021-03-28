@@ -61,6 +61,7 @@ API_APPS = (
     "onboarding.apps.OnboardingConfig"
 )
 COMMON_APPS = (
+    "social_django",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -179,10 +180,13 @@ GRAPHENE = {
 }
 AUTHENTICATION_BACKENDS = [
     'graphql_jwt.backends.JSONWebTokenBackend',
+    'social_core.backends.google.GoogleOAuth2',
     'django.contrib.auth.backends.ModelBackend',
 ]
 SENDGRID_API_KEY = env.SENDGRID_API_KEY
 STRIPE_API_KEY = env.STRIPE_API_KEY
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = env.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = env.SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET
 TWILIO_ACCOUNT_SID = 'test'
 TWILIO_AUTH_TOKEN = 'test'
 BUSINESS_NAME = 'Stark Industries'

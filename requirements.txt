@@ -1,4 +1,4 @@
-PyJWT==1.7.1
+PyJWT==2.0.0
 apache-airflow~=1.10.10
 arrow~=0.15.4
 django~=2.2.3
@@ -8,6 +8,7 @@ django-localflavor-us~=1.1
 djangorestframework~=3.9.4
 django-cors-headers~=3.0.2
 django-graphene-permissions~=0.0.4
+django-graphql-social-auth[jwt]~=0.1.4
 graphene-django~=2.10.1
 graphene-graphiql-explorer~=0.0.1
 gunicorn~=19.9.0
