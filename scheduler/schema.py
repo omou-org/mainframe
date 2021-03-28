@@ -8,7 +8,7 @@ from graphene import Boolean, Field, ID, Int, List, String, DateTime
 from graphene_django.types import DjangoObjectType, ObjectType
 from graphql_jwt.decorators import login_required
 
-from account.models import InstructorAvailability, InstructorOutOfOffice
+from account.models import Admin, Instructor, Parent, Student, InstructorAvailability, InstructorOutOfOffice
 
 from course.models import Course, Enrollment
 from scheduler.models import Session, SessionNote, Attendance
@@ -36,8 +36,8 @@ class AttendanceType(DjangoObjectType):
 class Query(object):
     session = Field(SessionType, session_id=ID(required=True))
     sessions = List(SessionType, time_frame=String(), view_option=String(),
-                    course_id=ID(), time_shift=Int(default_value=0), instructor_id=ID(),
-                    student_id=ID(), start_date=String(), end_date=String())
+                    course_id=ID(), time_shift=Int(default_value=0), user_id=ID(),
+                    start_date=String(), end_date=String())
     session_note = Field(SessionNoteType, note_id=ID())
     session_notes = List(SessionNoteType, session_id=ID(required=True))
     attendance = Field(AttendanceType, attendance_id=ID(required=True))
@@ -61,21 +61,34 @@ class Query(object):
 
     @login_required
     def resolve_sessions(self, info, time_frame=None, view_option=None,
-                         course_id=None, time_shift=0, instructor_id=None,
-                         student_id=None, start_date=None, end_date=None):
+                         course_id=None, time_shift=0, user_id=None,
+                         start_date=None, end_date=None):
         queryset = Session.objects.all()
 
         if course_id is not None:
             queryset = queryset.filter(course=course_id)
 
-        if instructor_id is not None:
-            queryset = queryset.filter(instructor=instructor_id)
+        # instructor
+        if Instructor.objects.filter(user__id=user_id).exists():
+            queryset = queryset.filter(instructor=user_id)
 
-        if student_id is not None:
+        # student
+        if Student.objects.filter(user__id=user_id).exists():
             # get all courses student is enrolled in
-            courses = [enrollment.course for enrollment in Enrollment.objects.filter(student=student_id)]
+            courses = [enrollment.course for enrollment in Enrollment.objects.filter(student=user_id)]
             # filter sessions to only those of courses student is enrolled in
             queryset = queryset.filter(course__in = courses)
+
+        # parent
+        if Parent.objects.filter(user__id=user_id).exists():
+            parent = Parent.objects.get(user_id=user_id)
+            # get all courses children are enrolled in
+            courses = set()
+            for student_id in parent.student_list:
+                for enrollment in Enrollment.objects.filter(student=student_id):
+                    courses.add(enrollment.course)
+            # filter sessions to only those of courses children are enrolled in
+            queryset = queryset.filter(course__in = courses) 
 
         if view_option == 'class':
             queryset = queryset.filter(course__course_type=Course.CLASS)
