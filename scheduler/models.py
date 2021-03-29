@@ -33,6 +33,7 @@ class Session(models.Model):
     is_confirmed = models.BooleanField(default=False)
     sent_upcoming_reminder = models.BooleanField(default=False)
     sent_payment_reminder = models.BooleanField(default=False)
+    sent_missed_reminder = models.BooleanField(default=False)
 
     objects = SessionManager()
 
