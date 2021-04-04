@@ -33,6 +33,7 @@ class AttendanceType(DjangoObjectType):
     class Meta:
         model = Attendance
 
+
 class Query(object):
     session = Field(SessionType, session_id=ID(required=True))
     sessions = List(SessionType, time_frame=String(), view_option=String(),
@@ -136,6 +137,7 @@ class Query(object):
                 end_datetime__lt=arrow.get(end_date).datetime
             )
 
+        queryset = queryset.order_by('start_datetime')
         return queryset
 
     @login_required
