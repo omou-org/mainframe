@@ -5,6 +5,8 @@ from onboarding.models import Business
 from onboarding.schema import BusinessType
 from graphql_jwt.decorators import login_required, staff_member_required
 
+from graphene_file_upload.scalars import Upload
+
 class CreateBusiness(graphene.Mutation):
     class Arguments:
         id = graphene.ID()
@@ -33,5 +35,25 @@ class CreateBusiness(graphene.Mutation):
         return CreateBusiness(business=business, created=created)
 
 
+# class UploadAccountMutation():
+#     class Arguments:
+#         files = Upload(required=True)
+
+#     success = graphene.Boolean()
+
+#     def mutate(self, info, files, **kwargs):
+#         all_csv = all(file for file in files if file.name.endswith('.csv'))
+#         if not all_csv:
+#             raise GraphQLError("All files must be csv-format.")
+
+            
+
+#         print("hello world")
+#         print(all_csv)
+
+#         return UploadAccountMutation(success=True)
+
+
 class Mutation(graphene.ObjectType):
     create_business = CreateBusiness.Field()
+    # upload_accounts = UploadAccountMutation.Field()
