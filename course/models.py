@@ -184,7 +184,7 @@ class Enrollment(models.Model):
         total_paid_sessions = sum(
             registration.num_sessions
             for registration in self.registration_set.all()
-            if registration.invoice.payment_status
+            if registration.invoice.payment_status == "paid"
             )
         
         for session in past_sessions:
@@ -205,7 +205,7 @@ class Enrollment(models.Model):
         total_paid_sessions = sum(
             registration.num_sessions
             for registration in self.registration_set.all()
-            if registration.invoice.payment_status
+            if registration.invoice.payment_status == "paid"
             )
         return self.course.num_sessions - total_paid_sessions
 
