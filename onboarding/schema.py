@@ -6,8 +6,8 @@ from graphql_jwt.decorators import login_required, staff_member_required
 
 from django.http import HttpResponse
 from openpyxl import Workbook
-from openpyxl.writer.excel import save_virtual_workbook
 from openpyxl.comments import Comment 
+from tempfile import NamedTemporaryFile
 
 class BusinessType(DjangoObjectType):
     class Meta:
@@ -76,12 +76,17 @@ class Query(object):
         instructors_examples = ["Vicky", "Lane", "vlane@gmail.com", "6453456765", "Vicky is experienced in teaching math for all skill levels.", "5", "456 Candy Lane", "Los Angeles", "CA", "90034"]
         for c in range(len(instructors_column_names)):
             instructors_ws.cell(row=2, column=c+1).value = instructors_column_names[c]
-            instructors_ws.cell(row=3, column=c+1).value = instructors_examples[c]        
+            instructors_ws.cell(row=3, column=c+1).value = instructors_examples[c]
 
-        response = HttpResponse(
-            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        )
-        response['Content-Disposition'] = 'attachment; filename=myexport.xlsx'        
+        with NamedTemporaryFile() as tmp:
+            wb.save(tmp.name)
+            tmp.seek(0)
+            stream = tmp.read()   
 
-        wb.save(response)
+        # print(stream)     
+
+        response = HttpResponse(stream, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=accounts_template.xlsx'
+
+        print(response.__dict__)
         return response
