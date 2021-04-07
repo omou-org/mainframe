@@ -77,9 +77,13 @@ class Query(object):
             instructors_ws.cell(row=2, column=c+1).value = instructors_column_names[c]
             instructors_ws.cell(row=3, column=c+1).value = instructors_examples[c]
 
+        # remove default sheet
+        del wb['Sheet']
+
         with NamedTemporaryFile() as tmp:
             wb.save(filename = tmp.name)
             tmp.seek(0)
-            stream = tmp.read()   
-
-        return base64.b64encode(stream)
+            stream = tmp.read()
+        
+        base64_stream = base64.b64encode(stream).decode("utf-8")
+        return base64_stream
