@@ -4,15 +4,14 @@ from graphene import Field, ID, String
 from graphene_django.types import DjangoObjectType
 from graphql_jwt.decorators import login_required, staff_member_required
 
-from django.http import HttpResponse
 from openpyxl import Workbook
 from openpyxl.comments import Comment 
 from tempfile import NamedTemporaryFile
+import base64
 
 class BusinessType(DjangoObjectType):
     class Meta:
         model = Business
-
 
 class Query(object):
     business = Field(BusinessType, business_id=ID(), name=String())
@@ -79,14 +78,8 @@ class Query(object):
             instructors_ws.cell(row=3, column=c+1).value = instructors_examples[c]
 
         with NamedTemporaryFile() as tmp:
-            wb.save(tmp.name)
+            wb.save(filename = tmp.name)
             tmp.seek(0)
             stream = tmp.read()   
 
-        # print(stream)     
-
-        response = HttpResponse(stream, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = 'attachment; filename=accounts_template.xlsx'
-
-        print(response.__dict__)
-        return response
+        return base64.b64encode(stream)
