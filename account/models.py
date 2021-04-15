@@ -243,5 +243,6 @@ class Admin(UserInfo):
         choices=TYPE_CHOICES
     )
     google_auth_enabled = models.BooleanField(default=False)
+    google_auth_email = models.CharField(max_length=100, null=True)
 
     objects = AdminManager()
