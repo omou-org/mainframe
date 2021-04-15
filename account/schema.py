@@ -96,6 +96,7 @@ class Query(object):
     user_info = Field(UserInfoType, user_id=ID(), user_name=String())
     user_type = Field(UserTypeAuth, user_id=ID(), user_name=String(), admin_types=Boolean())
     email_from_token = Field(String, token=String())
+    verify_google_oauth_token = Field(String, login_email=String(required=True))
 
     account_notes = List(AccountNoteType, user_id=ID(required=True))
     students = List(StudentType, grade=ID())
@@ -315,3 +316,6 @@ class Query(object):
 
     def resolve_email_from_token(self, info, token):
         return jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])["email"]
+
+    def resolve_verify_google_oauth_token(self, info, login_email):
+        return {"verified": False}
