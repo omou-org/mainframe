@@ -31,6 +31,10 @@ class UserTypeAuth(ObjectType):
     google_auth_enabled = Boolean()
 
 
+class GoogleVerifyTokenType(ObjectType):
+    verified = Boolean()
+
+
 class AccountNoteType(DjangoObjectType):
     class Meta:
         model = AccountNote
@@ -102,7 +106,7 @@ class Query(object):
     user_info = Field(UserInfoType, user_id=ID(), user_name=String())
     user_type = Field(UserTypeAuth, user_id=ID(), user_name=String(), admin_types=Boolean())
     email_from_token = Field(String, token=String())
-    verify_google_oauth_token = Field(String, login_email=String(required=True))
+    verify_google_oauth_token = Field(GoogleVerifyTokenType, login_email=String(required=True))
 
     account_notes = List(AccountNoteType, user_id=ID(required=True))
     students = List(StudentType, grade=ID())
@@ -324,4 +328,4 @@ class Query(object):
         return jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])["email"]
 
     def resolve_verify_google_oauth_token(self, info, login_email):
-        return {"verified": True}
+        return GoogleVerifyTokenType(verified=True)
