@@ -26,4 +26,4 @@ class IsOwner(GrapheneBasePermission):
     def has_permission(context):
         user_id = context.user.id
         admin = Admin.objects.filter(user_id=user_id)
-        return admin.exists() and admin.admin_type == "Owner"
+        return admin.exists() and admin[0].admin_type == "owner"

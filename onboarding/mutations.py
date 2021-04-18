@@ -26,6 +26,9 @@ from onboarding.schema import (
     workbook_to_base64
 )
 
+from mainframe.permissions import IsOwner
+from django_graphene_permissions import permissions_checker
+
 from tempfile import NamedTemporaryFile
 import base64
 from datetime import datetime
@@ -127,6 +130,8 @@ class UploadAccountsMutation(graphene.Mutation):
     error_excel = graphene.String()
 
     @staticmethod
+    @login_required
+    @permissions_checker([IsOwner])
     def mutate(self, info, accounts, **kwargs):
         xls = pd.ExcelFile(accounts.read())
 
@@ -158,13 +163,13 @@ class UploadAccountsMutation(graphene.Mutation):
                         last_name=row['Last Name'],
                         password=User.objects.make_random_password()
                     )
+                    user_object.save()
                     parent = Parent(
                         user=user_object,
                         account_type='parent',
                         phone_number=row['Phone'],
                         zipcode=row['Zip Code (Optional)']
                     )
-                    user_object.save()
                     parent.save()
             except Exception as e:
                 parents_error_df.append(row.to_dict())
@@ -181,13 +186,13 @@ class UploadAccountsMutation(graphene.Mutation):
                     'business_name': settings.BUSINESS_NAME,
                 }
             )
-            # LogEntry.objects.log_action(
-            #     user_id=info.context.user.id,
-            #     content_type_id=ContentType.objects.get_for_model(Parent).pk,
-            #     object_id=parent.user.id,
-            #     object_repr=f"{parent.user.first_name} {parent.user.last_name}",
-            #     action_flag=ADDITION
-            # )
+            LogEntry.objects.log_action(
+                user_id=info.context.user.id,
+                content_type_id=ContentType.objects.get_for_model(Parent).pk,
+                object_id=parent.user.id,
+                object_repr=f"{parent.user.first_name} {parent.user.last_name}",
+                action_flag=ADDITION
+            )
         
 
         # create Schools
@@ -215,6 +220,7 @@ class UploadAccountsMutation(graphene.Mutation):
                         last_name=row['Last Name'],
                         password=User.objects.make_random_password()
                     )
+                    user_object.save()
                     student = Student(
                         user=user_object,
                         account_type='student',
@@ -223,7 +229,6 @@ class UploadAccountsMutation(graphene.Mutation):
                         primary_parent=Parent.objects.get(user__username=row["Parent's Email"]),
                         birth_date=row.get('Birthday MM/DD/YYYY (Optional)')
                     )
-                    user_object.save()
                     student.save()
             except Exception as e:
                 students_error_df.append(row.to_dict())
@@ -231,13 +236,13 @@ class UploadAccountsMutation(graphene.Mutation):
                 continue
 
             Token.objects.get_or_create(user=user_object)
-            # LogEntry.objects.log_action(
-            #     user_id=info.context.user.id,
-            #     content_type_id=ContentType.objects.get_for_model(Student).pk,
-            #     object_id=student.user.id,
-            #     object_repr=f"{student.user.first_name} {student.user.last_name}",
-            #     action_flag=ADDITION
-            # )
+            LogEntry.objects.log_action(
+                user_id=info.context.user.id,
+                content_type_id=ContentType.objects.get_for_model(Student).pk,
+                object_id=student.user.id,
+                object_repr=f"{student.user.first_name} {student.user.last_name}",
+                action_flag=ADDITION
+            )
 
 
         # create instructors
@@ -258,6 +263,7 @@ class UploadAccountsMutation(graphene.Mutation):
                         last_name=row['Last Name'],
                         password=User.objects.make_random_password()
                     )
+                    user_object.save()
                     instructor = Instructor(
                         user=user_object,
                         account_type='instructor',
@@ -266,21 +272,20 @@ class UploadAccountsMutation(graphene.Mutation):
                         state=row['State'],
                         zipcode=row['Zip Code']
                     )
-                    user_object.save()
                     instructor.save()
-            except Exception as e:
+            except Exception as e:   
                 instructors_error_df.append(row.to_dict())
                 instructors_error_df[-1]['Error Message'] = str(e)
                 continue
 
             Token.objects.get_or_create(user=user_object)
-            # LogEntry.objects.log_action(
-            #     user_id=info.context.user.id,
-            #     content_type_id=ContentType.objects.get_for_model(Instructor).pk,
-            #     object_id=instructor.user.id,
-            #     object_repr=f"{instructor.user.first_name} {instructor.user.last_name}",
-            #     action_flag=ADDITION
-            # )
+            LogEntry.objects.log_action(
+                user_id=info.context.user.id,
+                content_type_id=ContentType.objects.get_for_model(Instructor).pk,
+                object_id=instructor.user.id,
+                object_repr=f"{instructor.user.first_name} {instructor.user.last_name}",
+                action_flag=ADDITION
+            )
 
         
         total = parents_df.shape[0]-1 + students_df.shape[0]-1 + instructors_df.shape[0]-1

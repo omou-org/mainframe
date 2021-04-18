@@ -42,6 +42,7 @@ def create_accounts_template(show_errors=False):
     parents_ws["A1"].value = "Instructions: Please enter parent details in this spreadsheet similar to the example on row 3. Double check that all emails, phone numbers, and zip codes are valid, otherwise those parents may not be uploaded correctly."
     parents_ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=4)
     parents_ws["A1"].alignment = Alignment(wrapText=True)
+    parents_ws["A1"].font = Font(color='44b6d9')
 
     parents_column_names = ["First Name", "Last Name", "Email", "Phone", "Zip Code (Optional)"]
     if show_errors:
@@ -56,6 +57,7 @@ def create_accounts_template(show_errors=False):
     students_ws["A1"].value = "Instructions: Please enter student details in this spreadsheet similar to the example on row 3. Please enter the student's parent's first last name and email exactly as was entered in the parent spreadsheet, otherwise the student will not be visible under the parent's profile in Omou."
     students_ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=4)
     students_ws["A1"].alignment = Alignment(wrapText=True)
+    students_ws["A1"].font = Font(color='44b6d9')
 
     students_column_names = ["First Name", "Last Name", "Email", "Birthday MM/DD/YYYY (Optional)", "School (Optional)", "Grade Level (Optional)", "Parent's First Name", "Parent's Last Name", "Parent's Email"]
     if show_errors:
@@ -70,6 +72,7 @@ def create_accounts_template(show_errors=False):
     instructors_ws["A1"].value = "Instructions: Please enter instructor details in this spreadsheet similar to the example on row 3. Instructors with invalid emails will not be entered into Omou, so please confirm the instructor's email is valid prior to submission!"
     instructors_ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=4)
     instructors_ws["A1"].alignment = Alignment(wrapText=True)
+    instructors_ws["A1"].font = Font(color='44b6d9')
 
     instructors_column_names = ["First Name", "Last Name", "Email", "Phone", "Biography (Optional)", "Years of Experience (Optional)", "Address (Optional)", "City", "State", "Zip Code"]
     if show_errors:
@@ -189,15 +192,15 @@ class Query(object):
         return None
 
 
-    # @login_required
-    # @permissions_checker([IsOwner])
+    @login_required
+    @permissions_checker([IsOwner])
     def resolve_account_templates(self, info, **kwargs):
         wb = create_accounts_template()
         return workbook_to_base64(wb)
 
 
-    # @login_required
-    # @permissions_checker([IsOwner])
+    @login_required
+    @permissions_checker([IsOwner])
     def resolve_course_templates(self, info, **kwargs):
         wb = create_course_templates()
         return workbook_to_base64(wb)
