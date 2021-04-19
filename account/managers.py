@@ -1,7 +1,16 @@
 from django.db import models
 from django.db.models import Q
 
-class StudentManager(models.Manager):
+
+class AccountManager(models.Manager):
+    def business(self, business_id):
+        qs = self.get_queryset()
+        if business_id is not None:
+            qs = qs.filter(business=business_id)
+        return qs
+
+
+class StudentManager(AccountManager):
     def search(self, query=None, qs_initial=None):
         if qs_initial is None or len(qs_initial) == 0:
             qs = self.get_queryset()
@@ -32,7 +41,7 @@ class StudentManager(models.Manager):
         return qs
 
 
-class ParentManager(models.Manager):
+class ParentManager(AccountManager):
     def search(self, query=None, qs_initial=None):
         if qs_initial is None or len(qs_initial) == 0:
             qs = self.get_queryset()
@@ -52,7 +61,7 @@ class ParentManager(models.Manager):
         return qs
 
 
-class InstructorManager(models.Manager):
+class InstructorManager(AccountManager):
     def search(self, query=None, qs_initial=None):
         if qs_initial is None or len(qs_initial) == 0:
             qs = self.get_queryset()
@@ -72,7 +81,7 @@ class InstructorManager(models.Manager):
         return qs
 
 
-class AdminManager(models.Manager):
+class AdminManager(AccountManager):
     def search(self, query=None, qs_initial=None):
         if qs_initial is None or len(qs_initial) == 0:
             qs = self.get_queryset()
