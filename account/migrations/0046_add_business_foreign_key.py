@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('onboarding', '0001_initial'),
-        ('account', '0044_auto_20210120_0454'),
+        ('account', '0045_admin_google_auth_enabled'),
     ]
 
     operations = [
