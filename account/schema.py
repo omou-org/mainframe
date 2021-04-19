@@ -1,6 +1,5 @@
 import jwt
 from datetime import datetime, date
-import graphene
 from graphene import Field, ID, List, String, Boolean, Union, DateTime, ObjectType
 from graphene_django.types import DjangoObjectType
 from graphql_jwt.decorators import login_required
@@ -21,29 +20,36 @@ from account.models import (
 
 User = get_user_model()
 
+
 class UserType(DjangoObjectType):
     class Meta:
         model = User
+
 
 class UserTypeAuth(ObjectType):
     user_type = String()
     google_auth_enabled = Boolean()
 
+
 class AccountNoteType(DjangoObjectType):
     class Meta:
         model = AccountNote
+
 
 class SchoolType(DjangoObjectType):
     class Meta:
         model = School
 
+
 class StudentType(DjangoObjectType):
     class Meta:
         model = Student
 
+
 class StudentSchoolInfoType(DjangoObjectType):
     class Meta:
         model = StudentSchoolInfo
+
 
 class ParentType(DjangoObjectType):
     student_id_list = List(ID, source='student_id_list')
@@ -195,29 +201,29 @@ class Query(object):
 
         if user_name:
             if Student.objects.filter(user__email=user_name).exists():
-                return UserTypeAuth(user_type="STUDENT",google_auth_enabled=False)
+                return UserTypeAuth(user_type="STUDENT", google_auth_enabled=False)
             if Instructor.objects.filter(user__email=user_name).exists():
-                return UserTypeAuth(user_type="INSTRUCTOR",google_auth_enabled=False)
+                return UserTypeAuth(user_type="INSTRUCTOR", google_auth_enabled=False)
             if Parent.objects.filter(user__email=user_name).exists():
-                return UserTypeAuth(user_type="PARENT",google_auth_enabled=False)
+                return UserTypeAuth(user_type="PARENT", google_auth_enabled=False)
             if Admin.objects.filter(user__email=user_name).exists():
                 admin = Admin.objects.get(user__email=user_name)
                 if admin_types:
                     return Admin.objects.get(user__email=user_name).admin_type.upper()
-                return UserTypeAuth(user_type="ADMIN",google_auth_enabled=admin.google_auth_enabled)
+                return UserTypeAuth(user_type="ADMIN", google_auth_enabled=admin.google_auth_enabled)
         
         if user_id:
             if Student.objects.filter(user=user_id).exists():
-                return UserTypeAuth(user_type="STUDENT",google_auth_enabled=False)
+                return UserTypeAuth(user_type="STUDENT", google_auth_enabled=False)
             if Instructor.objects.filter(user=user_id).exists():
-                return UserTypeAuth(user_type="INSTRUCTOR",google_auth_enabled=False)
+                return UserTypeAuth(user_type="INSTRUCTOR", google_auth_enabled=False)
             if Parent.objects.filter(user=user_id).exists():
-                return UserTypeAuth(user_type="PARENT",google_auth_enabled=False)
+                return UserTypeAuth(user_type="PARENT", google_auth_enabled=False)
             if Admin.objects.filter(user=user_id).exists():
                 admin = Admin.objects.get(user__email=user_name)
                 if admin_types:
-                    return UserTypeAuth(user_type=admin.admin_type.upper(),google_auth_enabled=admin.google_auth_enabled)
-                return UserTypeAuth(user_type="ADMIN",google_auth_enabled=admin.google_auth_enabled)
+                    return UserTypeAuth(user_type=admin.admin_type.upper(), google_auth_enabled=admin.google_auth_enabled)
+                return UserTypeAuth(user_type="ADMIN", google_auth_enabled=admin.google_auth_enabled)
 
         return None
 

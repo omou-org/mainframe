@@ -5,6 +5,7 @@ from onboarding.models import Business
 from onboarding.schema import BusinessType
 from graphql_jwt.decorators import login_required, staff_member_required
 
+
 class CreateBusiness(graphene.Mutation):
     class Arguments:
         id = graphene.ID()
