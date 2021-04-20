@@ -138,7 +138,7 @@ class UploadAccountsMutation(graphene.Mutation):
         # check all spreadsheets exist
         account_names = ['Parents', 'Students', 'Instructors']
         if not all(name in xls.sheet_names for name in account_names):
-            raise GraphQLError("Please include all spreadsheets: "+account_names)
+            raise GraphQLError("Please include all spreadsheets: "+str(account_names))
 
         # extract spreadsheets and skip first comment row
         parents_df = pd.read_excel(xls, sheet_name="Parents", header=1)
