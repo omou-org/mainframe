@@ -6,7 +6,7 @@ from graphql_jwt.decorators import login_required, staff_member_required
 
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font
-from openpyxl.utils import get_column_letter
+from openpyxl.utils import get_column_letter, quote_sheetname
 from openpyxl.worksheet.datavalidation import DataValidation
 from tempfile import NamedTemporaryFile
 import base64
@@ -119,13 +119,18 @@ def create_course_templates(show_errors=False):
     instructors_ws = wb.get_sheet_by_name("Instructor Roster (hidden)")
     instructors_ws.sheet_state = 'hidden'
     instructors_ws.cell(row=1, column=1).value = "Instructor Name (email)"
+    total_instructors = Instructor.objects.all().count()
     for row, instructor in enumerate(Instructor.objects.all()):
         instructors_ws.cell(row=row+2, column=1).value = f"{instructor.user.first_name} {instructor.user.last_name} ({instructor.user.username})" 
 
     # subject categories
     categories_ws = wb.get_sheet_by_name("Step 1 - Subject Categories")
+
     categories_ws.cell(row=1, column=1).value = "Instructions: Please FIRST fill out the list of subject or course category in the first column. This will become a list of subjects to fill out the required course subject field in Step 2 - Classes sheet. The first row is an example that will not be uploaded."
-    
+    categories_ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=2)
+    categories_ws["A1"].alignment = Alignment(wrapText=True)
+    categories_ws["A1"].font = Font(color='44b6d9')
+
     categories_column_names = ["Subjects", "Description (Optional)"]
     categories_example = ["SAT Prep", "Preparational courses for students taking the SAT"]
     if show_errors:
@@ -138,8 +143,16 @@ def create_course_templates(show_errors=False):
 
     # classes
     class_ws = wb.get_sheet_by_name("Step 2 - Classes")
-    class_ws.cell(row=1, column=1).value = "Instructions: Please fill out the course details similar to the example in row 3. You may only select subjects previous defined in Step 1 - Subject Categories. You may only select instructors that are already in the database. The first row is an example that will not be uploaded."
+
+    class_ws.cell(row=1, column=1).value = "Instructions: Please fill out the course details similar to the example in row 3. You may only select subjects previous defined in Step 1 - Subject Categories. You may only select instructors that are already in the database. The first row is an example that will not be uploaded."    
+    class_ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=3)
+    class_ws["A1"].alignment = Alignment(wrapText=True)
+    class_ws["A1"].font = Font(color='44b6d9')
+
     class_ws.cell(row=1, column=10).value = 'Instructions: 5 course session slots are provided in format of "Session Day" "Start Time" and "End Time." "Session Day" is the day of week the session takes place on. If a course meets more than 5 times a week, please add additional "Session Day" "Start Time" and "End Time" columns in increasing order (e.g. "Session Day 6"). If a course only meets once, you may leave the other session slots empty.'
+    class_ws.merge_cells(start_row=1, start_column=10, end_row=1, end_column=14)
+    class_ws["J1"].alignment = Alignment(wrapText=True)
+    class_ws["J1"].font = Font(color='44b6d9')
 
     class_column_names = ["Course Name", "Instructor", "Instructor Confirmed? (Y/N)", "Subject", "Course Description", "Academic Level", "Room Location", "Start Date",	"End Date", "Session Day 1", "Start Time 1", "End Time 1", "Session Day 2", "Start Time 2", "End Time 2", "Session Day 3", "Start Time 3", "End Time 3", "Session Day 4", "Start Time 4", "End Time 4", "Session Day 5", "Start Time 5", "End Time 5"]
     class_example = ["SAT Math Prep", "Daniel Wong (email)", "Y", "SAT Prep", "This is a prep course for SAT math. Open for all grade levels.", "High School", "Online", "12/1/2021", "12/30/2021",	"Wednesday", "4:00 PM",	"5:00 PM", "Friday", "2:00 PM", "3:00 PM"]
@@ -153,13 +166,56 @@ def create_course_templates(show_errors=False):
     for c in range(len(class_example)):
         class_ws.cell(row=3, column=c+1).value = class_example[c]
 
+    """
+    Validations:
+    openpyxl bug: need to set showDropDown=False to show dropdown menu
+    1048576 is the last row in excel
+    """
+
     # academic level validation
-    # academic_level_dv = DataValidation(type="list", formula1='$F:$F', allow_blank=False, showDropDown=True)
-    # "Elementary,Middle_School,High_School,College"
-    # class_ws.add_data_validation(academic_level_dv)
-    # f3 to f infinity
+    academic_level_dv = DataValidation(
+        type="list",
+        formula1='"Elementary,Middle School,High School,College"',
+        allow_blank=False,
+        showDropDown=False
+        )
+    class_ws.add_data_validation(academic_level_dv)
+    academic_level_dv.add("F4:F1048576")
+
     # instructor validation
+    instructor_dv = DataValidation(
+        type="list",
+        formula1='{0}!$A$2:$A${1}'.format(
+            quote_sheetname("Instructor Roster (hidden)"),
+            total_instructors
+            ),
+        allow_blank=False,
+        showDropDown=False
+        )
+    class_ws.add_data_validation(instructor_dv)
+    instructor_dv.add("B4:B1048576")
+
+    # Y/N validation
+    yes_no_dv = DataValidation(
+        type="list",
+        formula1='"Y,N"',
+        allow_blank=False,
+        showDropDown=False
+        )
+    class_ws.add_data_validation(yes_no_dv)
+    yes_no_dv.add("C4:C1048576")
+
     # subject validation
+    subject_dv = DataValidation(
+        type="list",
+        formula1='{0}!$A$3:$A$1048576'.format(
+            quote_sheetname("Step 1 - Subject Categories")
+            ),
+        allow_blank=False,
+        showDropDown=False
+        )
+    class_ws.add_data_validation(subject_dv)
+    subject_dv.add("D4:D1048576")
 
     # remove default sheet
     del wb['Sheet']
@@ -217,8 +273,8 @@ class Query(object):
         return workbook_to_base64(wb)
 
 
-    @login_required
-    @permissions_checker([IsOwner])
+    # @login_required
+    # @permissions_checker([IsOwner])
     def resolve_course_templates(self, info, **kwargs):
         wb = create_course_templates()
         return workbook_to_base64(wb)
