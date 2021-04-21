@@ -29,11 +29,8 @@ from onboarding.schema import (
 from mainframe.permissions import IsOwner
 from django_graphene_permissions import permissions_checker
 
-from tempfile import NamedTemporaryFile
-import base64
 from datetime import datetime
 import re
-import uuid
 
 from django.conf import settings
 from rest_framework.authtoken.models import Token
@@ -135,15 +132,32 @@ class UploadAccountsMutation(graphene.Mutation):
     def mutate(self, info, accounts, **kwargs):
         xls = pd.ExcelFile(accounts.read())
 
+
         # check all spreadsheets exist
         account_names = ['Parents', 'Students', 'Instructors']
         if not all(name in xls.sheet_names for name in account_names):
             raise GraphQLError("Please include all spreadsheets: "+str(account_names))
 
+
         # extract spreadsheets and skip first comment row
         parents_df = pd.read_excel(xls, sheet_name="Parents", header=1)
         students_df = pd.read_excel(xls, sheet_name="Students", header=1)
         instructors_df = pd.read_excel(xls, sheet_name="Instructors", header=1)
+
+
+        # check all column headers present
+        parent_ws_missing_columns = set(ACCOUNT_TO_REQUIRED_FIELDS['parent']) - set(parents_df.columns.values)
+        if len(parent_ws_missing_columns) > 0:
+            raise GraphQLError("Missing columns in parents worksheet: "+str(parent_ws_missing_columns))
+
+        instructor_ws_missing_columns = set(ACCOUNT_TO_REQUIRED_FIELDS['instructor']) - set(instructors_df.columns.values)
+        if len(instructor_ws_missing_columns) > 0:
+            raise GraphQLError("Missing columns in instructors workshet: "+str(instructor_ws_missing_columns))
+
+        student_ws_missing_columns = set(ACCOUNT_TO_REQUIRED_FIELDS['student']) - set(students_df.columns.values)
+        if len(student_ws_missing_columns) > 0:
+            raise GraphQLError("Missing columns in students workshet: "+str(student_ws_missing_columns))
+        
 
         # create parents
         parents_df = parents_df.where(pd.notnull(parents_df), None) # cast np.Nan to None

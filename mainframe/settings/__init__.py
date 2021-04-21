@@ -162,8 +162,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static/")
 # CORS settings
 CORS_ORIGIN_ALLOW_ALL = False
 CORS_ORIGIN_WHITELIST = (
-    "http://127.0.0.1:50961",
-    "http://127.0.0.1:60109",
     "http://localhost:8000",
     "http://localhost:3000",
     "https://www.omoulearning.com",
