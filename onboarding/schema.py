@@ -413,22 +413,22 @@ class Query(object):
         return None
 
 
-    # @login_required
-    # @permissions_checker([IsOwner])
+    @login_required
+    @permissions_checker([IsOwner])
     def resolve_account_templates(self, info, **kwargs):
         wb = create_accounts_template()
         return workbook_to_base64(wb)
 
 
-    # @login_required
-    # @permissions_checker([IsOwner])
+    @login_required
+    @permissions_checker([IsOwner])
     def resolve_course_templates(self, info, **kwargs):
         wb = create_course_templates()
         return workbook_to_base64(wb)
 
     
-    # @login_required
-    # @permissions_checker([IsOwner])
+    @login_required
+    @permissions_checker([IsOwner])
     def resolve_enrollment_templates(self, info, **kwargs):
         wb = create_enrollment_templates()
         return workbook_to_base64(wb)
