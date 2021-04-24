@@ -35,7 +35,7 @@ class UserInfo(models.Model):
     business = models.ForeignKey(
         Business,
         on_delete=models.PROTECT,
-        default=0
+        null=True
     )
     user = models.OneToOneField(
         get_user_model(),
