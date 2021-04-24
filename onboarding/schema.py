@@ -142,7 +142,7 @@ def create_course_templates(show_errors=False):
     categories_ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=2)
     style_instruction_comment(categories_ws["A1"])
 
-    categories_column_names = ["Subjects", "Description (Optional)"]
+    categories_column_names = ["Subjects", "Description"]
     categories_example = ["SAT Prep", "Preparational courses for students taking the SAT"]
     if show_errors:
         categories_column_names.insert(0, "Error Message")
@@ -163,8 +163,8 @@ def create_course_templates(show_errors=False):
     course_ws.merge_cells(start_row=1, start_column=10, end_row=1, end_column=14)
     style_instruction_comment(course_ws["J1"])
 
-    class_column_names = ["Course Name", "Instructor", "Instructor Confirmed? (Y/N)", "Subject", "Course Description", "Academic Level", "Room Location", "Start Date",	"End Date", "Session Day 1", "Start Time 1", "End Time 1", "Session Day 2", "Start Time 2", "End Time 2", "Session Day 3", "Start Time 3", "End Time 3", "Session Day 4", "Start Time 4", "End Time 4", "Session Day 5", "Start Time 5", "End Time 5"]
-    class_example = ["SAT Math Prep", "Daniel Wong (email)", "Y", "SAT Prep", "This is a prep course for SAT math. Open for all grade levels.", "High School", "Online", "12/1/2021", "12/30/2021",	"Wednesday", "4:00 PM",	"5:00 PM", "Friday", "2:00 PM", "3:00 PM"]
+    class_column_names = ["Course Name", "Instructor", "Instructor Confirmed? (Y/N)", "Subject", "Course Description", "Academic Level", "Room Location", "Total Tuition", "Start Date", "End Date", "Session Day 1", "Start Time 1", "End Time 1", "Session Day 2", "Start Time 2", "End Time 2", "Session Day 3", "Start Time 3", "End Time 3", "Session Day 4", "Start Time 4", "End Time 4", "Session Day 5", "Start Time 5", "End Time 5"]
+    class_example = ["SAT Math Prep", "Daniel Wong (email)", "Y", "SAT Prep", "This is a prep course for SAT math. Open for all grade levels.", "High School", "Online", "450.0", "12/1/2021", "12/30/2021", "Wednesday", "4:00 PM",	"5:00 PM", "Friday", "2:00 PM", "3:00 PM"]
     if show_errors:
         class_column_names.insert(0, "Error Message")
         class_example.insert(0, "")
@@ -192,7 +192,6 @@ def create_course_templates(show_errors=False):
         )
     course_ws.add_data_validation(time_dv)
 
-
     def colnum_string(n):
         string = ""
         while n > 0:
@@ -202,19 +201,19 @@ def create_course_templates(show_errors=False):
 
     for c in range(len(class_column_names)):
         # start and end date validation
-        if c == 7 or c == 8:
+        if class_column_names[c] in ["Start Date", "End Date"]:
             col = colnum_string(c+1)
             date_dv.add(f"{col}4:{col}1048576")
 
-        # session validation
-        if c > 8:
+        # session day of week validation
+        if class_column_names[c].startswith("Session Day"):
             col = colnum_string(c+1)
-            # session day of week
-            if c%3==0:
-                day_of_week_dv.add(f"{col}4:{col}1048576")
-            # session start and end times
-            else:
-                time_dv.add(f"{col}4:{col}1048576")
+            day_of_week_dv.add(f"{col}4:{col}1048576")
+            
+        # session start and end time validation
+        if class_column_names[c].startswith("Start Time") or class_column_names[c].startswith("End Time"):
+            col = colnum_string(c+1)
+            time_dv.add(f"{col}4:{col}1048576")
 
         course_ws.cell(row=2, column=c+1).value = class_column_names[c]
     
@@ -273,6 +272,16 @@ def create_course_templates(show_errors=False):
     course_ws.add_data_validation(subject_dv)
     subject_dv.add("D4:D1048576")
 
+    # tuition validation
+    tuition_dv = DataValidation(
+        type="decimal",
+        allow_blank=False,
+        operator="greaterThan",
+        formula1=0
+    )
+    course_ws.add_data_validation(tuition_dv)
+    tuition_dv.add("H4:H1048576")
+
     # remove default sheet
     del wb['Sheet']
 
@@ -308,8 +317,9 @@ def create_enrollment_templates(show_errors=False):
 
     # course templates
     for course in Course.objects.all():
-        wb.create_sheet(course.title)
-        course_ws = wb.get_sheet_by_name(course.title)
+        sheet_name = f"{course.title} - {course.id}"
+        wb.create_sheet(sheet_name)
+        course_ws = wb.get_sheet_by_name(sheet_name)
 
         course_ws["A1"].value = "Instructions: This course enrollment sheet and course details are generated from saved courses in the Omou database. Row 9 and beyond are dropdowns of students existing in the Omou database. Please select a student from the dropdown list starting from row 9 to create an enrollment for this course."
         course_ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=4)

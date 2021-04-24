@@ -5,6 +5,7 @@ from onboarding.models import Business
 from onboarding.schema import BusinessType
 from graphql_jwt.decorators import login_required, staff_member_required
 
+import decimal
 import pandas as pd
 from graphene_file_upload.scalars import Upload
 
@@ -20,16 +21,22 @@ from account.models import (
     Parent,
     Instructor
 )
+from course.models import (
+    CourseCategory,
+    Course
+)
+from course.mutations import create_availabilities_and_sessions
 from onboarding.schema import (
     autosize_ws_columns,
     create_accounts_template,
+    create_course_templates,
     workbook_to_base64
 )
 
 from mainframe.permissions import IsOwner
 from django_graphene_permissions import permissions_checker
 
-from datetime import datetime
+from datetime import date, datetime
 import re
 
 from django.conf import settings
@@ -44,11 +51,17 @@ PHONE_PATTERN = re.compile("(\d{3}[-\.\s]??\d{3}[-\.\s]??\d{4}|\(\d{3}\)\s*\d{3}
 ZIP_PATTERN = re.compile("(\d{5}(\-\d{4})?)$")
 DATE_PATTERN = re.compile("\d{2}/\d{2}/\d{4}")
 
-ACCOUNT_TO_REQUIRED_FIELDS = {
+ACCOUNT_SHEET_NAME_TO_REQUIRED_FIELDS = {
     'parent': ['First Name', 'Last Name', 'Email', 'Phone'],
     'student': ['First Name', 'Last Name', 'Email', "Parent's First Name", "Parent's Last Name", "Parent's Email"],
     'instructor': ['First Name', 'Last Name', 'Email', 'Phone', 'City', 'State', 'Zip Code']
 } 
+
+COURSE_SHEET_NAME_TO_REQUIRED_FIELDS = {
+    'subjects': ['Subjects', 'Description'],
+    'courses': ["Course Name", "Instructor", "Instructor Confirmed? (Y/N)", "Subject", "Course Description", "Academic Level", "Room Location", "Total Tuition", "Start Date", "End Date", "Session Day 1", "Start Time 1", "End Time 1", "Session Day 2", "Start Time 2", "End Time 2", "Session Day 3", "Start Time 3", "End Time 3", "Session Day 4", "Start Time 4", "End Time 4", "Session Day 5", "Start Time 5", "End Time 5"],
+    'courses_minimum': ["Course Name", "Instructor", "Instructor Confirmed? (Y/N)", "Subject", "Course Description", "Academic Level", "Room Location", "Total Tuition", "Start Date", "End Date", "Session Day 1", "Start Time 1", "End Time 1"]
+}
 
 
 class CreateBusiness(graphene.Mutation):
@@ -86,10 +99,10 @@ def check_required_fields(row, fields):
     return None
 
 
-# preliminary user checks
-def check_account(row, account_type):
+# preliminary account spreadsheet row checks
+def check_account_sheet_row(row, account_type):
     # check required fields
-    missing_field_error = check_required_fields(row, ACCOUNT_TO_REQUIRED_FIELDS[account_type])
+    missing_field_error = check_required_fields(row, ACCOUNT_SHEET_NAME_TO_REQUIRED_FIELDS[account_type])
     if missing_field_error:
         return missing_field_error
 
@@ -103,11 +116,12 @@ def check_account(row, account_type):
     if not email or not EMAIL_PATTERN.search(email):
         return "The email is invalid. Please check the email again."
 
-    if account_type is not "student" and (not phone or not PHONE_PATTERN.search(str(phone))):
-        return "The phone number is invalid. Please check the phone number again."
+    if account_type is not "student":
+        if not phone or not PHONE_PATTERN.search(str(phone)):
+            return "The phone number is invalid. Please check the phone number again."
 
-    if account_type is not "student" and (not zipcode or not ZIP_PATTERN.search(str(zipcode))):
-        return "The zip code is invalid. Please check the zip code again."
+        if not zipcode or not ZIP_PATTERN.search(str(zipcode)):
+            return "The zip code is invalid. Please check the zip code again."
 
     if birthday and (not DATE_PATTERN.search(str(birthday)) or datetime.strptime(str(birthday), "%d/%m/%Y") >= datetime.now()):
         return "The birthday is invalid. Please check the birthday again."
@@ -115,6 +129,44 @@ def check_account(row, account_type):
     if primary_parent and not Parent.objects.filter(user__username=primary_parent).exists():
         return "No parent with that email exists. Please check the email agaim."
 
+    return None
+
+
+# preliminary course spreadsheet row checks
+def check_course_sheet_row(row, model_type, dropdown_subject_names=set()):
+    # check required fields
+    missing_field_error = check_required_fields(row, COURSE_SHEET_NAME_TO_REQUIRED_FIELDS[model_type])
+    if missing_field_error:
+        return missing_field_error
+
+    if model_type is "courses":
+        if not Instructor.objects.filter(user__email=row.get("Instructor")).exists():
+            return "The instructor listed was not found. Please either add the instructor or change the instructor."
+
+        if row.get("Instructor Confirmed? (Y/N)") not in ["Y", "N"]:
+            return "There's been an invalid character in column C. Please change it to either \"Y\" or \"N.\""
+        
+        if row.get("Subject") not in dropdown_subject_names:
+            return "There's been an invalid subject found in column D. Please change it to one of the subjects in the dropdown menu."
+
+        if row.get("Academic Level") not in ["Elementary", "Middle School", "High School", "College"]:
+            return "There's been an invalid academic subject found in column F. Please change it to one of the academic levels in the dropdown menu."
+        
+        start_date = str(row.get("Start Date"))
+        end_date = str(row.get("End Date"))
+
+        if not DATE_PATTERN.search(start_date) or not DATE_PATTERN.search(end_date):
+            return "The start / end date is an invalid date. Please change it to a valid date."
+
+        start_date = datetime.strptime(start_date, "%d/%m/%Y")
+        end_date = datetime.strptime(end_date, "%d/%m/%Y")
+
+        if end_date < start_date:
+            return "The start date is after the end date. Please change the start/end dates to valid dates."
+
+        if start_date.strftime('%A') != row.get("Session Day 1"):
+            return "The start date day of week is not on the same as session day 1."
+    
     return None
 
 
@@ -132,29 +184,26 @@ class UploadAccountsMutation(graphene.Mutation):
     def mutate(self, info, accounts, **kwargs):
         xls = pd.ExcelFile(accounts.read())
 
-
         # check all spreadsheets exist
         account_names = ['Parents', 'Students', 'Instructors']
         if not all(name in xls.sheet_names for name in account_names):
             raise GraphQLError("Please include all spreadsheets: "+str(account_names))
-
 
         # extract spreadsheets and skip first comment row
         parents_df = pd.read_excel(xls, sheet_name="Parents", header=1)
         students_df = pd.read_excel(xls, sheet_name="Students", header=1)
         instructors_df = pd.read_excel(xls, sheet_name="Instructors", header=1)
 
-
         # check all column headers present
-        parent_ws_missing_columns = set(ACCOUNT_TO_REQUIRED_FIELDS['parent']) - set(parents_df.columns.values)
+        parent_ws_missing_columns = set(ACCOUNT_SHEET_NAME_TO_REQUIRED_FIELDS['parent']) - set(parents_df.columns.values)
         if len(parent_ws_missing_columns) > 0:
             raise GraphQLError("Missing columns in parents worksheet: "+str(parent_ws_missing_columns))
 
-        instructor_ws_missing_columns = set(ACCOUNT_TO_REQUIRED_FIELDS['instructor']) - set(instructors_df.columns.values)
+        instructor_ws_missing_columns = set(ACCOUNT_SHEET_NAME_TO_REQUIRED_FIELDS['instructor']) - set(instructors_df.columns.values)
         if len(instructor_ws_missing_columns) > 0:
             raise GraphQLError("Missing columns in instructors workshet: "+str(instructor_ws_missing_columns))
 
-        student_ws_missing_columns = set(ACCOUNT_TO_REQUIRED_FIELDS['student']) - set(students_df.columns.values)
+        student_ws_missing_columns = set(ACCOUNT_SHEET_NAME_TO_REQUIRED_FIELDS['student']) - set(students_df.columns.values)
         if len(student_ws_missing_columns) > 0:
             raise GraphQLError("Missing columns in students workshet: "+str(student_ws_missing_columns))
         
@@ -163,10 +212,10 @@ class UploadAccountsMutation(graphene.Mutation):
         parents_df = parents_df.where(pd.notnull(parents_df), None) # cast np.Nan to None
         parents_error_df = []
         for _index, row in parents_df.iloc[1:].iterrows():
-            user_check = check_account(row, 'parent')
-            if user_check:
+            required_fields_check = check_account_sheet_row(row, 'parent')
+            if required_fields_check:
                 parents_error_df.append(row.to_dict())
-                parents_error_df[-1]['Error Message'] = user_check
+                parents_error_df[-1]['Error Message'] = required_fields_check
                 continue
             try:
                 with transaction.atomic():
@@ -220,10 +269,10 @@ class UploadAccountsMutation(graphene.Mutation):
         students_df = students_df.where(pd.notnull(students_df), None) # cast np.Nan to None
         students_error_df = []
         for _index, row in students_df.iloc[1:].iterrows():
-            user_check = check_account(row, 'student')
-            if user_check:
+            required_fields_check = check_account_sheet_row(row, 'student')
+            if required_fields_check:
                 students_error_df.append(row.to_dict())
-                students_error_df[-1]['Error Message'] = user_check
+                students_error_df[-1]['Error Message'] = required_fields_check
                 continue
             try:
                 with transaction.atomic():
@@ -263,10 +312,10 @@ class UploadAccountsMutation(graphene.Mutation):
         instructors_df = instructors_df.where(pd.notnull(instructors_df), None) # cast np.Nan to None
         instructors_error_df = []
         for index, row in instructors_df.iloc[1:].iterrows():
-            user_check = check_account(row, 'instructor')
-            if user_check:
+            required_fields_check = check_account_sheet_row(row, 'instructor')
+            if required_fields_check:
                 instructors_error_df.append(row.to_dict())
-                instructors_error_df[-1]['Error Message'] = user_check
+                instructors_error_df[-1]['Error Message'] = required_fields_check
                 continue
             try:
                 with transaction.atomic():
@@ -340,6 +389,180 @@ class UploadAccountsMutation(graphene.Mutation):
         )
 
 
+class UploadCoursesMutation(graphene.Mutation):
+    class Arguments:
+        courses = Upload(required=True)
+
+    total_success = graphene.Int()
+    total_failure = graphene.Int()
+    error_excel = graphene.String()
+
+    @staticmethod
+    @login_required
+    @permissions_checker([IsOwner])
+    def mutate(self, info, courses, **kwargs):
+        xls = pd.ExcelFile(courses.read())
+
+        # check all spreadsheets exist
+        spreadsheet_names = ['Step 1 - Subject Categories', 'Step 2 - Classes']
+        if not all(name in xls.sheet_names for name in spreadsheet_names):
+            raise GraphQLError("Please include all spreadsheets: "+str(spreadsheet_names))
+
+        # extract spreadsheets and skip first comment row
+        subjects_df = pd.read_excel(xls, sheet_name="Step 1 - Subject Categories", header=1)
+        courses_df = pd.read_excel(xls, sheet_name="Step 2 - Classes", header=1)
+
+        # check all column headers present
+        subjects_ws_missing_columns = set(COURSE_SHEET_NAME_TO_REQUIRED_FIELDS['subjects']) - set(subjects_df.columns.values)
+        if len(subjects_ws_missing_columns) > 0:
+            raise GraphQLError("Missing columns in subjects worksheet: "+str(subjects_ws_missing_columns))
+
+        courses_ws_missing_columns = set(COURSE_SHEET_NAME_TO_REQUIRED_FIELDS['courses']) - set(courses_df.columns.values)
+        if len(courses_ws_missing_columns) > 0:
+            raise GraphQLError("Missing columns in courses workshet: "+str(courses_ws_missing_columns))
+        
+
+        # create subjects
+        subjects_df = subjects_df.where(pd.notnull(subjects_df), None) # cast np.Nan to None
+        subjects_error_df = []
+        for _index, row in subjects_df.iloc[1:].iterrows():
+            required_fields_check = check_course_sheet_row(row, 'subjects')
+            if required_fields_check:
+                subjects_error_df.append(row.to_dict())
+                subjects_error_df[-1]['Error Message'] = required_fields_check
+                continue
+            try:
+                # ignore subjects that already exist
+                if CourseCategory.objects.filter(name=row.get('Subjects')).exists():
+                    continue
+
+                course_category = CourseCategory(
+                    name=row.get('Subjects'),
+                    description=row.get('Description')
+                )
+                course_category.save()
+            except Exception as e:   
+                subjects_error_df.append(row.to_dict())
+                subjects_error_df[-1]['Error Message'] = str(e)
+                continue
+            
+            LogEntry.objects.log_action(
+                user_id=info.context.user.id,
+                content_type_id=ContentType.objects.get_for_model(CourseCategory).pk,
+                object_id=course_category.id,
+                object_repr=course_category.name,
+                action_flag=ADDITION
+            )
+        
+        # create courses
+        def extract_from_parenthesis(s):
+            if s:
+                return s[s.find("(")+1:s.find(")")]
+            else:
+                return s
+
+        academic_level_to_enum_str = {
+            "Elementary": "elementary_lvl",
+            "Middle School": "middle_lvl",
+            "High School": "high_lvl",
+            "College": "college_lvl"
+        }
+
+        courses_df = courses_df.where(pd.notnull(subjects_df), None) # cast np.Nan to None
+        courses_df["Instructor"].apply(extract_from_parenthesis)
+        courses_error_df = []
+        dropdown_subject_names = set(subjects_df['Subjects'])
+        for _index, row in courses_df.iloc[1:].iterrows():
+            required_fields_check = check_course_sheet_row(row, 'courses_minimum', dropdown_subject_names)
+            if required_fields_check:
+                courses_error_df.append(row.to_dict())
+                courses_error_df[-1]['Error Message'] = required_fields_check
+                continue
+            try:
+                course = Course(
+                    title=row.get("Course Name"),
+                    course_category=CourseCategory.objects.get(name=row.get("Subject")),
+                    description=row.get("Course Description"),
+                    total_tuition=row.get("Total Tuition"),
+                    instructor=Instructor.objects.get(user__email=row.get("Instructor")),
+                    is_confirmed=row.get("Instructor Confirmed? (Y/N)") == "Y",
+                    academic_level=academic_level_to_enum_str[row.get("Academic Level")],
+                    room=row.get("Room Location"),
+                    start_date=datetime.strptime(row.get("Start Date"), "%d/%m/%Y"),
+                    end_date=datetime.strptime(row.get("End Date"), "%d/%m/%Y")
+                )
+                course.save()
+            except Exception as e:   
+                courses_error_df.append(row.to_dict())
+                courses_error_df[-1]['Error Message'] = str(e)
+                continue
+            
+            # parse course availabilities
+            availabilities = [
+                {
+                    "day_of_week": row.get(f"Session Day {i+1}"),
+                    "start_time": row.get(f"Start Time {i+1}"),
+                    "end_time": row.get(f"End Time {i+1}")
+                }
+                for i in range(5)
+                if row.get(f"Session Day {i+1}")
+            ]
+            # populate sessions and availabilities
+            course_availabilities = create_availabilities_and_sessions(course, availabilities)
+            
+            # calculate total hours across all sessions
+            total_hours = decimal.Decimal('0.0')
+            for availability in course_availabilities:
+                duration_sec = (datetime.combine(date.min, availability.end_time) -
+                                datetime.combine(date.min, availability.start_time)).seconds
+                duration_hours = decimal.Decimal(duration_sec) / (60 * 60)
+                total_hours += duration_hours * availability.num_sessions
+
+            course.hourly_tuition = course.total_tuition / total_hours
+            course.save()
+            course.refresh_from_db()
+
+            LogEntry.objects.log_action(
+                user_id=info.context.user.id,
+                content_type_id=ContentType.objects.get_for_model(Course).pk,
+                object_id=course.id,
+                object_repr=course.title,
+                action_flag=ADDITION
+            )
+
+
+        total = subjects_df.shape[0]-1 + courses_df.shape[0]-1
+        total_failure = len(subjects_error_df) + len(courses_error_df)
+
+        # construct error excel
+        error_excel = ""
+        if total_failure > 0:
+            wb = create_course_templates(show_errors=True)
+
+            categories_ws = wb.get_sheet_by_name("Step 1 - Subject Categories")
+            categories_column_order = [cell.value for cell in categories_ws[2]]
+            for index, row_error in enumerate(subjects_error_df):
+                for col in range(len(categories_column_order)):
+                    categories_ws.cell(row=4+index, column=1+col).value = row_error[categories_column_order[col]]
+            autosize_ws_columns(categories_ws)
+
+            course_ws = wb.get_sheet_by_name("Step 2 - Classes")
+            course_column_order = [cell.value for cell in course_ws[2]]
+            for index, row_error in enumerate(courses_error_df):
+                for col in range(len(course_column_order)):
+                    course_ws.cell(row=4+index, column=1+col).value = row_error[course_column_order[col]]
+            autosize_ws_columns(course_ws)
+
+            error_excel = workbook_to_base64(wb)
+
+        return UploadCoursesMutation(
+            total_success = total-total_failure,
+            total_failure = total_failure,
+            error_excel = error_excel
+        )
+
+
 class Mutation(graphene.ObjectType):
     create_business = CreateBusiness.Field()
     upload_accounts = UploadAccountsMutation.Field()
+    upload_courses = UploadCoursesMutation.Field()
