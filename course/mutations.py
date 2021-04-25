@@ -76,10 +76,10 @@ def create_availabilities_and_sessions(course, availabilities):
             CourseAvailability.objects.create(course=course, **availability)
         )
         days_of_week.append(
-            start_week.shift(days=weekday_to_shift[availability.day_of_week])
+            start_week.shift(days=weekday_to_shift[availability["day_of_week"]])
         )
-        start_times.append(availability.start_time)
-        end_times.append(availability.end_time)
+        start_times.append(availability["start_time"])
+        end_times.append(availability["end_time"])
 
     # create sessions for each week till last date passes
     if course.start_date and course.end_date:
@@ -318,7 +318,15 @@ class CreateCourse(graphene.Mutation):
             course.course_link_updated_at = datetime.now()
             course.course_link_user = info.context.user
 
-        course_availabilities = create_availabilities_and_sessions(course, availabilities)
+        availabilities_dicts = [
+            {
+                "day_of_week": availability.day_of_week,
+                "start_time": availability.start_time,
+                "end_time": availability.end_time
+            }
+            for availability in availabilities
+        ]
+        course_availabilities = create_availabilities_and_sessions(course, availabilities_dicts)
 
         if course.course_type == 'class' and course.num_sessions:
             # calculate total hours across all sessions

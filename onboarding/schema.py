@@ -163,8 +163,8 @@ def create_course_templates(show_errors=False):
     course_ws.merge_cells(start_row=1, start_column=10, end_row=1, end_column=14)
     style_instruction_comment(course_ws["J1"])
 
-    class_column_names = ["Course Name", "Instructor", "Instructor Confirmed? (Y/N)", "Subject", "Course Description", "Academic Level", "Room Location", "Total Tuition", "Start Date", "End Date", "Session Day 1", "Start Time 1", "End Time 1", "Session Day 2", "Start Time 2", "End Time 2", "Session Day 3", "Start Time 3", "End Time 3", "Session Day 4", "Start Time 4", "End Time 4", "Session Day 5", "Start Time 5", "End Time 5"]
-    class_example = ["SAT Math Prep", "Daniel Wong (email)", "Y", "SAT Prep", "This is a prep course for SAT math. Open for all grade levels.", "High School", "Online", "450.0", "12/1/2021", "12/30/2021", "Wednesday", "4:00 PM",	"5:00 PM", "Friday", "2:00 PM", "3:00 PM"]
+    class_column_names = ["Course Name", "Instructor", "Instructor Confirmed? (Y/N)", "Subject", "Course Description", "Academic Level", "Room Location", "Total Tuition", "Enrollment Capacity (>=4)", "Start Date", "End Date", "Session Day 1", "Start Time 1", "End Time 1", "Session Day 2", "Start Time 2", "End Time 2", "Session Day 3", "Start Time 3", "End Time 3", "Session Day 4", "Start Time 4", "End Time 4", "Session Day 5", "Start Time 5", "End Time 5"]
+    class_example = ["SAT Math Prep", "Daniel Wong (email)", "Y", "SAT Prep", "This is a prep course for SAT math. Open for all grade levels.", "High School", "Online", "450.0", "5", "12/1/2021", "12/30/2021", "Wednesday", "4:00 PM",	"5:00 PM", "Friday", "2:00 PM", "3:00 PM"]
     if show_errors:
         class_column_names.insert(0, "Error Message")
         class_example.insert(0, "")
@@ -281,6 +281,15 @@ def create_course_templates(show_errors=False):
     )
     course_ws.add_data_validation(tuition_dv)
     tuition_dv.add("H4:H1048576")
+
+    # capacity validation
+    capacity_dv = DataValidation(
+        type="whole",
+        operator="greaterThanOrEqual",
+        formula1=4
+    )
+    course_ws.add_data_validation(capacity_dv)
+    capacity_dv.add("I4:I1048576")
 
     # remove default sheet
     del wb['Sheet']

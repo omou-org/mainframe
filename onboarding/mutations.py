@@ -25,7 +25,10 @@ from course.models import (
     CourseCategory,
     Course
 )
-from course.mutations import create_availabilities_and_sessions
+from course.mutations import (
+    create_availabilities_and_sessions,
+    CourseAvailabilityInput
+)
 from onboarding.schema import (
     autosize_ws_columns,
     create_accounts_template,
@@ -49,7 +52,7 @@ from comms.templates import (
 EMAIL_PATTERN = re.compile("[^@]+@[^@]+\.[^@]+")
 PHONE_PATTERN = re.compile("(\d{3}[-\.\s]??\d{3}[-\.\s]??\d{4}|\(\d{3}\)\s*\d{3}[-\.\s]??\d{4}|\d{3}[-\.\s]??\d{4})")
 ZIP_PATTERN = re.compile("(\d{5}(\-\d{4})?)$")
-DATE_PATTERN = re.compile("\d{2}/\d{2}/\d{4}")
+DATE_PATTERN = re.compile("\d{1,2}/\d{1,2}/\d{4}")
 
 ACCOUNT_SHEET_NAME_TO_REQUIRED_FIELDS = {
     'parent': ['First Name', 'Last Name', 'Email', 'Phone'],
@@ -59,8 +62,8 @@ ACCOUNT_SHEET_NAME_TO_REQUIRED_FIELDS = {
 
 COURSE_SHEET_NAME_TO_REQUIRED_FIELDS = {
     'subjects': ['Subjects', 'Description'],
-    'courses': ["Course Name", "Instructor", "Instructor Confirmed? (Y/N)", "Subject", "Course Description", "Academic Level", "Room Location", "Total Tuition", "Start Date", "End Date", "Session Day 1", "Start Time 1", "End Time 1", "Session Day 2", "Start Time 2", "End Time 2", "Session Day 3", "Start Time 3", "End Time 3", "Session Day 4", "Start Time 4", "End Time 4", "Session Day 5", "Start Time 5", "End Time 5"],
-    'courses_minimum': ["Course Name", "Instructor", "Instructor Confirmed? (Y/N)", "Subject", "Course Description", "Academic Level", "Room Location", "Total Tuition", "Start Date", "End Date", "Session Day 1", "Start Time 1", "End Time 1"]
+    'courses': ["Course Name", "Instructor", "Instructor Confirmed? (Y/N)", "Subject", "Course Description", "Academic Level", "Room Location", "Total Tuition", "Enrollment Capacity (>=4)", "Start Date", "End Date", "Session Day 1", "Start Time 1", "End Time 1", "Session Day 2", "Start Time 2", "End Time 2", "Session Day 3", "Start Time 3", "End Time 3", "Session Day 4", "Start Time 4", "End Time 4", "Session Day 5", "Start Time 5", "End Time 5"],
+    'courses_minimum': ["Course Name", "Instructor", "Instructor Confirmed? (Y/N)", "Subject", "Course Description", "Academic Level", "Room Location", "Total Tuition", "Enrollment Capacity (>=4)", "Start Date", "End Date", "Session Day 1", "Start Time 1", "End Time 1"]
 }
 
 
@@ -123,7 +126,7 @@ def check_account_sheet_row(row, account_type):
         if not zipcode or not ZIP_PATTERN.search(str(zipcode)):
             return "The zip code is invalid. Please check the zip code again."
 
-    if birthday and (not DATE_PATTERN.search(str(birthday)) or datetime.strptime(str(birthday), "%d/%m/%Y") >= datetime.now()):
+    if birthday and (not DATE_PATTERN.search(str(birthday)) or datetime.strptime(str(birthday), "%m/%d/%Y") >= datetime.now()):
         return "The birthday is invalid. Please check the birthday again."
 
     if primary_parent and not Parent.objects.filter(user__username=primary_parent).exists():
@@ -139,7 +142,8 @@ def check_course_sheet_row(row, model_type, dropdown_subject_names=set()):
     if missing_field_error:
         return missing_field_error
 
-    if model_type is "courses":
+    if model_type is "courses_minimum":
+
         if not Instructor.objects.filter(user__email=row.get("Instructor")).exists():
             return "The instructor listed was not found. Please either add the instructor or change the instructor."
 
@@ -151,6 +155,9 @@ def check_course_sheet_row(row, model_type, dropdown_subject_names=set()):
 
         if row.get("Academic Level") not in ["Elementary", "Middle School", "High School", "College"]:
             return "There's been an invalid academic subject found in column F. Please change it to one of the academic levels in the dropdown menu."
+
+        if not str(row.get("Enrollment Capacity (>=4)")).isdigit() or int(row.get("Enrollment Capacity (>=4)")) < 4:
+            return "There's an invalid Enrollment Capacity. Please check that at least 4 students can enroll in the course."
         
         start_date = str(row.get("Start Date"))
         end_date = str(row.get("End Date"))
@@ -158,8 +165,8 @@ def check_course_sheet_row(row, model_type, dropdown_subject_names=set()):
         if not DATE_PATTERN.search(start_date) or not DATE_PATTERN.search(end_date):
             return "The start / end date is an invalid date. Please change it to a valid date."
 
-        start_date = datetime.strptime(start_date, "%d/%m/%Y")
-        end_date = datetime.strptime(end_date, "%d/%m/%Y")
+        start_date = datetime.strptime(start_date, "%m/%d/%Y")
+        end_date = datetime.strptime(end_date, "%m/%d/%Y")
 
         if end_date < start_date:
             return "The start date is after the end date. Please change the start/end dates to valid dates."
@@ -474,7 +481,7 @@ class UploadCoursesMutation(graphene.Mutation):
 
         courses_df = courses_df.dropna(how='all')
         courses_df = courses_df.where(pd.notnull(courses_df), None) # cast np.Nan to None
-        courses_df["Instructor"].apply(extract_from_parenthesis)
+        courses_df["Instructor"] = courses_df["Instructor"].apply(extract_from_parenthesis)
         courses_error_df = []
         dropdown_subject_names = set(subjects_df['Subjects'])
         for _index, row in courses_df.iloc[1:].iterrows():
@@ -493,8 +500,10 @@ class UploadCoursesMutation(graphene.Mutation):
                     is_confirmed=row.get("Instructor Confirmed? (Y/N)") == "Y",
                     academic_level=academic_level_to_enum_str[row.get("Academic Level")],
                     room=row.get("Room Location"),
-                    start_date=datetime.strptime(row.get("Start Date"), "%d/%m/%Y"),
-                    end_date=datetime.strptime(row.get("End Date"), "%d/%m/%Y")
+                    start_date=datetime.strptime(row.get("Start Date"), "%m/%d/%Y"),
+                    end_date=datetime.strptime(row.get("End Date"), "%m/%d/%Y"),
+                    course_type='class',
+                    max_capacity=int(row.get("Enrollment Capacity (>=4)"))
                 )
                 course.save()
             except Exception as e:
@@ -505,9 +514,9 @@ class UploadCoursesMutation(graphene.Mutation):
             # parse course availabilities
             availabilities = [
                 {
-                    "day_of_week": row.get(f"Session Day {i+1}"),
-                    "start_time": row.get(f"Start Time {i+1}"),
-                    "end_time": row.get(f"End Time {i+1}")
+                    "day_of_week": row.get(f"Session Day {i+1}").lower(),
+                    "start_time": datetime.strptime(row.get(f"Start Time {i+1}"), "%I:%M %p").time(),
+                    "end_time": datetime.strptime(row.get(f"End Time {i+1}"), "%I:%M %p").time()
                 }
                 for i in range(5)
                 if row.get(f"Session Day {i+1}")
