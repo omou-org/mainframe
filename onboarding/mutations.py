@@ -209,6 +209,7 @@ class UploadAccountsMutation(graphene.Mutation):
         
 
         # create parents
+        parents_df = parents_df.dropna(how='all')
         parents_df = parents_df.where(pd.notnull(parents_df), None) # cast np.Nan to None
         parents_error_df = []
         for _index, row in parents_df.iloc[1:].iterrows():
@@ -266,6 +267,7 @@ class UploadAccountsMutation(graphene.Mutation):
 
 
         # create students
+        students_df = students_df.dropna(how='all')
         students_df = students_df.where(pd.notnull(students_df), None) # cast np.Nan to None
         students_error_df = []
         for _index, row in students_df.iloc[1:].iterrows():
@@ -309,6 +311,7 @@ class UploadAccountsMutation(graphene.Mutation):
 
 
         # create instructors
+        instructors_df = instructors_df.dropna(how='all')
         instructors_df = instructors_df.where(pd.notnull(instructors_df), None) # cast np.Nan to None
         instructors_error_df = []
         for index, row in instructors_df.iloc[1:].iterrows():
@@ -423,6 +426,7 @@ class UploadCoursesMutation(graphene.Mutation):
         
 
         # create subjects
+        subjects_df = subjects_df.dropna(how='all')
         subjects_df = subjects_df.where(pd.notnull(subjects_df), None) # cast np.Nan to None
         subjects_error_df = []
         for _index, row in subjects_df.iloc[1:].iterrows():
@@ -468,7 +472,8 @@ class UploadCoursesMutation(graphene.Mutation):
             "College": "college_lvl"
         }
 
-        courses_df = courses_df.where(pd.notnull(subjects_df), None) # cast np.Nan to None
+        courses_df = courses_df.dropna(how='all')
+        courses_df = courses_df.where(pd.notnull(courses_df), None) # cast np.Nan to None
         courses_df["Instructor"].apply(extract_from_parenthesis)
         courses_error_df = []
         dropdown_subject_names = set(subjects_df['Subjects'])
@@ -492,7 +497,7 @@ class UploadCoursesMutation(graphene.Mutation):
                     end_date=datetime.strptime(row.get("End Date"), "%d/%m/%Y")
                 )
                 course.save()
-            except Exception as e:   
+            except Exception as e:
                 courses_error_df.append(row.to_dict())
                 courses_error_df[-1]['Error Message'] = str(e)
                 continue
@@ -529,7 +534,7 @@ class UploadCoursesMutation(graphene.Mutation):
                 object_repr=course.title,
                 action_flag=ADDITION
             )
-
+        
 
         total = subjects_df.shape[0]-1 + courses_df.shape[0]-1
         total_failure = len(subjects_error_df) + len(courses_error_df)

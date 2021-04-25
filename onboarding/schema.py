@@ -364,8 +364,14 @@ def create_enrollment_templates(show_errors=False):
             style_course_info_cell(info_value_cell)
 
         # student header
-        course_ws['A8'].value = "Students Enrolled"
-        course_ws['A8'].font = Font(bold=True)
+        if show_errors:
+            course_ws['A8'].value = "Error Message"
+            course_ws['A8'].font = Font(bold=True)
+            course_ws['B8'].value = "Students Enrolled"
+            course_ws['B8'].font = Font(bold=True)
+        else:
+            course_ws['A8'].value = "Students Enrolled"
+            course_ws['A8'].font = Font(bold=True)
 
         # student validation
         if total_students > 0:
@@ -440,5 +446,5 @@ class Query(object):
     @login_required
     @permissions_checker([IsOwner])
     def resolve_enrollment_templates(self, info, **kwargs):
-        wb = create_enrollment_templates()
+        wb = create_enrollment_templates(True)
         return workbook_to_base64(wb)
