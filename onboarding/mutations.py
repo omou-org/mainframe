@@ -52,7 +52,7 @@ from comms.templates import (
 EMAIL_PATTERN = re.compile("[^@]+@[^@]+\.[^@]+")
 PHONE_PATTERN = re.compile("(\d{3}[-\.\s]??\d{3}[-\.\s]??\d{4}|\(\d{3}\)\s*\d{3}[-\.\s]??\d{4}|\d{3}[-\.\s]??\d{4})")
 ZIP_PATTERN = re.compile("(\d{5}(\-\d{4})?)$")
-DATE_PATTERN = re.compile("\d{1,2}/\d{1,2}/\d{4}")
+DATE_PATTERN = re.compile("\d{1,2}/\d{1,2}/(\d{4}|\d{2})")
 
 ACCOUNT_SHEET_NAME_TO_REQUIRED_FIELDS = {
     'parent': ['First Name', 'Last Name', 'Email', 'Phone'],
