@@ -169,6 +169,12 @@ def create_course_templates(show_errors=False):
         class_column_names.insert(0, "Error Message")
         class_example.insert(0, "")
 
+    """
+    Validations:
+    openpyxl bug: need to set showDropDown=False to show dropdown menu
+    1048576 is the last row in excel
+    """
+
     # date validation
     date_dv = DataValidation(
         type="date",
@@ -192,40 +198,6 @@ def create_course_templates(show_errors=False):
         )
     course_ws.add_data_validation(time_dv)
 
-    def colnum_string(n):
-        string = ""
-        while n > 0:
-            n, remainder = divmod(n - 1, 26)
-            string = chr(65 + remainder) + string
-        return string
-
-    for c in range(len(class_column_names)):
-        # start and end date validation
-        if class_column_names[c] in ["Start Date", "End Date"]:
-            col = colnum_string(c+1)
-            date_dv.add(f"{col}4:{col}1048576")
-
-        # session day of week validation
-        if class_column_names[c].startswith("Session Day"):
-            col = colnum_string(c+1)
-            day_of_week_dv.add(f"{col}4:{col}1048576")
-            
-        # session start and end time validation
-        if class_column_names[c].startswith("Start Time") or class_column_names[c].startswith("End Time"):
-            col = colnum_string(c+1)
-            time_dv.add(f"{col}4:{col}1048576")
-
-        course_ws.cell(row=2, column=c+1).value = class_column_names[c]
-    
-    for c in range(len(class_example)):
-        course_ws.cell(row=3, column=c+1).value = class_example[c]
-
-    """
-    Validations:
-    openpyxl bug: need to set showDropDown=False to show dropdown menu
-    1048576 is the last row in excel
-    """
-
     # academic level validation
     academic_level_dv = DataValidation(
         type="list",
@@ -234,7 +206,6 @@ def create_course_templates(show_errors=False):
         showDropDown=False
         )
     course_ws.add_data_validation(academic_level_dv)
-    academic_level_dv.add("F4:F1048576")
 
     # instructor validation
     if total_instructors > 0:
@@ -248,7 +219,6 @@ def create_course_templates(show_errors=False):
             showDropDown=False
             )
         course_ws.add_data_validation(instructor_dv)
-        instructor_dv.add("B4:B1048576")
 
     # Y/N validation
     yes_no_dv = DataValidation(
@@ -258,9 +228,8 @@ def create_course_templates(show_errors=False):
         showDropDown=False
         )
     course_ws.add_data_validation(yes_no_dv)
-    yes_no_dv.add("C4:C1048576")
 
-    # subject validation
+     # subject validation
     subject_dv = DataValidation(
         type="list",
         formula1='{0}!$A$3:$A$1048576'.format(
@@ -270,7 +239,6 @@ def create_course_templates(show_errors=False):
         showDropDown=False
         )
     course_ws.add_data_validation(subject_dv)
-    subject_dv.add("D4:D1048576")
 
     # tuition validation
     tuition_dv = DataValidation(
@@ -279,9 +247,8 @@ def create_course_templates(show_errors=False):
         operator="greaterThan",
         formula1=0
     )
-    course_ws.add_data_validation(tuition_dv)
-    tuition_dv.add("H4:H1048576")
-
+    course_ws.add_data_validation(tuition_dv)  
+    
     # capacity validation
     capacity_dv = DataValidation(
         type="whole",
@@ -289,7 +256,51 @@ def create_course_templates(show_errors=False):
         formula1=4
     )
     course_ws.add_data_validation(capacity_dv)
-    capacity_dv.add("I4:I1048576")
+
+
+    def colnum_string(n):
+        string = ""
+        while n > 0:
+            n, remainder = divmod(n - 1, 26)
+            string = chr(65 + remainder) + string
+        return string
+
+    # populate validations
+    for c in range(len(class_column_names)):
+        col = colnum_string(c+1)
+
+        if class_column_names[c] == "Academic Level":
+            academic_level_dv.add(f"{col}4:{col}1048576")
+        
+        if class_column_names[c] == "Instructor" and total_instructors > 0:
+            instructor_dv.add(f"{col}4:{col}1048576")
+        
+        if class_column_names[c] == "Instructor Confirmed? (Y/N)":
+            yes_no_dv.add(f"{col}4:{col}1048576")
+
+        if class_column_names[c] == "Subject":
+            subject_dv.add(f"{col}4:{col}1048576")
+
+        if class_column_names[c] == "Total Tuition":
+            tuition_dv.add(f"{col}4:{col}1048576")
+
+        if class_column_names[c] == "Enrollment Capacity (>=4)":
+            capacity_dv.add(f"{col}4:{col}1048576")
+
+        if class_column_names[c] in ["Start Date", "End Date"]:
+            date_dv.add(f"{col}4:{col}1048576")
+
+        if class_column_names[c].startswith("Session Day"):
+            day_of_week_dv.add(f"{col}4:{col}1048576")
+            
+        if class_column_names[c].startswith("Start Time") or class_column_names[c].startswith("End Time"):
+            time_dv.add(f"{col}4:{col}1048576")
+
+        course_ws.cell(row=2, column=c+1).value = class_column_names[c]
+    
+    for c in range(len(class_example)):
+        course_ws.cell(row=3, column=c+1).value = class_example[c]
+    
 
     # remove default sheet
     del wb['Sheet']

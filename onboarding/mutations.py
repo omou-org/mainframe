@@ -159,6 +159,8 @@ def check_course_sheet_row(row, model_type, dropdown_subject_names=set()):
         if not str(row.get("Enrollment Capacity (>=4)")).isdigit() or int(row.get("Enrollment Capacity (>=4)")) < 4:
             return "There's an invalid Enrollment Capacity. Please check that at least 4 students can enroll in the course."
         
+        print(row)
+
         start_date = str(row.get("Start Date"))
         end_date = str(row.get("End Date"))
 
