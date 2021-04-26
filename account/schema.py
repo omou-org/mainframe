@@ -1,6 +1,5 @@
 import jwt
-from datetime import datetime, date
-import graphene
+from datetime import datetime, date, timedelta
 from graphene import Field, ID, List, String, Boolean, Union, DateTime, ObjectType
 from graphene_django.types import DjangoObjectType
 from graphql_jwt.decorators import login_required
@@ -33,6 +32,7 @@ class UserTypeAuth(ObjectType):
 
 
 class GoogleVerifyTokenType(ObjectType):
+    token = String()
     verified = Boolean()
 
 
@@ -328,5 +328,15 @@ class Query(object):
     def resolve_email_from_token(self, info, token):
         return jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])["email"]
 
-    def resolve_verify_google_oauth_token(self, info, login_email):
-        return GoogleVerifyTokenType(verified=True)
+    def resolve_verify_google_oauth(self, info, login_email, oauth_email):
+        admin = Admin.objects.get(user__email=login_email)
+        if admin.google_auth_email == oauth_email:
+            encoded_jwt = jwt.encode(
+                {"username": login_email,
+                 "origIat": int(datetime.utcnow().timestamp()),
+                 "exp": int((datetime.utcnow() + timedelta(minutes=5)).timestamp())},
+                settings.SECRET_KEY,
+                algorithm="HS256"
+            )
+            return GoogleVerifyTokenType(token=encoded_jwt, verified=True)
+        return GoogleVerifyTokenType(token="", verified=False)
