@@ -340,5 +340,5 @@ class Query(object):
                 settings.SECRET_KEY,
                 algorithm="HS256"
             )
-            return GoogleVerifyTokenType(token=encoded_jwt, verified=True)
+            return GoogleVerifyTokenType(token=encoded_jwt.decode("utf-8"), verified=True)
         return GoogleVerifyTokenType(token="", verified=False)
