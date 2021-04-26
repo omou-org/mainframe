@@ -107,7 +107,7 @@ class Query(object):
     user_info = Field(UserInfoType, user_id=ID(), user_name=String())
     user_type = Field(UserTypeAuth, user_id=ID(), user_name=String(), admin_types=Boolean())
     email_from_token = Field(String, token=String())
-    verify_google_oauth_token = Field(
+    verify_google_oauth = Field(
         GoogleVerifyTokenType, login_email=String(required=True), oauth_email=String(required=True)
     )
 
