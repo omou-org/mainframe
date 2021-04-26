@@ -6,6 +6,7 @@ class Business(models.Model):
     phone = models.CharField(max_length=10)
     email = models.EmailField(max_length=200)
     address = models.CharField(max_length=200)
+    onboarding_step = models.IntegerField()
 
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)
