@@ -52,7 +52,6 @@ from comms.templates import (
 EMAIL_PATTERN = re.compile("[^@]+@[^@]+\.[^@]+")
 PHONE_PATTERN = re.compile("(\d{3}[-\.\s]??\d{3}[-\.\s]??\d{4}|\(\d{3}\)\s*\d{3}[-\.\s]??\d{4}|\d{3}[-\.\s]??\d{4})")
 ZIP_PATTERN = re.compile("(\d{5}(\-\d{4})?)$")
-DATE_PATTERN = re.compile("\d{1,2}/\d{1,2}/(\d{4}|\d{2})")
 
 ACCOUNT_SHEET_NAME_TO_REQUIRED_FIELDS = {
     'parent': ['First Name', 'Last Name', 'Email', 'Phone'],
@@ -126,7 +125,7 @@ def check_account_sheet_row(row, account_type):
         if not zipcode or not ZIP_PATTERN.search(str(zipcode)):
             return "The zip code is invalid. Please check the zip code again."
 
-    if birthday and (not DATE_PATTERN.search(str(birthday)) or datetime.strptime(str(birthday), "%m/%d/%Y") >= datetime.now()):
+    if birthday and (type(birthday) != datetime or birthday >= datetime.now()):
         return "The birthday is invalid. Please check the birthday again."
 
     if primary_parent and not Parent.objects.filter(user__username=primary_parent).exists():
@@ -145,7 +144,7 @@ def check_course_sheet_row(row, model_type, dropdown_subject_names=set()):
     if model_type is "courses_minimum":
 
         if not Instructor.objects.filter(user__email=row.get("Instructor")).exists():
-            return "The instructor listed was not found. Please either add the instructor or change the instructor."
+            return "The instuctor listed was not found. Please either add the instructor or change the instructor."
 
         if row.get("Instructor Confirmed? (Y/N)") not in ["Y", "N"]:
             return "There's been an invalid character in column C. Please change it to either \"Y\" or \"N.\""
@@ -159,16 +158,11 @@ def check_course_sheet_row(row, model_type, dropdown_subject_names=set()):
         if not str(row.get("Enrollment Capacity (>=4)")).isdigit() or int(row.get("Enrollment Capacity (>=4)")) < 4:
             return "There's an invalid Enrollment Capacity. Please check that at least 4 students can enroll in the course."
         
-        print(row)
+        start_date = row.get("Start Date")
+        end_date = row.get("End Date")
 
-        start_date = str(row.get("Start Date"))
-        end_date = str(row.get("End Date"))
-
-        if not DATE_PATTERN.search(start_date) or not DATE_PATTERN.search(end_date):
+        if type(start_date) != datetime or type(end_date) != datetime:
             return "The start / end date is an invalid date. Please change it to a valid date."
-
-        start_date = datetime.strptime(start_date, "%m/%d/%Y")
-        end_date = datetime.strptime(end_date, "%m/%d/%Y")
 
         if end_date < start_date:
             return "The start date is after the end date. Please change the start/end dates to valid dates."
@@ -468,6 +462,7 @@ class UploadCoursesMutation(graphene.Mutation):
             )
         
         # create courses
+        
         def extract_from_parenthesis(s):
             if s:
                 return s[s.find("(")+1:s.find(")")]
@@ -484,6 +479,7 @@ class UploadCoursesMutation(graphene.Mutation):
         courses_df = courses_df.dropna(how='all')
         courses_df = courses_df.where(pd.notnull(courses_df), None) # cast np.Nan to None
         courses_df["Instructor"] = courses_df["Instructor"].apply(extract_from_parenthesis)
+
         courses_error_df = []
         dropdown_subject_names = set(subjects_df['Subjects'])
         for _index, row in courses_df.iloc[1:].iterrows():
@@ -502,8 +498,8 @@ class UploadCoursesMutation(graphene.Mutation):
                     is_confirmed=row.get("Instructor Confirmed? (Y/N)") == "Y",
                     academic_level=academic_level_to_enum_str[row.get("Academic Level")],
                     room=row.get("Room Location"),
-                    start_date=datetime.strptime(row.get("Start Date"), "%m/%d/%Y"),
-                    end_date=datetime.strptime(row.get("End Date"), "%m/%d/%Y"),
+                    start_date=row.get("Start Date"),
+                    end_date=row.get("End Date"),
                     course_type='class',
                     max_capacity=int(row.get("Enrollment Capacity (>=4)"))
                 )

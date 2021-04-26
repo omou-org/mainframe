@@ -232,7 +232,7 @@ def create_course_templates(show_errors=False):
      # subject validation
     subject_dv = DataValidation(
         type="list",
-        formula1='{0}!$A$3:$A$1048576'.format(
+        formula1='{0}!$A$4:$A$1048576'.format(
             quote_sheetname("Step 1 - Subject Categories")
             ),
         allow_blank=False,
@@ -300,7 +300,6 @@ def create_course_templates(show_errors=False):
     
     for c in range(len(class_example)):
         course_ws.cell(row=3, column=c+1).value = class_example[c]
-    
 
     # remove default sheet
     del wb['Sheet']
