@@ -8,6 +8,7 @@ from comms.models import (
     ParentNotificationSettings,
     InstructorNotificationSettings,
     Announcement,
+    SMSNotification,
 )
 
 class AnnouncementType(DjangoObjectType):
@@ -24,10 +25,16 @@ class InstructorNotificationSettingsType(DjangoObjectType):
         model = InstructorNotificationSettings
 
 
+class SessesionNotificationSettingsType(DjangoObjectType):
+    class Meta:
+        model = SMSNotification
+
+
 class Query(object):
     announcement = Field(AnnouncementType, announcement_id=ID())
     parent_notification_settings = Field(ParentNotificationSettingsType, parent_id=ID(required=True))
     instructor_notification_settings = Field(InstructorNotificationSettingsType, instructor_id=ID(required=True))
+    smsNotification = Field(SessesionNotificationSettingsType)
 
     announcements = List(AnnouncementType, course_id=ID(required=True))
 

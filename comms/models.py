@@ -75,7 +75,7 @@ class SMSNotification(models.Model):
         (STATUS_FAILED, "Small group"),
     )
 
-    sender = models.CharField(default="+12513024126", max_length=15)
+    sender = models.CharField(default="+15865018299", max_length=15)
     recipient = models.CharField(max_length=15)
     body = models.CharField(max_length=1000)
     response_status = models.CharField(max_length=20, null=True)

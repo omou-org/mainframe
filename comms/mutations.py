@@ -3,8 +3,8 @@ from django.conf import settings
 from django.contrib.auth.models import User
 
 from account.models import Admin
-from comms.models import Announcement, Email, ParentNotificationSettings, InstructorNotificationSettings
-from comms.schema import AnnouncementType, ParentNotificationSettingsType, InstructorNotificationSettingsType
+from comms.models import Announcement, Email, ParentNotificationSettings, InstructorNotificationSettings, SMSNotification
+from comms.schema import AnnouncementType, ParentNotificationSettingsType, InstructorNotificationSettingsType, SessesionNotificationSettingsType
 from comms.templates import ANNOUNCEMENT_EMAIL_TEMPLATE, SEND_EMAIL_TO_PARENT_TEMPLATE
 from course.models import Course
 
@@ -73,6 +73,29 @@ class DeleteAnnouncement(graphene.Mutation):
             raise GraphQLError('Failed delete mutation. Announcement does not exist.')
         announcement_obj.delete()
         return DeleteAnnouncement(deleted=True, id=announcement_id)
+
+
+class SendSessionSMSNotification(graphene.Mutation):
+    class Arguments:
+        recipient = String()
+        body = String()
+    
+    smsnotification = graphene.Field(SessesionNotificationSettingsType)
+    sent = Boolean()
+    @staticmethod
+    def mutate(root, info, **validated_data):
+        # print(vars(SMSNotification))
+        smsnotification, sent = SMSNotification.objects.update_or_create(
+            defaults=validated_data
+        )
+        sender = smsnotification.sender
+        body = smsnotification.body
+        recipient = smsnotification.recipient
+        smsnotification.save()
+
+        return SendSessionSMSNotification(smsnotification=smsnotification, sent=sent)
+
+
 
 
 class MutateParentNotificationSettings(graphene.Mutation):
@@ -152,5 +175,6 @@ class Mutation(graphene.ObjectType):
     create_parent_notification_setting = MutateParentNotificationSettings.Field()
     create_instructor_notification_setting = MutateInstructorNotificationSettings.Field()
     send_email = SendEmail.Field()
+    send_sms = SendSessionSMSNotification.Field()
 
     delete_announcement = DeleteAnnouncement.Field()
