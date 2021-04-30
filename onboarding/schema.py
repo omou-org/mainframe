@@ -229,10 +229,11 @@ def create_course_templates(show_errors=False):
         )
     course_ws.add_data_validation(yes_no_dv)
 
-     # subject validation
+    # subject validation
+    subject_formula1 = '{0}!$B$4:$B$1048576' if show_errors else '{0}!$A$4:$A$1048576'
     subject_dv = DataValidation(
         type="list",
-        formula1='{0}!$A$4:$A$1048576'.format(
+        formula1=subject_formula1.format(
             quote_sheetname("Step 1 - Subject Categories")
             ),
         allow_blank=False,
