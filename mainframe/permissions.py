@@ -27,6 +27,14 @@ class IsEmployee(GrapheneBasePermission):
         return Admin.objects.filter(user_id=user_id).exists() or Instructor.objects.filter(user_id=user_id).exists()
 
 
+class IsOwner(GrapheneBasePermission):
+    @staticmethod
+    def has_permission(context):
+        user_id = context.user.id
+        admin = Admin.objects.filter(user_id=user_id)
+        return admin.exists() and admin[0].admin_type == "owner"
+
+
 def get_user_type_object(user_id):
     if Student.objects.filter(user=user_id).exists():
         return Student.objects.get(user=user_id)

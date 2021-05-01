@@ -58,6 +58,78 @@ class CourseAvailabilityInput(graphene.InputObjectType):
     end_time = Time()
 
 
+def create_availabilities_and_sessions(course, availabilities):
+    course.num_sessions = 0
+
+    # create first week days and course availability models
+    course_availabilities = []
+    days_of_week = []
+    start_times = []
+    end_times = []
+
+    start_date = arrow.get(course.start_date)
+    start_week = start_date - timedelta(days=start_date.weekday())
+    weekday_to_shift = {name.lower():i for i, name in enumerate(list(calendar.day_name))}
+
+    for availability in availabilities:
+        course_availabilities.append(
+            CourseAvailability.objects.create(course=course, **availability)
+        )
+        days_of_week.append(
+            start_week.shift(days=weekday_to_shift[availability["day_of_week"]])
+        )
+        start_times.append(availability["start_time"])
+        end_times.append(availability["end_time"])
+
+    # create sessions for each week till last date passes
+    if course.start_date and course.end_date:
+        end_date = arrow.get(course.end_date)
+        confirmed_end_date = end_date
+
+        end_not_reached = True
+        while end_not_reached:
+            # for each week iterate over all availabilities
+            for i in range(len(days_of_week)):
+                current_date = days_of_week[i]
+
+                # stop iterating once any current_date exceeds end_date
+                if current_date > end_date:
+                    end_not_reached = False
+
+                if start_date <= current_date and current_date <= end_date:
+                    start_datetime = datetime.combine(
+                        current_date.date(),
+                        start_times[i]
+                    )
+                    end_datetime = datetime.combine(
+                        current_date.date(),
+                        end_times[i]
+                    )
+                    start_datetime = pytz.timezone(
+                        'America/Los_Angeles').localize(start_datetime).astimezone(pytz.utc)
+                    end_datetime = pytz.timezone(
+                        'America/Los_Angeles').localize(end_datetime).astimezone(pytz.utc)
+
+                    Session.objects.create(
+                        course=course,
+                        availability=course_availabilities[i],
+                        start_datetime=start_datetime,
+                        end_datetime=end_datetime,
+                        instructor=course.instructor,
+                        is_confirmed=course.is_confirmed and current_date <= confirmed_end_date,
+                        title=course.title
+                    )
+                    course_availabilities[i].num_sessions += 1
+                    course.num_sessions += 1
+                days_of_week[i] = current_date.shift(weeks=+1)
+
+    # save updated availability num_sessions
+    for availability in course_availabilities:
+        availability.save()
+
+    return course_availabilities
+
+
 class CreateCourse(graphene.Mutation):
     class Arguments:
         course_id = ID(name='id')
@@ -242,76 +314,19 @@ class CreateCourse(graphene.Mutation):
             raise GraphQLError('Failed course creation mutation. Availabilities unprovided.')
 
         course = Course.objects.create(**validated_data)
-        course.num_sessions = 0
         if validated_data.get('course_link') or validated_data.get('course_link_description'):
             course.course_link_updated_at = datetime.now()
             course.course_link_user = info.context.user
 
-        # create first week days and course availability models
-        course_availabilities = []
-        days_of_week = []
-        start_times = []
-        end_times = []
-
-        start_date = arrow.get(course.start_date)
-        start_week = start_date - timedelta(days=start_date.weekday())
-        weekday_to_shift = {name.lower():i for i, name in enumerate(list(calendar.day_name))}
-
-        for availability in availabilities:
-            course_availabilities.append(
-                CourseAvailability.objects.create(course=course, **availability)
-            )
-            days_of_week.append(
-                start_week.shift(days=weekday_to_shift[availability.day_of_week])
-            )
-            start_times.append(availability.start_time)
-            end_times.append(availability.end_time)
-
-        # create sessions for each week till last date passes
-        if course.start_date and course.end_date:
-            end_date = arrow.get(course.end_date)
-            confirmed_end_date = end_date
-
-            end_not_reached = True
-            while end_not_reached:
-                # for each week iterate over all availabilities
-                for i in range(len(days_of_week)):
-                    current_date = days_of_week[i]
-
-                    # stop iterating once any current_date exceeds end_date
-                    if current_date > end_date:
-                        end_not_reached = False
-
-                    if start_date <= current_date and current_date <= end_date:
-                        start_datetime = datetime.combine(
-                            current_date.date(),
-                            start_times[i]
-                        )
-                        end_datetime = datetime.combine(
-                            current_date.date(),
-                            end_times[i]
-                        )
-                        start_datetime = pytz.timezone(
-                            'America/Los_Angeles').localize(start_datetime).astimezone(pytz.utc)
-                        end_datetime = pytz.timezone(
-                            'America/Los_Angeles').localize(end_datetime).astimezone(pytz.utc)
-
-                        Session.objects.create(
-                            course=course,
-                            availability=course_availabilities[i],
-                            start_datetime=start_datetime,
-                            end_datetime=end_datetime,
-                            instructor=course.instructor,
-                            is_confirmed=course.is_confirmed and current_date <= confirmed_end_date,
-                            title=course.title
-                        )
-                        course_availabilities[i].num_sessions += 1
-                        course.num_sessions += 1
-                    days_of_week[i] = current_date.shift(weeks=+1)
-
-        # save updated availability num_sessions
-        for availability in course_availabilities:
-            availability.save()
+        availabilities_dicts = [
+            {
+                "day_of_week": availability.day_of_week,
+                "start_time": availability.start_time,
+                "end_time": availability.end_time
+            }
+            for availability in availabilities
+        ]
+        course_availabilities = create_availabilities_and_sessions(course, availabilities_dicts)
 
         if course.course_type == 'class' and course.num_sessions:
             # calculate total hours across all sessions
