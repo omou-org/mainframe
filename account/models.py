@@ -5,6 +5,7 @@ from django_localflavor_us.us_states import US_STATES
 from django.conf import settings
 
 from account.managers import StudentManager, ParentManager, InstructorManager, AdminManager
+from onboarding.models import Business
 
 
 class UserInfo(models.Model):
@@ -31,6 +32,11 @@ class UserInfo(models.Model):
     )
     STATE_CHOICES = tuple(sorted(US_STATES, key=lambda obj: obj[1]))
 
+    business = models.ForeignKey(
+        Business,
+        on_delete=models.PROTECT,
+        null=True
+    )
     user = models.OneToOneField(
         get_user_model(),
         on_delete=models.PROTECT,
@@ -61,7 +67,6 @@ class UserInfo(models.Model):
 
     class Meta:
         abstract = True
-
 
 
 class AccountNote(models.Model):
@@ -126,6 +131,7 @@ class Student(UserInfo):
     def enrollment_id_list(self):
         return [enrollment.id for enrollment in self.enrollment_set.all()]
 
+
 class StudentSchoolInfo(models.Model):
     student = models.ForeignKey(
         Student,
@@ -138,7 +144,8 @@ class StudentSchoolInfo(models.Model):
     current_topic = models.CharField(max_length=64)
     student_strengths=models.CharField(max_length=1024)
     student_weaknesses=models.CharField(max_length=1024)
-    
+
+
 class Parent(UserInfo):
     MOTHER_REL = "mother"
     FATHER_REL = "father"

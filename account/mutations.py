@@ -141,6 +141,7 @@ class CreateStudent(graphene.Mutation):
     @staticmethod
     @login_required
     def mutate(root, info, user, **validated_data):
+
         with transaction.atomic():
             # update request
             if user.get('id'):
