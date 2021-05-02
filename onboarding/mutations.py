@@ -1,60 +1,48 @@
 import graphene
 from graphql import GraphQLError
-
-from account.schema import (
-    AdminType
-)
-from account.mutations import (
-    GenderEnum,
-    UserInput
-)
-
-from onboarding.models import Business
-from onboarding.schema import BusinessType
 from graphql_jwt.decorators import login_required, staff_member_required
-
-import decimal
-import pandas as pd
 from graphene_file_upload.scalars import Upload
 
+import decimal
+import re
+import pandas as pd
+from datetime import date, datetime
+
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.admin.models import LogEntry, ADDITION
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
+from django_graphene_permissions import permissions_checker
 
-from comms.models import Email, ParentNotificationSettings
+from mainframe.permissions import IsOwner
+from rest_framework.authtoken.models import Token
+
 from account.models import (
+    Admin,
     School,
     Student,
     Parent,
     Instructor
 )
+from account.schema import AdminType
+from account.mutations import DayOfWeekEnum, UserInput
 from course.models import (
     CourseCategory,
     Course
 )
-from course.mutations import (
-    create_availabilities_and_sessions,
-    CourseAvailabilityInput
+from course.mutations import create_availabilities_and_sessions
+from comms.models import Email, ParentNotificationSettings
+from comms.templates import (
+    WELCOME_PARENT_TEMPLATE
 )
+from onboarding.models import Business, BusinessAvailability
 from onboarding.schema import (
+    BusinessType,
     autosize_ws_columns,
     create_accounts_template,
     create_course_templates,
     workbook_to_base64
-)
-
-from mainframe.permissions import IsOwner
-from django_graphene_permissions import permissions_checker
-
-from datetime import date, datetime
-import re
-
-from django.conf import settings
-from rest_framework.authtoken.models import Token
-from comms.models import Email, ParentNotificationSettings
-from comms.templates import (
-    WELCOME_PARENT_TEMPLATE
 )
 
 EMAIL_PATTERN = re.compile("[^@]+@[^@]+\.[^@]+")
@@ -74,57 +62,116 @@ COURSE_SHEET_NAME_TO_REQUIRED_FIELDS = {
 }
 
 
-class CreateBusiness(graphene.Mutation):
+class CreateOwnerInput(graphene.InputObjectType):
+    user = UserInput(required=True)
+    address = graphene.String()
+    city = graphene.String()
+    phone_number = graphene.String()
+    state = graphene.String()
+    zipcode = graphene.String()
+
+
+class BusinessAvailabilityInput(graphene.InputObjectType):
+    day_of_week = DayOfWeekEnum(require=True)
+    start_time = graphene.Time(require=True)
+    end_time = graphene.Time(require=True)
+
+
+class CreateBusinessInput(graphene.InputObjectType):
+    name = graphene.String(require=True)
+    phone_number = graphene.String(require=True)
+    email = graphene.String(require=True)
+    address = graphene.String(require=True)
+    availabilities = graphene.List(BusinessAvailabilityInput, require=True)
+
+
+class UpdateBusiness(graphene.Mutation):
     class Arguments:
-        id = graphene.ID()
         name = graphene.String()
-        phone = graphene.String()
+        phone_number = graphene.String()
         email = graphene.String()
         address = graphene.String()
+        availabilities = graphene.List(BusinessAvailabilityInput)
 
     business = graphene.Field(BusinessType)
-    created = graphene.Boolean()
+    updated = graphene.Boolean()
 
     @staticmethod
     @login_required
     @staff_member_required
     def mutate(root, info, **validated_data):
-        if (
-            "name" in validated_data
-            and Business.objects.filter(name=validated_data["name"]).count() > 0
-        ):
+        user_id = info.context.user.id
+        admin = Admin.objects.get(user__id=user_id)
+
+        if "name" in validated_data and Business.objects.filter(name=validated_data["name"]).exclude(id=admin.business.id).exists():
             raise GraphQLError("Failed mutation. Business with name already exists.")
 
-        business, created = Business.objects.update_or_create(
-            id=validated_data.pop('id', None),
-            defaults=validated_data
-        )
-        return CreateBusiness(business=business, created=created)
+        with transaction.atomic():
+            # update business
+            business_object, updated = Business.objects.update_or_create(
+                id=admin.business.id,
+                defaults=validated_data
+            )
+
+            # remove old availabilities and create new ones
+            availabilities_dict_list = validated_data.pop('availabilities')
+            if availabilities_dict_list:
+                BusinessAvailability.objects.filter(business=business_object).delete()
+                for availability_dict in availabilities_dict_list:
+                    BusinessAvailability.objects.create(
+                        business=business_object,
+                        **availability_dict
+                    )
+            
+            return UpdateBusiness(business=business_object, updated=updated)
 
 
 class CreateOwnerAndBusiness(graphene.Mutation):
     class Arguments:
-        # User fields
-        user = UserInput(required=True)
-        gender = GenderEnum()
-        birth_date = graphene.Date()
-        address = graphene.String()
-        city = graphene.String()
-        phone_number = graphene.String()
-        state = graphene.String()
-        zipcode = graphene.String()
+        owner = CreateOwnerInput()
+        business = CreateBusinessInput()
 
     owner = graphene.Field(AdminType)
-    owner_created = graphene.Boolean()
-
     business = graphene.Field(BusinessType)
-    business_created = graphene.Boolean()
+    created = graphene.Boolean()
 
     @staticmethod
     def mutate(root, info, **validated_data):
+        with transaction.atomic():
+            owner_dict = validated_data['owner']
+            user_dict = owner_dict.pop('user')
+            business_dict = validated_data['business']
+            availabilities_dict_list = business_dict.pop('availabilities')
 
-        pass
-        # admin type is Owner
+            # create business
+            if Business.objects.filter(name=business_dict["name"]).exists():
+                raise GraphQLError("Failed mutation. Business with name already exists.")
+
+            business_object = Business.objects.create(**business_dict)
+            for availability_dict in availabilities_dict_list:
+                BusinessAvailability.objects.create(
+                    business=business_object,
+                    **availability_dict
+                )
+            # create user and token
+            user_object = User.objects.create_user(
+                email=user_dict['email'],
+                username=user_dict['email'],
+                password=user_dict['password'],
+                first_name=user_dict['first_name'],
+                last_name=user_dict['last_name'],
+                is_staff=True
+            )
+            Token.objects.get_or_create(user=user_object)
+            # create owner
+            owner_object = Admin.objects.create(
+                user=user_object,
+                account_type='admin',
+                admin_type=Admin.OWNER_TYPE,
+                business=business_object,
+                **owner_dict
+            )
+            return CreateOwnerAndBusiness(owner=owner_object, business=business_object, created=True)
 
 
 def check_required_fields(row, fields):
@@ -608,7 +655,7 @@ class UploadCoursesMutation(graphene.Mutation):
 
 
 class Mutation(graphene.ObjectType):
-    create_business = CreateBusiness.Field()
+    update_business = UpdateBusiness.Field()
     create_owner_and_business = CreateOwnerAndBusiness.Field()
     upload_accounts = UploadAccountsMutation.Field()
     upload_courses = UploadCoursesMutation.Field()
