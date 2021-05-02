@@ -6,9 +6,11 @@ from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.utils.functional import cached_property
-from account.models import Instructor, Parent, Student
 
-from course.managers import CourseManager
+from account.models import Instructor, Parent, Student
+from onboarding.models import Business
+
+from course.managers import CourseManager, EnrollmentManager
 
 
 class CourseCategory(models.Model):
@@ -62,6 +64,11 @@ class Course(models.Model):
     hourly_tuition = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
     total_tuition = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
 
+    business = models.ForeignKey(
+        Business,
+        on_delete=models.PROTECT,
+        null=True
+    )
     course_link = models.URLField(
         max_length=128, 
         db_index=True, 
@@ -228,6 +235,8 @@ class Enrollment(models.Model):
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    objects = EnrollmentManager()
 
 
 def create_enrollment_attendances(instance, created, raw, **kwargs):
