@@ -1,4 +1,4 @@
-from graphene import Field, ID, String
+from graphene import Field, ID, List, String
 from graphene_django.types import DjangoObjectType
 from graphql_jwt.decorators import login_required, staff_member_required
 
@@ -13,12 +13,24 @@ import base64
 from mainframe.permissions import IsOwner
 from django_graphene_permissions import permissions_checker
 
-from account.models import Instructor, Student
+from account.models import (
+    Admin,
+    Student,
+    Parent,
+    Instructor
+)
 from course.models import Course
-from onboarding.models import Business
+from onboarding.models import Business, BusinessAvailability
+
+
+class BusinessAvailabilityType(DjangoObjectType):
+    class Meta:
+        model = BusinessAvailability
 
 
 class BusinessType(DjangoObjectType):
+    availability_list = List(BusinessAvailabilityType, source='availability_list')
+
     class Meta:
         model = Business
 
@@ -428,25 +440,25 @@ def create_enrollment_templates(show_errors=False):
 
 
 class Query(object):
-    business = Field(BusinessType, business_id=ID(), name=String())
+    business = Field(BusinessType)
     account_templates = String()
     course_templates = String()
     enrollment_templates = String()
 
 
     @login_required
-    @staff_member_required
     def resolve_business(self, info, **kwargs):
-        business_id = kwargs.get('business_id')
-        name = kwargs.get('name')
+        user_id = info.context.user.id
 
-        if business_id:
-            return Business.objects.get(id=business_id)
+        account_queries = [
+            Student.objects.filter(user__id=user_id),
+            Instructor.objects.filter(user__id=user_id),
+            Parent.objects.filter(user__id=user_id),
+            Admin.objects.filter(user__id=user_id),
+        ]
+        account = next(query.first() for query in account_queries if query.exists())
 
-        if name:
-            return Business.objects.get(name=name)
-
-        return None
+        return Business.objects.get(id=account.business.id)
 
 
     @login_required
