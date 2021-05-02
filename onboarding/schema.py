@@ -131,8 +131,9 @@ def create_accounts_template(show_errors=False):
     return wb
 
 
+# business_id populates instructors from same business
 # show_errors=True adds error message column
-def create_course_templates(show_errors=False):
+def create_course_templates(business_id, show_errors=False):
     wb = Workbook()
     wb.create_sheet("Instructor Roster (hidden)")
     wb.create_sheet("Step 1 - Subject Categories")
@@ -142,8 +143,8 @@ def create_course_templates(show_errors=False):
     instructors_ws = wb.get_sheet_by_name("Instructor Roster (hidden)")
     instructors_ws.sheet_state = 'hidden'
     instructors_ws.cell(row=1, column=1).value = "Instructor Name (email)"
-    total_instructors = Instructor.objects.all().count()
-    for row, instructor in enumerate(Instructor.objects.all()):
+    total_instructors = Instructor.objects.business(business_id).count()
+    for row, instructor in enumerate(Instructor.objects.business(business_id)):
         combined_value = f"{instructor.user.first_name} {instructor.user.last_name} ({instructor.user.email})"
         instructors_ws.cell(row=row+2, column=1).value = combined_value
 
@@ -334,8 +335,9 @@ def create_course_templates(show_errors=False):
     return wb
 
 
+# business_id used to populate students and courses from same business
 # show_errors=True adds error message column
-def create_enrollment_templates(show_errors=False):
+def create_enrollment_templates(business_id, show_errors=False):
     wb = Workbook()
     wb.create_sheet("Student Roster (hidden)")
 
@@ -343,12 +345,12 @@ def create_enrollment_templates(show_errors=False):
     students_ws = wb.get_sheet_by_name("Student Roster (hidden)")
     students_ws.sheet_state = 'hidden'
     students_ws.cell(row=1, column=1).value = "Student Name (email)"
-    total_students = Student.objects.all().count()
-    for row, student in enumerate(Student.objects.all()):
+    total_students = Student.objects.business(business_id).count()
+    for row, student in enumerate(Student.objects.business(business_id)):
         students_ws.cell(row=row+2, column=1).value = f"{student.user.first_name} {student.user.last_name} ({student.user.email})" 
 
     # course templates
-    for course in Course.objects.all():
+    for course in Course.objects.business(business_id):
         sheet_name = f"{course.title} - {course.id}"
         wb.create_sheet(sheet_name)
         course_ws = wb.get_sheet_by_name(sheet_name)
@@ -468,11 +470,13 @@ class Query(object):
     @login_required
     @permissions_checker([IsOwner])
     def resolve_course_templates(self, info, **kwargs):
-        wb = create_course_templates()
+        owner = Admin.objects.get(user=info.context.user)
+        wb = create_course_templates(owner.business.id)
         return workbook_to_base64(wb)
     
     @login_required
     @permissions_checker([IsOwner])
     def resolve_enrollment_templates(self, info, **kwargs):
-        wb = create_enrollment_templates(True)
+        owner = Admin.objects.get(user=info.context.user)
+        wb = create_enrollment_templates(owner.business.id)
         return workbook_to_base64(wb)

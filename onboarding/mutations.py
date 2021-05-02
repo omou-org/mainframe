@@ -184,7 +184,7 @@ def check_required_fields(row, fields):
 
 
 # preliminary account spreadsheet row checks
-def check_account_sheet_row(row, account_type):
+def check_account_sheet_row(row, account_type, business_id=None):
     # check required fields
     missing_field_error = check_required_fields(row, ACCOUNT_SHEET_NAME_TO_REQUIRED_FIELDS[account_type])
     if missing_field_error:
@@ -203,21 +203,23 @@ def check_account_sheet_row(row, account_type):
     if account_type is not "student":
         if not phone or not PHONE_PATTERN.search(str(phone)):
             return "The phone number is invalid. Please check the phone number again."
-
-        if not zipcode or not ZIP_PATTERN.search(str(zipcode)):
+        
+        if account_type is "parent" and not zipcode:
+            pass
+        elif not zipcode or not ZIP_PATTERN.search(str(zipcode)):
             return "The zip code is invalid. Please check the zip code again."
 
     if birthday and (type(birthday) != datetime or birthday >= datetime.now()):
         return "The birthday is invalid. Please check the birthday again."
 
-    if primary_parent and not Parent.objects.filter(user__username=primary_parent).exists():
+    if primary_parent and not Parent.objects.filter(business__id=business_id, user__username=primary_parent).exists():
         return "No parent with that email exists. Please check the email agaim."
 
     return None
 
 
 # preliminary course spreadsheet row checks
-def check_course_sheet_row(row, model_type, dropdown_subject_names=set()):
+def check_course_sheet_row(row, model_type, business_id=None, dropdown_subject_names=set()):
     # check required fields
     missing_field_error = check_required_fields(row, COURSE_SHEET_NAME_TO_REQUIRED_FIELDS[model_type])
     if missing_field_error:
@@ -225,7 +227,7 @@ def check_course_sheet_row(row, model_type, dropdown_subject_names=set()):
 
     if model_type is "courses_minimum":
 
-        if not Instructor.objects.filter(user__email=row.get("Instructor")).exists():
+        if not Instructor.objects.filter(business__id=business_id, user__email=row.get("Instructor")).exists():
             return "The instuctor listed was not found. Please either add the instructor or change the instructor."
 
         if row.get("Instructor Confirmed? (Y/N)") not in ["Y", "N"]:
@@ -267,6 +269,10 @@ class UploadAccountsMutation(graphene.Mutation):
     @login_required
     @permissions_checker([IsOwner])
     def mutate(self, info, accounts, **kwargs):
+        owner = Admin.objects.get(user=info.context.user)
+        business_id = owner.business.id
+        business = Business.objects.get(id=business_id)
+
         xls = pd.ExcelFile(accounts.read())
 
         # check all spreadsheets exist
@@ -314,9 +320,10 @@ class UploadAccountsMutation(graphene.Mutation):
                     user_object.save()
                     parent = Parent(
                         user=user_object,
+                        business=business,
                         account_type='parent',
                         phone_number=row['Phone'],
-                        zipcode=row['Zip Code (Optional)']
+                        zipcode=row.get('Zip Code (Optional)')
                     )
                     parent.save()
             except Exception as e:
@@ -353,7 +360,7 @@ class UploadAccountsMutation(graphene.Mutation):
         students_df = students_df.where(pd.notnull(students_df), None) # cast np.Nan to None
         students_error_df = []
         for _index, row in students_df.iloc[1:].iterrows():
-            required_fields_check = check_account_sheet_row(row, 'student')
+            required_fields_check = check_account_sheet_row(row, 'student', business_id)
             if required_fields_check:
                 students_error_df.append(row.to_dict())
                 students_error_df[-1]['Error Message'] = required_fields_check
@@ -370,6 +377,7 @@ class UploadAccountsMutation(graphene.Mutation):
                     user_object.save()
                     student = Student(
                         user=user_object,
+                        business=business,
                         account_type='student',
                         grade=row.get('Grade Level (Optional)'),
                         school=None if not row.get('School (Optional)') else School.objects.get(name=row.get('School (Optional)')),
@@ -413,6 +421,7 @@ class UploadAccountsMutation(graphene.Mutation):
                     user_object.save()
                     instructor = Instructor(
                         user=user_object,
+                        business=business,
                         account_type='instructor',
                         city=row['City'],
                         phone_number=row['Phone'],
@@ -484,6 +493,10 @@ class UploadCoursesMutation(graphene.Mutation):
     @login_required
     @permissions_checker([IsOwner])
     def mutate(self, info, courses, **kwargs):
+        owner = Admin.objects.get(user=info.context.user)
+        business_id = owner.business.id
+        business = Business.objects.get(id=business_id)
+
         xls = pd.ExcelFile(courses.read())
 
         # check all spreadsheets exist
@@ -558,13 +571,14 @@ class UploadCoursesMutation(graphene.Mutation):
         courses_error_df = []
         dropdown_subject_names = set(subjects_df['Subjects'])
         for _index, row in courses_df.iloc[1:].iterrows():
-            required_fields_check = check_course_sheet_row(row, 'courses_minimum', dropdown_subject_names)
+            required_fields_check = check_course_sheet_row(row, 'courses_minimum', business_id, dropdown_subject_names)
             if required_fields_check:
                 courses_error_df.append(row.to_dict())
                 courses_error_df[-1]['Error Message'] = required_fields_check
                 continue
             try:
                 course = Course(
+                    business=business,
                     title=row.get("Course Name"),
                     course_category=CourseCategory.objects.get(name=row.get("Subject")),
                     description=row.get("Course Description"),
@@ -588,8 +602,8 @@ class UploadCoursesMutation(graphene.Mutation):
             availabilities = [
                 {
                     "day_of_week": row.get(f"Session Day {i+1}").lower(),
-                    "start_time": datetime.strptime(row.get(f"Start Time {i+1}"), "%I:%M %p").time(),
-                    "end_time": datetime.strptime(row.get(f"End Time {i+1}"), "%I:%M %p").time()
+                    "start_time": row.get(f"Start Time {i+1}"),
+                    "end_time": row.get(f"End Time {i+1}")
                 }
                 for i in range(5)
                 if row.get(f"Session Day {i+1}")

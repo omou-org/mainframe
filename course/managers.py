@@ -2,6 +2,12 @@ from django.db import models
 from django.db.models import Q
 
 class CourseManager(models.Manager):
+    def business(self, business_id):
+        qs = self.get_queryset()
+        if business_id is not None:
+            qs = qs.filter(business=business_id)
+        return qs
+
     def search(self, query=None, qs_initial=None):
         if qs_initial is None or len(qs_initial) == 0:
             qs = self.get_queryset()
@@ -23,4 +29,12 @@ class CourseManager(models.Manager):
             except ValueError:
                 pass
             qs = qs.filter(or_lookup).distinct()
+        return qs
+
+
+class EnrollmentManager(models.Manager):
+    def business(self, business_id):
+        qs = self.get_queryset()
+        if business_id is not None:
+            qs = qs.filter(course__business=business_id)
         return qs
