@@ -45,6 +45,7 @@ class AcademicLevelEnum(graphene.Enum):
     HIGH_LVL = 'high_lvl'
     COLLEGE_LVL = 'college_lvl'
 
+
 class InviteStatusEnum(graphene.Enum):
     SENT = "sent"
     UNSENT = "unsent"
@@ -96,7 +97,7 @@ def create_availabilities_and_sessions(course, availabilities):
                 if current_date > end_date:
                     end_not_reached = False
 
-                if start_date <= current_date and current_date <= end_date:
+                if start_date <= current_date <= end_date:
                     start_datetime = datetime.combine(
                         current_date.date(),
                         start_times[i]

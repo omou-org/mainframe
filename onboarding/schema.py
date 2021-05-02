@@ -445,7 +445,6 @@ class Query(object):
     course_templates = String()
     enrollment_templates = String()
 
-
     @login_required
     def resolve_business(self, info, **kwargs):
         user_id = info.context.user.id
@@ -460,20 +459,17 @@ class Query(object):
 
         return Business.objects.get(id=account.business.id)
 
-
     @login_required
     @permissions_checker([IsOwner])
     def resolve_account_templates(self, info, **kwargs):
         wb = create_accounts_template()
         return workbook_to_base64(wb)
 
-
     @login_required
     @permissions_checker([IsOwner])
     def resolve_course_templates(self, info, **kwargs):
         wb = create_course_templates()
         return workbook_to_base64(wb)
-
     
     @login_required
     @permissions_checker([IsOwner])
