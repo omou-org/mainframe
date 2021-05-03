@@ -167,7 +167,9 @@ CORS_ORIGIN_WHITELIST = (
     "https://www.omoulearning.com",
     "https://omoulearning.com",
     "https://development.omoulearning.com",
-    "https://www.development.omoulearning.com"
+    "https://www.development.omoulearning.com",
+    "https://www.getomou.com/",
+    "https://getomou.com/",
 )
 
 # GraphQL

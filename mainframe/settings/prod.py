@@ -12,12 +12,9 @@ ALLOWED_HOSTS = [
     "mainframe-env.eba-yszaihyi.us-west-1.elasticbeanstalk.com",
     "api.omoulearning.com",
     "development.omoulearning.com",
-    "jon.omoulearning.com",
+    "getomou.com",
     "localhost",
-    "172.31.13.236",
-    "172.31.16.196",
-    "172.31.20.69",
-    "172.31.30.119"
+    "172.31.0.238"
 ]
 
 DATABASES = {
