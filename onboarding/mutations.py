@@ -201,7 +201,7 @@ def check_account_sheet_row(row, account_type, business_id=None):
     if not email or not EMAIL_PATTERN.search(email):
         return "The email is invalid. Please check the email again."
 
-    if account_type is not "student":
+    if account_type != "student":
         if not phone or not PHONE_PATTERN.search(str(phone)):
             return "The phone number is invalid. Please check the phone number again."
         
@@ -226,7 +226,7 @@ def check_course_sheet_row(row, model_type, business_id=None, dropdown_subject_n
     if missing_field_error:
         return missing_field_error
 
-    if model_type is "courses_minimum":
+    if model_type == "courses_minimum":
 
         if not Instructor.objects.filter(business__id=business_id, user__email=row.get("Instructor")).exists():
             return "The instuctor listed was not found. Please either add the instructor or change the instructor."
