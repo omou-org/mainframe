@@ -363,6 +363,7 @@ def create_enrollment_templates(business_id, show_errors=False):
         def date_format(date):
             return f"{date.month}/{date.day}/{date.year}"
 
+        print(course.__dict__)
         course_info = {
             "Course Name": course.title,
             "Course ID": course.id,
