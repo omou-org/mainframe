@@ -4,7 +4,7 @@ import datetime
 logging.basicConfig(
     format='[%(asctime)s] %(levelname)s: %(message)s', level=logging.INFO)
 
-from comms.models import Email, InstructorNotificationSettings, ParentNotificationSettings
+from comms.models import Email, InstructorNotificationSettings, ParentNotificationSettings, SMSNotification
 from comms.templates import SESSION_REMINDER_TEMPLATE
 from scheduler.models import Session
 
@@ -47,6 +47,12 @@ def run():
                     template_id=MISSED_TEMPLATE,
                     recipient=primary_parent.user.email,
                     data=email_data
+                )
+            if parent_settings.session_reminder_sms:
+                primary_parent = enrollment.student.primary_parent
+                SMSNotification.objects.create(
+                    recipient=primary_parent.phone_number,
+                    data='hello'
                 )
 
         session.sent_upcoming_reminder = True

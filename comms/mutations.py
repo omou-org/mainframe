@@ -75,29 +75,6 @@ class DeleteAnnouncement(graphene.Mutation):
         return DeleteAnnouncement(deleted=True, id=announcement_id)
 
 
-class SendSessionSMSNotification(graphene.Mutation):
-    class Arguments:
-        recipient = String()
-        body = String()
-    
-    smsnotification = graphene.Field(SessesionNotificationSettingsType)
-    sent = Boolean()
-    @staticmethod
-    def mutate(root, info, **validated_data):
-        # print(vars(SMSNotification))
-        smsnotification, sent = SMSNotification.objects.update_or_create(
-            defaults=validated_data
-        )
-        sender = smsnotification.sender
-        body = smsnotification.body
-        recipient = smsnotification.recipient
-        smsnotification.save()
-
-        return SendSessionSMSNotification(smsnotification=smsnotification, sent=sent)
-
-
-
-
 class MutateParentNotificationSettings(graphene.Mutation):
     class Arguments:
         parent_id = ID(name="parent", required=True)
@@ -168,6 +145,32 @@ class SendEmail(graphene.Mutation):
         )
         email.save()
         return SendEmail(created=True)
+
+class SendSessionSMSNotification(graphene.Mutation):
+    class Arguments:
+        recipient = String()
+        body = String()
+    
+    smsnotification = graphene.Field(SessesionNotificationSettingsType)
+    sent = Boolean()
+    @staticmethod
+    def mutate(root, info, **validated_data):
+        # print(vars(SMSNotification))
+        # print(validated_data)
+        smsnotification = SMSNotification.objects.create(
+            body = validated_data.get('body'),
+            recipient = validated_data.get('recipient')
+        )
+        if smsnotification:
+            sent=True
+            smsnotification.save()
+
+        # print(vars(settings))
+        # print(local)
+        # print(settings.local.TWILIO_ACCOUNT_SID)
+        # print(vars(smsnotification))
+        # print(smsnotification.sid)
+        return SendSessionSMSNotification(smsnotification=smsnotification, sent=sent)
 
 
 class Mutation(graphene.ObjectType):
