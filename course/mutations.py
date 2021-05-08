@@ -354,6 +354,8 @@ class CreateCourse(graphene.Mutation):
             course.hourly_tuition = price_rule.hourly_tuition
             course.total_tuition = course.hourly_tuition * course.num_sessions
 
+        owner = Admin.objects.get(user=info.context.user)
+        course.business_id = owner.business.id
         course.save()
         LogEntry.objects.log_action(
             user_id=info.context.user.id,
