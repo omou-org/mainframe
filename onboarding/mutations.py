@@ -683,13 +683,12 @@ class UploadEnrollmentsMutation(graphene.Mutation):
         total_errors = 0
 
         for course in Course.objects.all():
-            print(course.title)
+            
             sheet_name = f"{course.title} - {course.id}"
             # extract spreadsheet and use 8th row (7th 0-indexed) for header, skipping all previous rows
             try:
                 enrollment_df = pd.read_excel(xls, sheet_name=sheet_name, skiprows=7, header=0)
-            except Exception as e:
-                print(e)
+            except Exception:
                 # not uploading for this course
                 continue
 
@@ -698,20 +697,17 @@ class UploadEnrollmentsMutation(graphene.Mutation):
                 raise GraphQLError("Missing columns in enrollments worksheet: " + str(enrollment_ws_missing_columns))
 
             # create enrollments
-            print(enrollment_df)
             enrollment_df = enrollment_df.dropna(how='all')
-            print(enrollment_df)
             enrollment_error_df = []
             for _index, row in enrollment_df.iloc[0:].iterrows():
                 entry = row['Students Enrolled']
-                print(entry)
                 student_email = entry[entry.find("(")+1:entry.find(")")]
-                print(student_email)
                 if not Student.objects.filter(user__email=student_email).exists():
                     enrollment_error_df.append(row.to_dict())
                     enrollment_error_df[-1]['Error Message'] = (
                         "No student with that email exists. Please check the entry again."
                     )
+
                     continue
                 try:
                     with transaction.atomic():
@@ -721,15 +717,18 @@ class UploadEnrollmentsMutation(graphene.Mutation):
                             course=course,
                             invite_status=Enrollment.SENT,
                         )
+
                 except Exception as e:
                     enrollment_error_df.append(row.to_dict())
                     enrollment_error_df[-1]['Error Message'] = str(e)
                     continue
-            total = enrollment_df.shape[0] - 1
+            total = enrollment_df.shape[0] 
             errors = len(enrollment_error_df)
             if errors > 0:
                 enrollments_ws = wb.get_sheet_by_name(sheet_name)
-                enrollments_column_order = [cell.value for cell in enrollments_ws[8]]
+                enrollments_column_order = [cell.value for cell in enrollments_ws[8]][:2]
+
+                
                 for index, row_error in enumerate(enrollment_error_df):
                     for col in range(len(enrollments_column_order)):
                         enrollments_ws.cell(row=9 + index, column=1 + col).value = (
