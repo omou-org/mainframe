@@ -114,14 +114,15 @@ class UpdateBusiness(graphene.Mutation):
             )
 
             # remove old availabilities and create new ones
-            availabilities_dict_list = validated_data.pop('availabilities')
-            if availabilities_dict_list:
-                BusinessAvailability.objects.filter(business=business_object).delete()
-                for availability_dict in availabilities_dict_list:
-                    BusinessAvailability.objects.create(
-                        business=business_object,
-                        **availability_dict
-                    )
+            if "availabilities" in validated_data:
+                availabilities_dict_list = validated_data.pop('availabilities')
+                if availabilities_dict_list:
+                    BusinessAvailability.objects.filter(business=business_object).delete()
+                    for availability_dict in availabilities_dict_list:
+                        BusinessAvailability.objects.create(
+                            business=business_object,
+                            **availability_dict
+                        )
             
             return UpdateBusiness(business=business_object, updated=updated)
 
