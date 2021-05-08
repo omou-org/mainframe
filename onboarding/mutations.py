@@ -728,7 +728,6 @@ class UploadEnrollmentsMutation(graphene.Mutation):
                 enrollments_ws = wb.get_sheet_by_name(sheet_name)
                 enrollments_column_order = [cell.value for cell in enrollments_ws[8]][:2]
 
-                
                 for index, row_error in enumerate(enrollment_error_df):
                     for col in range(len(enrollments_column_order)):
                         enrollments_ws.cell(row=9 + index, column=1 + col).value = (
