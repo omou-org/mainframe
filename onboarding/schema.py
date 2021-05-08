@@ -337,7 +337,9 @@ def create_course_templates(business_id, show_errors=False):
 
 # business_id used to populate students and courses from same business
 # show_errors=True adds error message column
+
 def create_enrollment_templates(business_id, show_errors=False):
+    
     wb = Workbook()
     wb.create_sheet("Student Roster (hidden)")
 
@@ -348,6 +350,7 @@ def create_enrollment_templates(business_id, show_errors=False):
     total_students = Student.objects.business(business_id).count()
     for row, student in enumerate(Student.objects.business(business_id)):
         students_ws.cell(row=row+2, column=1).value = f"{student.user.first_name} {student.user.last_name} ({student.user.email})" 
+        
 
     # course templates
     for course in Course.objects.business(business_id):
@@ -363,7 +366,7 @@ def create_enrollment_templates(business_id, show_errors=False):
         def date_format(date):
             return f"{date.month}/{date.day}/{date.year}"
 
-        print(course.__dict__)
+      
         course_info = {
             "Course Name": course.title,
             "Course ID": course.id,
