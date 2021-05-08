@@ -522,6 +522,7 @@ class CreateAdmin(graphene.Mutation):
         state = graphene.String()
         zipcode = graphene.String()
         google_auth_enabled = graphene.Boolean()
+        google_auth_email = graphene.String()
 
         # Admin fields
         admin_type = AdminTypeEnum(required=True)
@@ -542,7 +543,8 @@ class CreateAdmin(graphene.Mutation):
                     user_object = User.objects.get(id=user_id)
                     user_object.is_staff = True
                     user_object.save()
-                admin.refresh_from_db()
+                if not admin.google_auth_enabled:
+                    admin.google_auth_enabled = None
                 admin.save()
                 return CreateAdmin(admin=admin, created=False)
 

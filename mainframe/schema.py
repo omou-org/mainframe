@@ -25,7 +25,6 @@ class Mutation(account_mutations.Mutation, comms_mutations.Mutation,
                scheduler_mutations.Mutation, invoice_mutations.Mutation,
                onboarding_mutations.Mutation, graphene.ObjectType):
     token_auth = graphql_jwt.ObtainJSONWebToken.Field()
-    social_auth = graphql_social_auth.SocialAuthJWT.Field()
     verify_token = graphql_jwt.Verify.Field()
     refresh_token = graphql_jwt.Refresh.Field()
 
