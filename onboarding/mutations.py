@@ -677,16 +677,19 @@ class UploadEnrollmentsMutation(graphene.Mutation):
     def mutate(self, info, enrollments, **kwargs):
         xls = pd.ExcelFile(enrollments.read())
         error_excel = ""
-        wb = create_enrollment_templates(show_errors=True)
+        owner = Admin.objects.get(user=info.context.user)
+        wb = create_enrollment_templates(owner.business.id, show_errors=True)
         overall_total = 0
         total_errors = 0
 
         for course in Course.objects.all():
+            print(course.title)
             sheet_name = f"{course.title} - {course.id}"
             # extract spreadsheet and use 8th row (7th 0-indexed) for header, skipping all previous rows
             try:
-                enrollment_df = pd.read_excel(xls, sheet_name=sheet_name, skiprows=7, header=7)
-            except Exception:
+                enrollment_df = pd.read_excel(xls, sheet_name=sheet_name, skiprows=7, header=0)
+            except Exception as e:
+                print(e)
                 # not uploading for this course
                 continue
 
@@ -695,12 +698,16 @@ class UploadEnrollmentsMutation(graphene.Mutation):
                 raise GraphQLError("Missing columns in enrollments worksheet: " + str(enrollment_ws_missing_columns))
 
             # create enrollments
+            print(enrollment_df)
             enrollment_df = enrollment_df.dropna(how='all')
+            print(enrollment_df)
             enrollment_error_df = []
-            for _index, row in enrollment_df.iloc[1:].iterrows():
+            for _index, row in enrollment_df.iloc[0:].iterrows():
                 entry = row['Students Enrolled']
+                print(entry)
                 student_email = entry[entry.find("(")+1:entry.find(")")]
-                if not Student.objects.exists(user__email=student_email):
+                print(student_email)
+                if not Student.objects.filter(user__email=student_email).exists():
                     enrollment_error_df.append(row.to_dict())
                     enrollment_error_df[-1]['Error Message'] = (
                         "No student with that email exists. Please check the entry again."

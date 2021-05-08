@@ -297,7 +297,7 @@ class CreateCourse(graphene.Mutation):
                     course.total_tuition = course.hourly_tuition * total_hours
 
             owner = Admin.objects.get(user=info.context.user)
-            course.business = owner.business.id
+            course.business_id = owner.business.id
             course.save()
             course.refresh_from_db()
 
