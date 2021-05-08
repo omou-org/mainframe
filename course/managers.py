@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models import Q
 
+
 class CourseManager(models.Manager):
     def business(self, business_id):
         qs = self.get_queryset()

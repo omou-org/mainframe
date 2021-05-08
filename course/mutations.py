@@ -2,7 +2,7 @@ import arrow
 import calendar
 import decimal
 import pytz
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timedelta
 
 import graphene
 from graphene import Boolean, DateTime, Decimal, Field, ID, Int, List, String, Time
@@ -17,9 +17,8 @@ from django.db.models import Q
 from mainframe.permissions import IsEmployee
 from django_graphene_permissions import permissions_checker
 
+from account.models import Admin
 from account.mutations import DayOfWeekEnum
-from comms.models import Email
-from comms.templates import INTEREST_LIST_TEMPLATE
 from course.models import Course, CourseAvailability, CourseNote, CourseCategory, Enrollment, EnrollmentNote, Interest
 from course.schema import (
     CourseType,
@@ -44,6 +43,7 @@ class AcademicLevelEnum(graphene.Enum):
     MIDDLE_LVL = 'middle_lvl'
     HIGH_LVL = 'high_lvl'
     COLLEGE_LVL = 'college_lvl'
+
 
 class InviteStatusEnum(graphene.Enum):
     SENT = "sent"
@@ -96,7 +96,7 @@ def create_availabilities_and_sessions(course, availabilities):
                 if current_date > end_date:
                     end_not_reached = False
 
-                if start_date <= current_date and current_date <= end_date:
+                if start_date <= current_date <= end_date:
                     start_datetime = datetime.combine(
                         current_date.date(),
                         start_times[i]
@@ -296,6 +296,8 @@ class CreateCourse(graphene.Mutation):
                     # else use new/old hourly tuition
                     course.total_tuition = course.hourly_tuition * total_hours
 
+            owner = Admin.objects.get(user=info.context.user)
+            course.business_id = owner.business.id
             course.save()
             course.refresh_from_db()
 
@@ -352,6 +354,8 @@ class CreateCourse(graphene.Mutation):
             course.hourly_tuition = price_rule.hourly_tuition
             course.total_tuition = course.hourly_tuition * course.num_sessions
 
+        owner = Admin.objects.get(user=info.context.user)
+        course.business_id = owner.business.id
         course.save()
         LogEntry.objects.log_action(
             user_id=info.context.user.id,

@@ -645,8 +645,8 @@ class ResetPassword(graphene.Mutation):
     @staff_member_required
     def mutate(root, info, **validated_data):
         user_obj = User.objects.filter(
-            Q(id = validated_data.get('user_id', None)) |
-            Q(username = validated_data.get('username', None))
+            Q(id=validated_data.get('user_id', None)) |
+            Q(username=validated_data.get('username', None))
         )
 
         if user_obj.exists():

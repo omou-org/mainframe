@@ -47,6 +47,8 @@ clean-requirements:
 .PHONY: startdb
 startdb:
 	docker-compose -p $(PROJ) -f docker/docker-compose.yml up -d --no-recreate
+	echo "Waiting for postgres to accept connections..."
+	sleep 5
 	$(PYTHON) manage.py migrate
 
 .PHONY: cleandb
