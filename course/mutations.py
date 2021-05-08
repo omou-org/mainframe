@@ -2,7 +2,7 @@ import arrow
 import calendar
 import decimal
 import pytz
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timedelta
 
 import graphene
 from graphene import Boolean, DateTime, Decimal, Field, ID, Int, List, String, Time
@@ -17,9 +17,8 @@ from django.db.models import Q
 from mainframe.permissions import IsEmployee
 from django_graphene_permissions import permissions_checker
 
+from account.models import Admin
 from account.mutations import DayOfWeekEnum
-from comms.models import Email
-from comms.templates import INTEREST_LIST_TEMPLATE
 from course.models import Course, CourseAvailability, CourseNote, CourseCategory, Enrollment, EnrollmentNote, Interest
 from course.schema import (
     CourseType,
@@ -297,6 +296,8 @@ class CreateCourse(graphene.Mutation):
                     # else use new/old hourly tuition
                     course.total_tuition = course.hourly_tuition * total_hours
 
+            owner = Admin.objects.get(user=info.context.user)
+            course.business = owner.business.id
             course.save()
             course.refresh_from_db()
 
