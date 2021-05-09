@@ -17,7 +17,7 @@ jobs:
       - name: Format
         run: |
           pip install black
-          black --check .
+          black .
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4.1.2
         with:
