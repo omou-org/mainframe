@@ -57,7 +57,7 @@ def workbook_to_base64(wb):
     return base64_stream
 
 
-def create_accounts_template(show_errors=False):
+def create_account_templates(show_errors=False):
     wb = Workbook()
     wb.create_sheet("Parents")
     wb.create_sheet("Students")
@@ -467,7 +467,7 @@ class Query(object):
     @login_required
     @permissions_checker([IsOwner])
     def resolve_account_templates(self, info, **kwargs):
-        wb = create_accounts_template()
+        wb = create_account_templates()
         return workbook_to_base64(wb)
 
     @login_required

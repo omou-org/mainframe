@@ -41,7 +41,7 @@ from onboarding.models import Business, BusinessAvailability
 from onboarding.schema import (
     BusinessType,
     autosize_ws_columns,
-    create_accounts_template,
+    create_account_templates,
     create_course_templates,
     create_enrollment_templates,
     workbook_to_base64
@@ -450,7 +450,7 @@ class UploadAccountsMutation(graphene.Mutation):
         # construct error excel
         error_excel = ""
         if total_failure > 0:
-            wb = create_accounts_template(show_errors=True)
+            wb = create_account_templates(show_errors=True)
 
             parents_ws = wb.get_sheet_by_name("Parents")
             parents_column_order = [cell.value for cell in parents_ws[2]]
@@ -638,7 +638,7 @@ class UploadCoursesMutation(graphene.Mutation):
         # construct error excel
         error_excel = ""
         if total_failure > 0:
-            wb = create_course_templates(show_errors=True)
+            wb = create_course_templates(business_id, show_errors=True)
 
             categories_ws = wb.get_sheet_by_name("Step 1 - Subject Categories")
             categories_column_order = [cell.value for cell in categories_ws[2]]
