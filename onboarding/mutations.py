@@ -41,7 +41,7 @@ from onboarding.models import Business, BusinessAvailability
 from onboarding.schema import (
     BusinessType,
     autosize_ws_columns,
-    create_accounts_template,
+    create_account_templates,
     create_course_templates,
     create_enrollment_templates,
     workbook_to_base64
@@ -450,7 +450,7 @@ class UploadAccountsMutation(graphene.Mutation):
         # construct error excel
         error_excel = ""
         if total_failure > 0:
-            wb = create_accounts_template(show_errors=True)
+            wb = create_account_templates(show_errors=True)
 
             parents_ws = wb.get_sheet_by_name("Parents")
             parents_column_order = [cell.value for cell in parents_ws[2]]
@@ -567,14 +567,17 @@ class UploadCoursesMutation(graphene.Mutation):
 
         courses_df = courses_df.dropna(how='all')
         courses_df = courses_df.where(pd.notnull(courses_df), None) # cast np.Nan to None
-        courses_df["Instructor"] = courses_df["Instructor"].apply(extract_from_parenthesis)
 
         courses_error_df = []
         dropdown_subject_names = set(subjects_df['Subjects'])
         for _index, row in courses_df.iloc[1:].iterrows():
+            orig_instructor_field = row["Instructor"]            
+            row["Instructor"] = extract_from_parenthesis(row["Instructor"])
+
             required_fields_check = check_course_sheet_row(row, 'courses_minimum', business_id, dropdown_subject_names)
             if required_fields_check:
                 courses_error_df.append(row.to_dict())
+                courses_error_df[-1]["Instructor"] = orig_instructor_field
                 courses_error_df[-1]['Error Message'] = required_fields_check
                 continue
             try:
@@ -596,6 +599,7 @@ class UploadCoursesMutation(graphene.Mutation):
                 course.save()
             except Exception as e:
                 courses_error_df.append(row.to_dict())
+                courses_error_df[-1]["Instructor"] = orig_instructor_field
                 courses_error_df[-1]['Error Message'] = str(e)
                 continue
             
@@ -638,7 +642,7 @@ class UploadCoursesMutation(graphene.Mutation):
         # construct error excel
         error_excel = ""
         if total_failure > 0:
-            wb = create_course_templates(show_errors=True)
+            wb = create_course_templates(business_id, show_errors=True)
 
             categories_ws = wb.get_sheet_by_name("Step 1 - Subject Categories")
             categories_column_order = [cell.value for cell in categories_ws[2]]
@@ -659,164 +663,6 @@ class UploadCoursesMutation(graphene.Mutation):
         return UploadCoursesMutation(
             total_success=total-total_failure,
             total_failure=total_failure,
-            error_excel=error_excel
-        )
-
-
-class UploadEnrollmentsMutation(graphene.Mutation):
-    class Arguments:
-        enrollments = Upload(required=True)
-
-    total_success = graphene.Int()
-    total_failure = graphene.Int()
-    error_excel = graphene.String()
-
-    @staticmethod
-    @login_required
-    @permissions_checker([IsOwner])
-    def mutate(self, info, enrollments, **kwargs):
-        xls = pd.ExcelFile(enrollments.read())
-        error_excel = ""
-        wb = create_enrollment_templates(show_errors=True)
-        overall_total = 0
-        total_errors = 0
-
-        for course in Course.objects.all():
-            sheet_name = f"{course.title} - {course.id}"
-            # extract spreadsheet and use 8th row (7th 0-indexed) for header, skipping all previous rows
-            try:
-                enrollment_df = pd.read_excel(xls, sheet_name=sheet_name, skiprows=7, header=7)
-            except Exception:
-                # not uploading for this course
-                continue
-
-            enrollment_ws_missing_columns = {'Students Enrolled'} - set(enrollment_df.columns.values)
-            if len(enrollment_ws_missing_columns) > 0:
-                raise GraphQLError("Missing columns in enrollments worksheet: " + str(enrollment_ws_missing_columns))
-
-            # create enrollments
-            enrollment_df = enrollment_df.dropna(how='all')
-            enrollment_error_df = []
-            for _index, row in enrollment_df.iloc[1:].iterrows():
-                entry = row['Students Enrolled']
-                student_email = entry[entry.find("(")+1:entry.find(")")]
-                if not Student.objects.exists(user__email=student_email):
-                    enrollment_error_df.append(row.to_dict())
-                    enrollment_error_df[-1]['Error Message'] = (
-                        "No student with that email exists. Please check the entry again."
-                    )
-                    continue
-                try:
-                    with transaction.atomic():
-                        student = Student.objects.get(user__email=student_email)
-                        enrollment_object = Enrollment.objects.create(
-                            student=student,
-                            course=course,
-                            invite_status=Enrollment.SENT,
-                        )
-                except Exception as e:
-                    enrollment_error_df.append(row.to_dict())
-                    enrollment_error_df[-1]['Error Message'] = str(e)
-                    continue
-            total = enrollment_df.shape[0] - 1
-            errors = len(enrollment_error_df)
-            if errors > 0:
-                enrollments_ws = wb.get_sheet_by_name(sheet_name)
-                enrollments_column_order = [cell.value for cell in enrollments_ws[8]]
-                for index, row_error in enumerate(enrollment_error_df):
-                    for col in range(len(enrollments_column_order)):
-                        enrollments_ws.cell(row=9 + index, column=1 + col).value = (
-                            row_error[enrollments_column_order[col]]
-                        )
-                autosize_ws_columns(enrollments_ws)
-            overall_total += total
-            total_errors += errors
-
-        if total_errors > 0:
-            error_excel = workbook_to_base64(wb)
-
-        return UploadAccountsMutation(
-            total_success=overall_total - total_errors,
-            total_failure=total_errors,
-            error_excel=error_excel
-        )
-
-
-class UploadEnrollmentsMutation(graphene.Mutation):
-    class Arguments:
-        enrollments = Upload(required=True)
-
-    total_success = graphene.Int()
-    total_failure = graphene.Int()
-    error_excel = graphene.String()
-
-    @staticmethod
-    @login_required
-    @permissions_checker([IsOwner])
-    def mutate(self, info, enrollments, **kwargs):
-        xls = pd.ExcelFile(enrollments.read())
-        error_excel = ""
-        wb = create_enrollment_templates(show_errors=True)
-        overall_total = 0
-        total_errors = 0
-
-        for course in Course.objects.all():
-            sheet_name = f"{course.title} - {course.id}"
-            # extract spreadsheet and use 8th row (7th 0-indexed) for header, skipping all previous rows
-            try:
-                enrollment_df = pd.read_excel(xls, sheet_name=sheet_name, skiprows=7, header=7)
-            except Exception:
-                # not uploading for this course
-                continue
-
-            enrollment_ws_missing_columns = {'Students Enrolled'} - set(enrollment_df.columns.values)
-            if len(enrollment_ws_missing_columns) > 0:
-                raise GraphQLError("Missing columns in enrollments worksheet: " + str(enrollment_ws_missing_columns))
-
-            # create enrollments
-            enrollment_df = enrollment_df.dropna(how='all')
-            enrollment_error_df = []
-            for _index, row in enrollment_df.iloc[1:].iterrows():
-                entry = row['Students Enrolled']
-                student_email = entry[entry.find("(")+1:entry.find(")")]
-                if not Student.objects.exists(user__email=student_email):
-                    enrollment_error_df.append(row.to_dict())
-                    enrollment_error_df[-1]['Error Message'] = (
-                        "No student with that email exists. Please check the entry again."
-                    )
-                    continue
-                try:
-                    with transaction.atomic():
-                        student = Student.objects.get(user__email=student_email)
-                        enrollment_object = Enrollment.objects.create(
-                            student=student,
-                            course=course,
-                            invite_status=Enrollment.SENT,
-                        )
-                except Exception as e:
-                    enrollment_error_df.append(row.to_dict())
-                    enrollment_error_df[-1]['Error Message'] = str(e)
-                    continue
-            total = enrollment_df.shape[0] - 1
-            errors = len(enrollment_error_df)
-            if errors > 0:
-                enrollments_ws = wb.get_sheet_by_name(sheet_name)
-                enrollments_column_order = [cell.value for cell in enrollments_ws[8]]
-                for index, row_error in enumerate(enrollment_error_df):
-                    for col in range(len(enrollments_column_order)):
-                        enrollments_ws.cell(row=9 + index, column=1 + col).value = (
-                            row_error[enrollments_column_order[col]]
-                        )
-                autosize_ws_columns(enrollments_ws)
-            overall_total += total
-            total_errors += errors
-
-        if total_errors > 0:
-            error_excel = workbook_to_base64(wb)
-
-        return UploadAccountsMutation(
-            total_success=overall_total - total_errors,
-            total_failure=total_errors,
             error_excel=error_excel
         )
 
@@ -865,7 +711,6 @@ class UploadEnrollmentsMutation(graphene.Mutation):
                     enrollment_error_df[-1]['Error Message'] = (
                         "No student with that email exists. Please check the entry again."
                     )
-
                     continue
                 try:
                     with transaction.atomic():
@@ -875,7 +720,6 @@ class UploadEnrollmentsMutation(graphene.Mutation):
                             course=course,
                             invite_status=Enrollment.SENT,
                         )
-
                 except Exception as e:
                     enrollment_error_df.append(row.to_dict())
                     enrollment_error_df[-1]['Error Message'] = str(e)
@@ -898,7 +742,7 @@ class UploadEnrollmentsMutation(graphene.Mutation):
         if total_errors > 0:
             error_excel = workbook_to_base64(wb)
 
-        return UploadAccountsMutation(
+        return UploadEnrollmentsMutation(
             total_success=overall_total - total_errors,
             total_failure=total_errors,
             error_excel=error_excel
