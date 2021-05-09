@@ -672,6 +672,10 @@ class UploadCoursesMutation(graphene.Mutation):
                 subjects_error_df.append(row.to_dict())
                 subjects_error_df[-1]["Error Message"] = required_fields_check
                 continue
+
+            # include valid subjects in error file for courses that rely on them
+            subjects_error_df.append(row.to_dict())
+            subjects_error_df[-1]["Error Message"] = ""
             try:
                 # ignore subjects that already exist
                 if CourseCategory.objects.filter(name=row.get("Subjects")).exists():
@@ -682,7 +686,6 @@ class UploadCoursesMutation(graphene.Mutation):
                 )
                 course_category.save()
             except Exception as e:
-                subjects_error_df.append(row.to_dict())
                 subjects_error_df[-1]["Error Message"] = str(e)
                 continue
 
@@ -792,7 +795,9 @@ class UploadCoursesMutation(graphene.Mutation):
             )
 
         total = subjects_df.shape[0] - 1 + courses_df.shape[0] - 1
-        total_failure = len(subjects_error_df) + len(courses_error_df)
+        total_failure = sum(
+            1 for row in subjects_error_df if row["Error Message"]
+        ) + len(courses_error_df)
 
         # construct error excel
         error_excel = ""
