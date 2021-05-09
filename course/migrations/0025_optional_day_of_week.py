@@ -6,13 +6,26 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('course', '0024_add_day_of_week_options'),
+        ("course", "0024_add_day_of_week_options"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='course',
-            name='day_of_week',
-            field=models.CharField(blank=True, choices=[('monday', 'Monday'), ('tuesday', 'Tuesday'), ('wednesday', 'Wednesday'), ('thursday', 'Thursday'), ('friday', 'Friday'), ('saturday', 'Saturday'), ('sunday', 'Sunday')], max_length=9, null=True),
+            model_name="course",
+            name="day_of_week",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("monday", "Monday"),
+                    ("tuesday", "Tuesday"),
+                    ("wednesday", "Wednesday"),
+                    ("thursday", "Thursday"),
+                    ("friday", "Friday"),
+                    ("saturday", "Saturday"),
+                    ("sunday", "Sunday"),
+                ],
+                max_length=9,
+                null=True,
+            ),
         ),
     ]

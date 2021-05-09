@@ -7,17 +7,22 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('account', '0028_auto_20200103_2235'),
+        ("account", "0028_auto_20200103_2235"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='instructoravailability',
-            name='id',
+            model_name="instructoravailability",
+            name="id",
         ),
         migrations.AlterField(
-            model_name='instructoravailability',
-            name='instructor',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.PROTECT, primary_key=True, serialize=False, to='account.Instructor'),
+            model_name="instructoravailability",
+            name="instructor",
+            field=models.OneToOneField(
+                on_delete=django.db.models.deletion.PROTECT,
+                primary_key=True,
+                serialize=False,
+                to="account.Instructor",
+            ),
         ),
     ]

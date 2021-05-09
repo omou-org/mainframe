@@ -18,30 +18,26 @@ class Invoice(models.Model):
     account_balance = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
     discount_total = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
 
-    PAID = 'paid'
-    UNPAID = 'unpaid'
-    CANCELED = 'canceled'
-    PAYMENT_CHOICES = (
-        (PAID, 'Paid'),
-        (UNPAID, 'Unpaid'),
-        (CANCELED, 'Canceled')
-    )
+    PAID = "paid"
+    UNPAID = "unpaid"
+    CANCELED = "canceled"
+    PAYMENT_CHOICES = ((PAID, "Paid"), (UNPAID, "Unpaid"), (CANCELED, "Canceled"))
     payment_status = models.CharField(
         max_length=20,
         choices=PAYMENT_CHOICES,
     )
 
-    CASH = 'cash'
-    CREDIT_CARD = 'credit_card'
-    COURSE_CREDIT = 'course_credit'
-    CHECK = 'check'
-    INTL_CREDIT_CARD = 'intl_credit_card'
+    CASH = "cash"
+    CREDIT_CARD = "credit_card"
+    COURSE_CREDIT = "course_credit"
+    CHECK = "check"
+    INTL_CREDIT_CARD = "intl_credit_card"
     METHOD_CHOICES = (
-        (CASH, 'Cash'),
-        (COURSE_CREDIT, 'Course Credit'),
-        (CREDIT_CARD, 'Credit Card'),
-        (CHECK, 'Check'),
-        (INTL_CREDIT_CARD, 'International Credit Card'),
+        (CASH, "Cash"),
+        (COURSE_CREDIT, "Course Credit"),
+        (CREDIT_CARD, "Credit Card"),
+        (CHECK, "Check"),
+        (INTL_CREDIT_CARD, "International Credit Card"),
     )
     method = models.CharField(
         max_length=20,
@@ -49,8 +45,8 @@ class Invoice(models.Model):
     )
     enrollments = models.ManyToManyField(
         Enrollment,
-        through='Registration',
-        related_name='payment_list',
+        through="Registration",
+        related_name="payment_list",
     )
 
     # Timestamps

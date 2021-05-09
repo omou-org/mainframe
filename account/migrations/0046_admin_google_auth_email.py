@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('account', '0045_admin_google_auth_enabled'),
+        ("account", "0045_admin_google_auth_enabled"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='admin',
-            name='google_auth_email',
+            model_name="admin",
+            name="google_auth_email",
             field=models.CharField(max_length=100, null=True),
         ),
     ]

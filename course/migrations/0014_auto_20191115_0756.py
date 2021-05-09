@@ -6,28 +6,30 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('course', '0013_enrollment_payment'),
+        ("course", "0013_enrollment_payment"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='course',
-            name='end_date',
+            model_name="course",
+            name="end_date",
             field=models.DateField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='course',
-            name='max_capacity',
+            model_name="course",
+            name="max_capacity",
             field=models.IntegerField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='course',
-            name='start_date',
+            model_name="course",
+            name="start_date",
             field=models.DateField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='course',
-            name='tuition',
-            field=models.DecimalField(blank=True, decimal_places=2, max_digits=6, null=True),
+            model_name="course",
+            name="tuition",
+            field=models.DecimalField(
+                blank=True, decimal_places=2, max_digits=6, null=True
+            ),
         ),
     ]

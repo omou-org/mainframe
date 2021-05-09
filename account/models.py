@@ -4,39 +4,40 @@ from django.db import models
 from django_localflavor_us.us_states import US_STATES
 from django.conf import settings
 
-from account.managers import StudentManager, ParentManager, InstructorManager, AdminManager
+from account.managers import (
+    StudentManager,
+    ParentManager,
+    InstructorManager,
+    AdminManager,
+)
 from onboarding.models import Business
 
 
 class UserInfo(models.Model):
     # Account type
-    STUDENT_TYPE = 'student'
-    PARENT_TYPE = 'parent'
-    INSTRUCTOR_TYPE = 'instructor'
-    ADMIN_TYPE = 'admin'
+    STUDENT_TYPE = "student"
+    PARENT_TYPE = "parent"
+    INSTRUCTOR_TYPE = "instructor"
+    ADMIN_TYPE = "admin"
     ACCOUNT_TYPE_CHOICES = (
-        (STUDENT_TYPE, 'Student'),
-        (PARENT_TYPE, 'Parent'),
-        (INSTRUCTOR_TYPE, 'Instructor'),
-        (ADMIN_TYPE, 'Admin'),
+        (STUDENT_TYPE, "Student"),
+        (PARENT_TYPE, "Parent"),
+        (INSTRUCTOR_TYPE, "Instructor"),
+        (ADMIN_TYPE, "Admin"),
     )
 
     # Gender
-    MALE_GENDER = 'male'
-    FEMALE_GENDER = 'female'
-    UNSPECIFIED_GENDER = 'unspecified'
+    MALE_GENDER = "male"
+    FEMALE_GENDER = "female"
+    UNSPECIFIED_GENDER = "unspecified"
     GENDER_CHOICES = (
-        (MALE_GENDER, 'Male'),
-        (FEMALE_GENDER, 'Female'),
-        (UNSPECIFIED_GENDER, 'Unspecified'),
+        (MALE_GENDER, "Male"),
+        (FEMALE_GENDER, "Female"),
+        (UNSPECIFIED_GENDER, "Unspecified"),
     )
     STATE_CHOICES = tuple(sorted(US_STATES, key=lambda obj: obj[1]))
 
-    business = models.ForeignKey(
-        Business,
-        on_delete=models.PROTECT,
-        null=True
-    )
+    business = models.ForeignKey(Business, on_delete=models.PROTECT, null=True)
     user = models.OneToOneField(
         get_user_model(),
         on_delete=models.PROTECT,
@@ -55,7 +56,9 @@ class UserInfo(models.Model):
     address = models.CharField(max_length=64, blank=True, null=True)
     city = models.CharField(max_length=32, blank=True, null=True)
     phone_number = models.CharField(max_length=50, blank=True, null=True)
-    state = models.CharField(max_length=16, choices=STATE_CHOICES, blank=True, null=True)
+    state = models.CharField(
+        max_length=16, choices=STATE_CHOICES, blank=True, null=True
+    )
     zipcode = models.CharField(max_length=10, blank=True, null=True)
 
     # Timestamps
@@ -63,7 +66,7 @@ class UserInfo(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.user.first_name + ' ' + self.user.last_name
+        return self.user.first_name + " " + self.user.last_name
 
     class Meta:
         abstract = True
@@ -102,12 +105,7 @@ class Student(UserInfo):
         null=True,
         blank=True,
     )
-    school = models.ForeignKey(
-        School,
-        on_delete=models.PROTECT,
-        null=True,
-        blank=True
-    )
+    school = models.ForeignKey(School, on_delete=models.PROTECT, null=True, blank=True)
 
     primary_parent = models.ForeignKey(
         "Parent",
@@ -133,17 +131,14 @@ class Student(UserInfo):
 
 
 class StudentSchoolInfo(models.Model):
-    student = models.ForeignKey(
-        Student,
-        on_delete=models.PROTECT
-    )
+    student = models.ForeignKey(Student, on_delete=models.PROTECT)
     name = models.CharField(max_length=512)
     textbook = models.CharField(max_length=512)
     teacher = models.CharField(max_length=100)
     current_grade = models.CharField(max_length=5)
     current_topic = models.CharField(max_length=64)
-    student_strengths=models.CharField(max_length=1024)
-    student_weaknesses=models.CharField(max_length=1024)
+    student_strengths = models.CharField(max_length=1024)
+    student_weaknesses = models.CharField(max_length=1024)
 
 
 class Parent(UserInfo):
@@ -170,14 +165,22 @@ class Parent(UserInfo):
 
     @property
     def student_id_list(self):
-        return [student.user.id for student in self.student_primary_parent.all().union(
-            self.student_secondary_parent.all())]
-    
+        return [
+            student.user.id
+            for student in self.student_primary_parent.all().union(
+                self.student_secondary_parent.all()
+            )
+        ]
+
     @property
     def student_list(self):
-        student_ids = [student.user.id for student in self.student_primary_parent.all().union(
-            self.student_secondary_parent.all())]
-        return Student.objects.filter(user_id__in = student_ids)
+        student_ids = [
+            student.user.id
+            for student in self.student_primary_parent.all().union(
+                self.student_secondary_parent.all()
+            )
+        ]
+        return Student.objects.filter(user_id__in=student_ids)
 
 
 class Instructor(UserInfo):
@@ -186,7 +189,7 @@ class Instructor(UserInfo):
     biography = models.CharField(max_length=2000, null=True, blank=True)
     experience = models.CharField(max_length=2000, null=True, blank=True)
     language = models.CharField(max_length=2000, null=True, blank=True)
-    subjects = models.ManyToManyField('course.CourseCategory', blank=True)
+    subjects = models.ManyToManyField("course.CourseCategory", blank=True)
 
 
 class InstructorAvailability(models.Model):
@@ -196,13 +199,13 @@ class InstructorAvailability(models.Model):
     )
 
     DAYS_OF_WEEK = (
-        ('monday', 'Monday'),
-        ('tuesday', 'Tuesday'),
-        ('wednesday', 'Wednesday'),
-        ('thursday', 'Thursday'),
-        ('friday', 'Friday'),
-        ('saturday', 'Saturday'),
-        ('sunday', 'Sunday'),
+        ("monday", "Monday"),
+        ("tuesday", "Tuesday"),
+        ("wednesday", "Wednesday"),
+        ("thursday", "Thursday"),
+        ("friday", "Friday"),
+        ("saturday", "Saturday"),
+        ("sunday", "Sunday"),
     )
 
     day_of_week = models.CharField(max_length=9, choices=DAYS_OF_WEEK)
@@ -238,10 +241,7 @@ class Admin(UserInfo):
         (RECEPTIONIST_TYPE, "Receptionist"),
         (ASSISTANT_TYPE, "Assistant"),
     )
-    admin_type = models.CharField(
-        max_length=20,
-        choices=TYPE_CHOICES
-    )
+    admin_type = models.CharField(max_length=20, choices=TYPE_CHOICES)
     google_auth_enabled = models.BooleanField(default=False)
     google_auth_email = models.CharField(max_length=100, null=True)
 

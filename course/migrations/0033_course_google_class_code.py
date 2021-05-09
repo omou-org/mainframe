@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('course', '0032_course_course_link_user'),
+        ("course", "0032_course_course_link_user"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='course',
-            name='google_class_code',
+            model_name="course",
+            name="google_class_code",
             field=models.CharField(blank=True, max_length=7, null=True),
         ),
     ]

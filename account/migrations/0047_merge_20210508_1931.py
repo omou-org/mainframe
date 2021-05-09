@@ -6,9 +6,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('account', '0046_auto_20210501_2226'),
-        ('account', '0046_admin_google_auth_email'),
+        ("account", "0046_auto_20210501_2226"),
+        ("account", "0046_admin_google_auth_email"),
     ]
 
-    operations = [
-    ]
+    operations = []

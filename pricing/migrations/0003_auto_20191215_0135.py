@@ -6,25 +6,49 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('pricing', '0002_daterangediscount_discount_multicoursediscount_paymentmethoddiscount'),
+        (
+            "pricing",
+            "0002_daterangediscount_discount_multicoursediscount_paymentmethoddiscount",
+        ),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Fee',
+            name="Fee",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(blank=True, max_length=1000, null=True)),
-                ('description', models.CharField(blank=True, max_length=1000, null=True)),
-                ('amount', models.DecimalField(decimal_places=2, default=0.0, max_digits=8)),
-                ('amount_type', models.CharField(choices=[('percent', 'percent'), ('fixed', 'fixed')], default='fixed', max_length=10)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(blank=True, max_length=1000, null=True)),
+                (
+                    "description",
+                    models.CharField(blank=True, max_length=1000, null=True),
+                ),
+                (
+                    "amount",
+                    models.DecimalField(decimal_places=2, default=0.0, max_digits=8),
+                ),
+                (
+                    "amount_type",
+                    models.CharField(
+                        choices=[("percent", "percent"), ("fixed", "fixed")],
+                        default="fixed",
+                        max_length=10,
+                    ),
+                ),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
         ),
         migrations.AlterField(
-            model_name='pricerule',
-            name='hourly_tuition',
+            model_name="pricerule",
+            name="hourly_tuition",
             field=models.DecimalField(decimal_places=2, default=0.0, max_digits=8),
         ),
     ]

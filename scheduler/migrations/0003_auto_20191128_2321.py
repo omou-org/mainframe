@@ -6,18 +6,18 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('scheduler', '0002_session_is_confirmed'),
+        ("scheduler", "0002_session_is_confirmed"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='session',
-            old_name='end_time',
-            new_name='end_datetime',
+            model_name="session",
+            old_name="end_time",
+            new_name="end_datetime",
         ),
         migrations.RenameField(
-            model_name='session',
-            old_name='start_time',
-            new_name='start_datetime',
+            model_name="session",
+            old_name="start_time",
+            new_name="start_datetime",
         ),
     ]

@@ -18,26 +18,30 @@ class StudentManager(AccountManager):
             qs = qs_initial
 
         if query is not None:
-            or_lookup = (Q(user__first_name__icontains=query) |
-                Q(user__last_name__icontains=query) |
-                Q(user__email__iexact=query) |
-                Q(user_uuid__iexact=query) |
-                Q(address__icontains=query) |
-                Q(city__icontains=query) |
-                Q(phone_number__icontains=query) |
-                Q(state__icontains=query) |
-                Q(zipcode__icontains=query) |
-                Q(school__name__icontains=query) |
-                Q(primary_parent__user__first_name__icontains=query) |
-                Q(primary_parent__user__last_name__icontains=query) |
-                Q(secondary_parent__user__first_name__icontains=query) |
-                Q(secondary_parent__user__last_name__icontains=query))
+            or_lookup = (
+                Q(user__first_name__icontains=query)
+                | Q(user__last_name__icontains=query)
+                | Q(user__email__iexact=query)
+                | Q(user_uuid__iexact=query)
+                | Q(address__icontains=query)
+                | Q(city__icontains=query)
+                | Q(phone_number__icontains=query)
+                | Q(state__icontains=query)
+                | Q(zipcode__icontains=query)
+                | Q(school__name__icontains=query)
+                | Q(primary_parent__user__first_name__icontains=query)
+                | Q(primary_parent__user__last_name__icontains=query)
+                | Q(secondary_parent__user__first_name__icontains=query)
+                | Q(secondary_parent__user__last_name__icontains=query)
+            )
             try:
                 query = int(query)
                 or_lookup |= Q(grade=query)
             except ValueError:
                 pass
-            qs = qs.filter(or_lookup).distinct() # distinct() is often necessary with Q lookups
+            qs = qs.filter(
+                or_lookup
+            ).distinct()  # distinct() is often necessary with Q lookups
         return qs
 
 
@@ -49,14 +53,16 @@ class ParentManager(AccountManager):
             qs = qs_initial
 
         if query is not None:
-            or_lookup = (Q(user__first_name__icontains=query) |
-                Q(user__last_name__icontains=query) |
-                Q(user__email__icontains=query) |
-                Q(address__icontains=query) |
-                Q(city__icontains=query) |
-                Q(phone_number__icontains=query) |
-                Q(state__icontains=query) |
-                Q(zipcode__icontains=query))
+            or_lookup = (
+                Q(user__first_name__icontains=query)
+                | Q(user__last_name__icontains=query)
+                | Q(user__email__icontains=query)
+                | Q(address__icontains=query)
+                | Q(city__icontains=query)
+                | Q(phone_number__icontains=query)
+                | Q(state__icontains=query)
+                | Q(zipcode__icontains=query)
+            )
             qs = qs.filter(or_lookup).distinct()
         return qs
 
@@ -69,14 +75,16 @@ class InstructorManager(AccountManager):
             qs = qs_initial
 
         if query is not None:
-            or_lookup = (Q(user__first_name__icontains=query) |
-                Q(user__last_name__icontains=query) |
-                Q(user__email__icontains=query) |
-                Q(address__icontains=query) |
-                Q(city__icontains=query) |
-                Q(phone_number__icontains=query) |
-                Q(state__icontains=query) |
-                Q(zipcode__icontains=query))
+            or_lookup = (
+                Q(user__first_name__icontains=query)
+                | Q(user__last_name__icontains=query)
+                | Q(user__email__icontains=query)
+                | Q(address__icontains=query)
+                | Q(city__icontains=query)
+                | Q(phone_number__icontains=query)
+                | Q(state__icontains=query)
+                | Q(zipcode__icontains=query)
+            )
             qs = qs.filter(or_lookup).distinct()
         return qs
 
@@ -89,14 +97,16 @@ class AdminManager(AccountManager):
             qs = qs_initial
 
         if query is not None:
-            or_lookup = (Q(user__first_name__icontains=query) |
-                Q(user__last_name__icontains=query) |
-                Q(user__email__icontains=query) |
-                Q(address__icontains=query) |
-                Q(city__icontains=query) |
-                Q(phone_number__icontains=query) |
-                Q(state__icontains=query) |
-                Q(zipcode__icontains=query) |
-                Q(admin_type__icontains=query))
+            or_lookup = (
+                Q(user__first_name__icontains=query)
+                | Q(user__last_name__icontains=query)
+                | Q(user__email__icontains=query)
+                | Q(address__icontains=query)
+                | Q(city__icontains=query)
+                | Q(phone_number__icontains=query)
+                | Q(state__icontains=query)
+                | Q(zipcode__icontains=query)
+                | Q(admin_type__icontains=query)
+            )
             qs = qs.filter(or_lookup).distinct()
         return qs

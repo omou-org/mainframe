@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('comms', '0008_announcement'),
+        ("comms", "0008_announcement"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='parentnotificationsettings',
-            name='missed_session_reminder_email',
+            model_name="parentnotificationsettings",
+            name="missed_session_reminder_email",
             field=models.BooleanField(default=True),
         ),
         migrations.AddField(
-            model_name='parentnotificationsettings',
-            name='missed_session_reminder_sms',
+            model_name="parentnotificationsettings",
+            name="missed_session_reminder_sms",
             field=models.BooleanField(default=False),
         ),
     ]

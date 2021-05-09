@@ -6,20 +6,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('pricing', '0011_auto_20200102_1921'),
+        ("pricing", "0011_auto_20200102_1921"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='discount',
-            name='description',
-            field=models.CharField(blank=True, default='', max_length=1000),
+            model_name="discount",
+            name="description",
+            field=models.CharField(blank=True, default="", max_length=1000),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='discount',
-            name='name',
-            field=models.CharField(blank=True, default='', max_length=1000),
+            model_name="discount",
+            name="name",
+            field=models.CharField(blank=True, default="", max_length=1000),
             preserve_default=False,
         ),
     ]

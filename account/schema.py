@@ -57,8 +57,8 @@ class StudentSchoolInfoType(DjangoObjectType):
 
 
 class ParentType(DjangoObjectType):
-    student_id_list = List(ID, source='student_id_list')
-    student_list = List(StudentType, source='student_list')
+    student_id_list = List(ID, source="student_id_list")
+    student_list = List(StudentType, source="student_list")
 
     class Meta:
         model = Parent
@@ -72,12 +72,13 @@ class InstructorType(DjangoObjectType):
 class InstructorAvailabilityType(DjangoObjectType):
     start_datetime = DateTime()
     end_datetime = DateTime()
+
     class Meta:
         model = InstructorAvailability
-    
+
     def resolve_start_datetime(self, info):
         return datetime.combine(date.today(), self.start_time)
-    
+
     def resolve_end_datetime(self, info):
         return datetime.combine(date.today(), self.end_time)
 
@@ -105,10 +106,14 @@ class Query(object):
     instructor = Field(InstructorType, user_id=ID(), email=String())
     admin = Field(AdminType, user_id=ID(), email=String())
     user_info = Field(UserInfoType, user_id=ID(), user_name=String())
-    user_type = Field(UserTypeAuth, user_id=ID(), user_name=String(), admin_types=Boolean())
+    user_type = Field(
+        UserTypeAuth, user_id=ID(), user_name=String(), admin_types=Boolean()
+    )
     email_from_token = Field(String, token=String())
     verify_google_oauth = Field(
-        GoogleVerifyTokenType, login_email=String(required=True), oauth_email=String(required=True)
+        GoogleVerifyTokenType,
+        login_email=String(required=True),
+        oauth_email=String(required=True),
     )
 
     account_notes = List(AccountNoteType, user_id=ID(required=True))
@@ -119,18 +124,14 @@ class Query(object):
     admins = List(AdminType, admin_type=String())
     user_infos = List(UserInfoType, user_ids=List(ID))
 
-    instructor_ooo = List(
-        InstructorOutOfOfficeType,
-        instructor_id=ID(required=True)
-    )
+    instructor_ooo = List(InstructorOutOfOfficeType, instructor_id=ID(required=True))
     instructor_availability = List(
-        InstructorAvailabilityType,
-        instructor_id=ID(required=True)
+        InstructorAvailabilityType, instructor_id=ID(required=True)
     )
 
     @login_required
     def resolve_account_note(self, info, **kwargs):
-        note_id = kwargs.get('note_id')
+        note_id = kwargs.get("note_id")
 
         if note_id:
             return AccountNote.objects.get(id=note_id)
@@ -139,8 +140,8 @@ class Query(object):
 
     @login_required
     def resolve_student(self, info, **kwargs):
-        user_id = kwargs.get('user_id')
-        email = kwargs.get('email')
+        user_id = kwargs.get("user_id")
+        email = kwargs.get("email")
 
         if user_id:
             return Student.objects.get(user=user_id)
@@ -152,8 +153,8 @@ class Query(object):
 
     @login_required
     def resolve_school(self, info, **kwargs):
-        school_id = kwargs.get('school_id')
-        name = kwargs.get('name')
+        school_id = kwargs.get("school_id")
+        name = kwargs.get("name")
 
         if school_id:
             return School.objects.get(id=school_id)
@@ -165,8 +166,8 @@ class Query(object):
 
     @login_required
     def resolve_parent(self, info, **kwargs):
-        user_id = kwargs.get('user_id')
-        email = kwargs.get('email')
+        user_id = kwargs.get("user_id")
+        email = kwargs.get("email")
 
         if user_id:
             return Parent.objects.get(user=user_id)
@@ -178,8 +179,8 @@ class Query(object):
 
     @login_required
     def resolve_instructor(self, info, **kwargs):
-        user_id = kwargs.get('user_id')
-        email = kwargs.get('email')
+        user_id = kwargs.get("user_id")
+        email = kwargs.get("email")
 
         if user_id:
             return Instructor.objects.get(user=user_id)
@@ -191,8 +192,8 @@ class Query(object):
 
     @login_required
     def resolve_admin(self, info, **kwargs):
-        user_id = kwargs.get('user_id')
-        email = kwargs.get('email')
+        user_id = kwargs.get("user_id")
+        email = kwargs.get("email")
 
         if user_id:
             return Admin.objects.get(user=user_id)
@@ -203,9 +204,9 @@ class Query(object):
         return None
 
     def resolve_user_type(self, info, **kwargs):
-        user_id = kwargs.get('user_id')
-        user_name = kwargs.get('user_name')
-        admin_types = kwargs.get('admin_types')
+        user_id = kwargs.get("user_id")
+        user_name = kwargs.get("user_name")
+        admin_types = kwargs.get("admin_types")
 
         if user_name:
             if Student.objects.filter(user__email=user_name).exists():
@@ -218,8 +219,10 @@ class Query(object):
                 admin = Admin.objects.get(user__email=user_name)
                 if admin_types:
                     return Admin.objects.get(user__email=user_name).admin_type.upper()
-                return UserTypeAuth(user_type="ADMIN", google_auth_enabled=admin.google_auth_enabled)
-        
+                return UserTypeAuth(
+                    user_type="ADMIN", google_auth_enabled=admin.google_auth_enabled
+                )
+
         if user_id:
             if Student.objects.filter(user=user_id).exists():
                 return UserTypeAuth(user_type="STUDENT", google_auth_enabled=False)
@@ -230,15 +233,20 @@ class Query(object):
             if Admin.objects.filter(user=user_id).exists():
                 admin = Admin.objects.get(user__email=user_name)
                 if admin_types:
-                    return UserTypeAuth(user_type=admin.admin_type.upper(), google_auth_enabled=admin.google_auth_enabled)
-                return UserTypeAuth(user_type="ADMIN", google_auth_enabled=admin.google_auth_enabled)
+                    return UserTypeAuth(
+                        user_type=admin.admin_type.upper(),
+                        google_auth_enabled=admin.google_auth_enabled,
+                    )
+                return UserTypeAuth(
+                    user_type="ADMIN", google_auth_enabled=admin.google_auth_enabled
+                )
 
         return None
 
     @login_required
     def resolve_user_info(self, info, **kwargs):
-        user_id = kwargs.get('user_id')
-        user_name = kwargs.get('user_name')
+        user_id = kwargs.get("user_id")
+        user_name = kwargs.get("user_name")
 
         if user_name:
             if Student.objects.filter(user__email=user_name).exists():
@@ -264,12 +272,12 @@ class Query(object):
 
     @login_required
     def resolve_account_notes(self, info, **kwargs):
-        user_id = kwargs.get('user_id')
+        user_id = kwargs.get("user_id")
 
         return AccountNote.objects.filter(user=user_id)
 
     def resolve_students(self, info, **kwargs):
-        grade = kwargs.get('grade')
+        grade = kwargs.get("grade")
 
         if grade:
             return Student.objects.filter(grade=grade)
@@ -277,7 +285,7 @@ class Query(object):
 
     @login_required
     def resolve_schools(self, info, **kwargs):
-        district = kwargs.get('district')
+        district = kwargs.get("district")
         queryset = School.objects
 
         if district:
@@ -287,7 +295,7 @@ class Query(object):
 
     @login_required
     def resolve_admins(self, info, **kwargs):
-        admin_type = kwargs.get('admin_type')
+        admin_type = kwargs.get("admin_type")
 
         if admin_type:
             return Admin.objects.filter(admin_type=admin_type)
@@ -303,13 +311,13 @@ class Query(object):
 
     @login_required
     def resolve_instructor_ooo(self, info, **kwargs):
-        instructor_id = kwargs.get('instructor_id')
+        instructor_id = kwargs.get("instructor_id")
 
         return InstructorOutOfOffice.objects.filter(instructor=instructor_id)
 
     @login_required
     def resolve_instructor_availability(self, info, **kwargs):
-        instructor_id = kwargs.get('instructor_id')
+        instructor_id = kwargs.get("instructor_id")
         return InstructorAvailability.objects.filter(instructor=instructor_id)
 
     def resolve_user_infos(self, info, user_ids):
@@ -328,17 +336,21 @@ class Query(object):
         return user_list
 
     def resolve_email_from_token(self, info, token):
-        return jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])["email"]
+        return jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])["email"]
 
     def resolve_verify_google_oauth(self, info, login_email, oauth_email):
         admin = Admin.objects.get(user__email=login_email)
         if admin.google_auth_email == oauth_email:
             encoded_jwt = jwt.encode(
-                {"username": login_email,
-                 "origIat": int(datetime.utcnow().timestamp()),
-                 "exp": int((datetime.utcnow() + timedelta(minutes=5)).timestamp())},
+                {
+                    "username": login_email,
+                    "origIat": int(datetime.utcnow().timestamp()),
+                    "exp": int((datetime.utcnow() + timedelta(minutes=5)).timestamp()),
+                },
                 settings.SECRET_KEY,
-                algorithm="HS256"
+                algorithm="HS256",
             )
-            return GoogleVerifyTokenType(token=encoded_jwt.decode("utf-8"), verified=True)
+            return GoogleVerifyTokenType(
+                token=encoded_jwt.decode("utf-8"), verified=True
+            )
         return GoogleVerifyTokenType(token="", verified=False)

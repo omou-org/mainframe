@@ -7,20 +7,52 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('course', '0030_courseavailability_active'),
-        ('scheduler', '0009_session_availability'),
+        ("course", "0030_courseavailability_active"),
+        ("scheduler", "0009_session_availability"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Attendance',
+            name="Attendance",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('status', models.CharField(choices=[('unset', 'Unset'), ('present', 'Present'), ('tardy', 'Tardy'), ('absent', 'Absent')], default='unset', max_length=7)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('enrollment', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='course.Enrollment')),
-                ('session', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='scheduler.Session')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("unset", "Unset"),
+                            ("present", "Present"),
+                            ("tardy", "Tardy"),
+                            ("absent", "Absent"),
+                        ],
+                        default="unset",
+                        max_length=7,
+                    ),
+                ),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "enrollment",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="course.Enrollment",
+                    ),
+                ),
+                (
+                    "session",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="scheduler.Session",
+                    ),
+                ),
             ],
         ),
     ]

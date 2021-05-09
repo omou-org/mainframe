@@ -7,24 +7,42 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('account', '0043_auto_20201003_1659'),
-        ('course', '0030_courseavailability_active'),
+        ("account", "0043_auto_20201003_1659"),
+        ("course", "0030_courseavailability_active"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='course',
-            name='enrollment_deadline',
+            model_name="course",
+            name="enrollment_deadline",
             field=models.DateField(blank=True, null=True),
         ),
         migrations.CreateModel(
-            name='Interest',
+            name="Interest",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('course', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='course.Course')),
-                ('parent', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='account.Parent')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "course",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, to="course.Course"
+                    ),
+                ),
+                (
+                    "parent",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, to="account.Parent"
+                    ),
+                ),
             ],
         ),
     ]

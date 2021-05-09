@@ -13,13 +13,13 @@ from rest_framework.authtoken.models import Token
 
 
 class Command(BaseCommand):
-    help = 'Closes the specified poll for voting'
+    help = "Closes the specified poll for voting"
 
     bad_rows = []
     rowNum = 1
 
     def handle(self, *args, **options):
-        self.stdout.write(self.style.SUCCESS('Successfully called'))
+        self.stdout.write(self.style.SUCCESS("Successfully called"))
         dataframe = self.read_data_from_file("data/summit_student.csv")
 
         self.insert_accounts(dataframe)
@@ -69,7 +69,7 @@ class Command(BaseCommand):
         words = name_field.split()
 
         if len(words) == 0:
-            raise Exception('improper name field')
+            raise Exception("improper name field")
 
         if len(words) == 1:
             return words[0], ""
@@ -80,7 +80,10 @@ class Command(BaseCommand):
             return None
 
         try:
-            parent_first_name, parent_last_name = self.get_first_name_last_name_from_field(row[15])
+            (
+                parent_first_name,
+                parent_last_name,
+            ) = self.get_first_name_last_name_from_field(row[15])
 
             username = row[18]
             email = row[18]
@@ -98,12 +101,20 @@ class Command(BaseCommand):
                     password="password",
                     first_name=parent_first_name,
                     last_name=parent_last_name,
-                    email=email
+                    email=email,
                 )
 
-                parent = Parent.objects.create(user=parent_user, user_uuid=parent_user.username, address=row[22],
-                                               city=row[23], phone_number=row[16], state=row[24], zipcode=row[25],
-                                               secondary_phone_number=row[17], account_type="PARENT")
+                parent = Parent.objects.create(
+                    user=parent_user,
+                    user_uuid=parent_user.username,
+                    address=row[22],
+                    city=row[23],
+                    phone_number=row[16],
+                    state=row[24],
+                    zipcode=row[25],
+                    secondary_phone_number=row[17],
+                    account_type="PARENT",
+                )
 
                 parent.save()
 
@@ -120,7 +131,7 @@ class Command(BaseCommand):
                 username=uuid.uuid4(),
                 password="password",
                 first_name=row[3],
-                last_name=row[4]
+                last_name=row[4],
             )
 
             Token.objects.get_or_create(user=student_user)
@@ -132,16 +143,27 @@ class Command(BaseCommand):
                     user=student_user,
                     gender=self.translate_gender(row[9]),
                     user_uuid=row[2],
-                    address=row[22], city=row[23], state=row[24],
-                    zipcode=row[25], school=row[11], primary_parent=parent,
-                    account_type="STUDENT"
+                    address=row[22],
+                    city=row[23],
+                    state=row[24],
+                    zipcode=row[25],
+                    school=row[11],
+                    primary_parent=parent,
+                    account_type="STUDENT",
                 )
             else:
                 student = Student.objects.create(
-                    user=student_user, gender=self.translate_gender(row[9]), user_uuid=row[2],
-                    address=row[22], city=row[23], state=row[24],
-                    zipcode=row[25], school=row[11], primary_parent=parent,
-                    grade=row[10], account_type="STUDENT"
+                    user=student_user,
+                    gender=self.translate_gender(row[9]),
+                    user_uuid=row[2],
+                    address=row[22],
+                    city=row[23],
+                    state=row[24],
+                    zipcode=row[25],
+                    school=row[11],
+                    primary_parent=parent,
+                    grade=row[10],
+                    account_type="STUDENT",
                 )
 
             student.save()
@@ -163,6 +185,7 @@ class Command(BaseCommand):
             print(e)
             self.bad_rows.append(str(self.rowNum) + " note")
         return None
+
 
 # Index to column name mapping:
 # 1 "Criteria"

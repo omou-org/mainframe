@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('course', '0022_auto_20200102_1921'),
+        ("course", "0022_auto_20200102_1921"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='course',
-            name='is_confirmed',
+            model_name="course",
+            name="is_confirmed",
             field=models.BooleanField(default=False),
         ),
     ]

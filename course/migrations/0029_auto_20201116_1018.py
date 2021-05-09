@@ -7,31 +7,60 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('course', '0028_auto_20201112_0546'),
+        ("course", "0028_auto_20201112_0546"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='course',
-            name='day_of_week',
+            model_name="course",
+            name="day_of_week",
         ),
         migrations.RemoveField(
-            model_name='course',
-            name='end_time',
+            model_name="course",
+            name="end_time",
         ),
         migrations.RemoveField(
-            model_name='course',
-            name='start_time',
+            model_name="course",
+            name="start_time",
         ),
         migrations.CreateModel(
-            name='CourseAvailability',
+            name="CourseAvailability",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('num_sessions', models.IntegerField(default=0)),
-                ('day_of_week', models.CharField(blank=True, choices=[('monday', 'Monday'), ('tuesday', 'Tuesday'), ('wednesday', 'Wednesday'), ('thursday', 'Thursday'), ('friday', 'Friday'), ('saturday', 'Saturday'), ('sunday', 'Sunday')], max_length=9, null=True)),
-                ('start_time', models.TimeField()),
-                ('end_time', models.TimeField()),
-                ('course', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='course.Course')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("num_sessions", models.IntegerField(default=0)),
+                (
+                    "day_of_week",
+                    models.CharField(
+                        blank=True,
+                        choices=[
+                            ("monday", "Monday"),
+                            ("tuesday", "Tuesday"),
+                            ("wednesday", "Wednesday"),
+                            ("thursday", "Thursday"),
+                            ("friday", "Friday"),
+                            ("saturday", "Saturday"),
+                            ("sunday", "Sunday"),
+                        ],
+                        max_length=9,
+                        null=True,
+                    ),
+                ),
+                ("start_time", models.TimeField()),
+                ("end_time", models.TimeField()),
+                (
+                    "course",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, to="course.Course"
+                    ),
+                ),
             ],
         ),
     ]

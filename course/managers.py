@@ -16,17 +16,19 @@ class CourseManager(models.Manager):
             qs = qs_initial
 
         if query is not None:
-            or_lookup = (Q(course_type__icontains=query) |
-                Q(title__icontains=query) |
-                Q(description__icontains=query) |
-                Q(instructor__user__first_name__icontains=query) |
-                Q(instructor__user__last_name__icontains=query) |
-                Q(room__icontains=query) |
-                Q(course_category__name__icontains=query) |
-                Q(course_category__description__icontains=query))
+            or_lookup = (
+                Q(course_type__icontains=query)
+                | Q(title__icontains=query)
+                | Q(description__icontains=query)
+                | Q(instructor__user__first_name__icontains=query)
+                | Q(instructor__user__last_name__icontains=query)
+                | Q(room__icontains=query)
+                | Q(course_category__name__icontains=query)
+                | Q(course_category__description__icontains=query)
+            )
             try:
                 query = int(query)
-                or_lookup |= (Q(hourly_tuition=query))
+                or_lookup |= Q(hourly_tuition=query)
             except ValueError:
                 pass
             qs = qs.filter(or_lookup).distinct()

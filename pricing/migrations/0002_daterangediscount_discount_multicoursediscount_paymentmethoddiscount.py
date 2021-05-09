@@ -8,46 +8,115 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('pricing', '0001_initial'),
+        ("pricing", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Discount',
+            name="Discount",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(blank=True, max_length=1000, null=True)),
-                ('description', models.CharField(blank=True, max_length=1000, null=True)),
-                ('amount', models.DecimalField(decimal_places=2, default=0.0, max_digits=3)),
-                ('amount_type', models.CharField(choices=[('percent', 'percent'), ('fixed', 'fixed')], default='fixed', max_length=10)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(blank=True, max_length=1000, null=True)),
+                (
+                    "description",
+                    models.CharField(blank=True, max_length=1000, null=True),
+                ),
+                (
+                    "amount",
+                    models.DecimalField(decimal_places=2, default=0.0, max_digits=3),
+                ),
+                (
+                    "amount_type",
+                    models.CharField(
+                        choices=[("percent", "percent"), ("fixed", "fixed")],
+                        default="fixed",
+                        max_length=10,
+                    ),
+                ),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
         ),
         migrations.CreateModel(
-            name='DateRangeDiscount',
+            name="DateRangeDiscount",
             fields=[
-                ('discount_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='pricing.Discount')),
-                ('start_date', models.DateField()),
-                ('end_date', models.DateField()),
+                (
+                    "discount_ptr",
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to="pricing.Discount",
+                    ),
+                ),
+                ("start_date", models.DateField()),
+                ("end_date", models.DateField()),
             ],
-            bases=('pricing.discount',),
+            bases=("pricing.discount",),
         ),
         migrations.CreateModel(
-            name='MultiCourseDiscount',
+            name="MultiCourseDiscount",
             fields=[
-                ('discount_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='pricing.Discount')),
-                ('num_classes', models.IntegerField(validators=[django.core.validators.MinValueValidator(2), django.core.validators.MaxValueValidator(1000)])),
-                ('num_accounts', models.IntegerField(blank=True, null=True, validators=[django.core.validators.MinValueValidator(2), django.core.validators.MaxValueValidator(1000)])),
+                (
+                    "discount_ptr",
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to="pricing.Discount",
+                    ),
+                ),
+                (
+                    "num_classes",
+                    models.IntegerField(
+                        validators=[
+                            django.core.validators.MinValueValidator(2),
+                            django.core.validators.MaxValueValidator(1000),
+                        ]
+                    ),
+                ),
+                (
+                    "num_accounts",
+                    models.IntegerField(
+                        blank=True,
+                        null=True,
+                        validators=[
+                            django.core.validators.MinValueValidator(2),
+                            django.core.validators.MaxValueValidator(1000),
+                        ],
+                    ),
+                ),
             ],
-            bases=('pricing.discount',),
+            bases=("pricing.discount",),
         ),
         migrations.CreateModel(
-            name='PaymentMethodDiscount',
+            name="PaymentMethodDiscount",
             fields=[
-                ('discount_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='pricing.Discount')),
-                ('payment_method', models.CharField(max_length=50)),
+                (
+                    "discount_ptr",
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to="pricing.Discount",
+                    ),
+                ),
+                ("payment_method", models.CharField(max_length=50)),
             ],
-            bases=('pricing.discount',),
+            bases=("pricing.discount",),
         ),
     ]

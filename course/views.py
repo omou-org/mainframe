@@ -36,6 +36,7 @@ class CourseViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows courses to be viewed or edited
     """
+
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsDev | (IsAuthenticated & (IsAdminUser | ReadOnly))]
     queryset = Course.objects.all()
@@ -46,6 +47,7 @@ class CourseCategoryViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows course categories to be viewed or edited
     """
+
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsDev | (IsAuthenticated & (IsAdminUser | ReadOnly))]
     queryset = CourseCategory.objects.all()
@@ -55,10 +57,10 @@ class CourseCategoryViewSet(viewsets.ModelViewSet):
     Extra route that gets courses by category id
     /api/courses/categories/<category_id>/course_list
     """
-    @action(detail=True, methods=['get'])
+
+    @action(detail=True, methods=["get"])
     def course_list(self, request, pk=None):
-        matching_courses = Course.objects.filter(
-            course_category=self.get_object())
+        matching_courses = Course.objects.filter(course_category=self.get_object())
         matching_courses_json = CourseSerializer(matching_courses, many=True)
         return Response(matching_courses_json.data)
 
@@ -83,6 +85,7 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows enrollments to be created or edited
     """
+
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsDev | (IsAuthenticated & (IsAdminUser | ReadOnly))]
     queryset = Enrollment.objects.all()

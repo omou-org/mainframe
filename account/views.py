@@ -46,6 +46,7 @@ class StudentViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows students to be viewed or edited
     """
+
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsDev | (IsAuthenticated & (IsAdminUser | ReadOnly))]
     queryset = Student.objects.all()
@@ -61,6 +62,7 @@ class ParentViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows parents to be viewed or edited
     """
+
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsDev | (IsAuthenticated & (IsAdminUser | ReadOnly))]
     queryset = Parent.objects.all()
@@ -76,6 +78,7 @@ class InstructorViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows instructors to be viewed or edited
     """
+
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsDev | (IsAuthenticated & (IsAdminUser | ReadOnly))]
     queryset = Instructor.objects.all()
@@ -86,11 +89,12 @@ class InstructorAvailabilityViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows instructors to be viewed or edited
     """
+
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsDev | (IsAuthenticated & (IsAdminUser | ReadOnly))]
     queryset = InstructorAvailability.objects.all()
     serializer_class = InstructorAvailablitySerializer
-    
+
     def list(self, request):
         """
         query by instructor_id
@@ -105,6 +109,7 @@ class InstructorOutOfOfficeViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows instructors out of office to be added and changed
     """
+
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsDev | (IsAuthenticated & (IsAdminUser | ReadOnly))]
     queryset = InstructorOutOfOffice.objects.all()
@@ -115,6 +120,7 @@ class AdminViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows admins to be viewed or edited
     """
+
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsDev | (IsAuthenticated & (IsAdminUser | ReadOnly))]
     queryset = Admin.objects.all()
@@ -125,6 +131,7 @@ class CurrentUserView(APIView):
     """
     Returns current user information
     """
+
     def get(self, request):
         serializer = UserSerializer(request.user)
         return Response(serializer.data)

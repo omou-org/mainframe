@@ -6,13 +6,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('course', '0033_course_google_class_code'),
+        ("course", "0033_course_google_class_code"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='enrollment',
-            name='invite_status',
-            field=models.CharField(choices=[('sent', 'Sent'), ('unsent', 'Unsent'), ('accepted', 'Accepted'), ('invalid_email', 'Invalid_Email')], default='unsent', max_length=13),
+            model_name="enrollment",
+            name="invite_status",
+            field=models.CharField(
+                choices=[
+                    ("sent", "Sent"),
+                    ("unsent", "Unsent"),
+                    ("accepted", "Accepted"),
+                    ("invalid_email", "Invalid_Email"),
+                ],
+                default="unsent",
+                max_length=13,
+            ),
         ),
     ]

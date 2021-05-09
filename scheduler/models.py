@@ -13,10 +13,7 @@ class Session(models.Model):
         Course,
         on_delete=models.PROTECT,
     )
-    availability = models.ForeignKey(
-        CourseAvailability,
-        on_delete=models.PROTECT
-    )
+    availability = models.ForeignKey(CourseAvailability, on_delete=models.PROTECT)
     details = models.CharField(
         max_length=1000,
         blank=True,
@@ -55,18 +52,16 @@ def create_session_attendances(instance, created, raw, **kwargs):
 
 
 models.signals.post_save.connect(
-    create_session_attendances, sender=Session,
-    dispatch_uid='create_session_attendances'
-    )
+    create_session_attendances,
+    sender=Session,
+    dispatch_uid="create_session_attendances",
+)
 
 
 class SessionNote(models.Model):
     subject = models.TextField()
     body = models.TextField()
-    session = models.ForeignKey(
-        Session,
-        on_delete=models.PROTECT
-    )
+    session = models.ForeignKey(Session, on_delete=models.PROTECT)
     poster = models.ForeignKey(
         get_user_model(),
         on_delete=models.PROTECT,

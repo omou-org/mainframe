@@ -18,10 +18,7 @@ twilio = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
 class Announcement(models.Model):
     subject = models.TextField()
     body = models.TextField()
-    course = models.ForeignKey(
-        Course,
-        on_delete=models.PROTECT
-    )
+    course = models.ForeignKey(Course, on_delete=models.PROTECT)
     poster = models.ForeignKey(
         get_user_model(),
         on_delete=models.PROTECT,
@@ -101,11 +98,7 @@ class SMSNotification(models.Model):
 
 
 class ParentNotificationSettings(models.Model):
-    parent = models.OneToOneField(
-        Parent,
-        on_delete=models.PROTECT,
-        primary_key=True
-    )
+    parent = models.OneToOneField(Parent, on_delete=models.PROTECT, primary_key=True)
     session_reminder_email = models.BooleanField(default=True)
     session_reminder_sms = models.BooleanField(default=False)
     payment_reminder_email = models.BooleanField(default=True)
@@ -122,9 +115,7 @@ class ParentNotificationSettings(models.Model):
 
 class InstructorNotificationSettings(models.Model):
     instructor = models.OneToOneField(
-        Instructor,
-        on_delete=models.PROTECT,
-        primary_key=True
+        Instructor, on_delete=models.PROTECT, primary_key=True
     )
     session_reminder_email = models.BooleanField(default=True)
     session_reminder_sms = models.BooleanField(default=False)

@@ -6,33 +6,33 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('account', '0019_parent_secondary_phone_number'),
+        ("account", "0019_parent_secondary_phone_number"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='admin',
-            name='phone_number',
+            model_name="admin",
+            name="phone_number",
             field=models.CharField(blank=True, max_length=50, null=True),
         ),
         migrations.AlterField(
-            model_name='instructor',
-            name='phone_number',
+            model_name="instructor",
+            name="phone_number",
             field=models.CharField(blank=True, max_length=50, null=True),
         ),
         migrations.AlterField(
-            model_name='parent',
-            name='phone_number',
+            model_name="parent",
+            name="phone_number",
             field=models.CharField(blank=True, max_length=50, null=True),
         ),
         migrations.AlterField(
-            model_name='parent',
-            name='secondary_phone_number',
+            model_name="parent",
+            name="secondary_phone_number",
             field=models.CharField(blank=True, max_length=50, null=True),
         ),
         migrations.AlterField(
-            model_name='student',
-            name='phone_number',
+            model_name="student",
+            name="phone_number",
             field=models.CharField(blank=True, max_length=50, null=True),
         ),
     ]

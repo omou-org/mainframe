@@ -19,7 +19,7 @@ class Command(BaseCommand):
             start_datetime__lte=threshold,
             start_datetime__gt=arrow.now().datetime,
             sent_payment_reminder=False,
-            course__course_type=Course.TUTORING
+            course__course_type=Course.TUTORING,
         )
 
         for session in sessions:
@@ -35,9 +35,9 @@ class Command(BaseCommand):
                         template_id=PAYMENT_REMINDER_TEMPLATE,
                         recipient=parent.user.email,
                         data={
-                            'parent_name': parent.user.first_name,
-                            'course_name': enrollment.course.title
-                        }
+                            "parent_name": parent.user.first_name,
+                            "course_name": enrollment.course.title,
+                        },
                     )
 
             session.sent_payment_reminder = True

@@ -17,19 +17,18 @@ class Business(models.Model):
 
 
 class BusinessAvailability(models.Model):
-    business = models.ForeignKey(
-        Business,
-        on_delete=models.PROTECT
-    )
+    business = models.ForeignKey(Business, on_delete=models.PROTECT)
     DAYS_OF_WEEK = (
-        ('monday', 'Monday'),
-        ('tuesday', 'Tuesday'),
-        ('wednesday', 'Wednesday'),
-        ('thursday', 'Thursday'),
-        ('friday', 'Friday'),
-        ('saturday', 'Saturday'),
-        ('sunday', 'Sunday'),
+        ("monday", "Monday"),
+        ("tuesday", "Tuesday"),
+        ("wednesday", "Wednesday"),
+        ("thursday", "Thursday"),
+        ("friday", "Friday"),
+        ("saturday", "Saturday"),
+        ("sunday", "Sunday"),
     )
-    day_of_week = models.CharField(max_length=9, choices=DAYS_OF_WEEK, null=True, blank=True)
+    day_of_week = models.CharField(
+        max_length=9, choices=DAYS_OF_WEEK, null=True, blank=True
+    )
     start_time = models.TimeField()
     end_time = models.TimeField()

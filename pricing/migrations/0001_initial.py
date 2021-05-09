@@ -9,21 +9,62 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('course', '0018_auto_20191215_0058'),
+        ("course", "0018_auto_20191215_0058"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='PriceRule',
+            name="PriceRule",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(blank=True, max_length=1000, null=True)),
-                ('hourly_tuition', models.DecimalField(decimal_places=2, default=0.0, max_digits=5)),
-                ('academic_level', models.CharField(choices=[('elementary_lvl', 'Elementary'), ('middle_lvl', 'Middle'), ('high_lvl', 'High'), ('college_lvl', 'College')], default='elementary_lvl', max_length=20)),
-                ('course_type', models.CharField(choices=[('tutoring', 'Tutoring'), ('small_group', 'Small group'), ('class', 'Class')], default='tutoring', max_length=20)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('category', models.ForeignKey(default=-1, on_delete=django.db.models.deletion.PROTECT, to='course.CourseCategory')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(blank=True, max_length=1000, null=True)),
+                (
+                    "hourly_tuition",
+                    models.DecimalField(decimal_places=2, default=0.0, max_digits=5),
+                ),
+                (
+                    "academic_level",
+                    models.CharField(
+                        choices=[
+                            ("elementary_lvl", "Elementary"),
+                            ("middle_lvl", "Middle"),
+                            ("high_lvl", "High"),
+                            ("college_lvl", "College"),
+                        ],
+                        default="elementary_lvl",
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "course_type",
+                    models.CharField(
+                        choices=[
+                            ("tutoring", "Tutoring"),
+                            ("small_group", "Small group"),
+                            ("class", "Class"),
+                        ],
+                        default="tutoring",
+                        max_length=20,
+                    ),
+                ),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "category",
+                    models.ForeignKey(
+                        default=-1,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to="course.CourseCategory",
+                    ),
+                ),
             ],
         ),
     ]

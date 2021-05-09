@@ -6,20 +6,28 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('account', '0041_auto_20200725_0334'),
+        ("account", "0041_auto_20200725_0334"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='UserSchoolInfo',
+            name="UserSchoolInfo",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('textbook', models.CharField(max_length=512)),
-                ('teacher', models.CharField(max_length=100)),
-                ('current_grade', models.CharField(max_length=5)),
-                ('current_topic', models.CharField(max_length=64)),
-                ('student_strengths', models.CharField(max_length=1024)),
-                ('student_weaknesses', models.CharField(max_length=1024)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("textbook", models.CharField(max_length=512)),
+                ("teacher", models.CharField(max_length=100)),
+                ("current_grade", models.CharField(max_length=5)),
+                ("current_topic", models.CharField(max_length=64)),
+                ("student_strengths", models.CharField(max_length=1024)),
+                ("student_weaknesses", models.CharField(max_length=1024)),
             ],
         ),
     ]

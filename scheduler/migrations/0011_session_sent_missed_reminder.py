@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('scheduler', '0010_attendance'),
+        ("scheduler", "0010_attendance"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='session',
-            name='sent_missed_reminder',
+            model_name="session",
+            name="sent_missed_reminder",
             field=models.BooleanField(default=False),
         ),
     ]

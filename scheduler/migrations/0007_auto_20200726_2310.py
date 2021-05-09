@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('scheduler', '0006_session_sent_reminder'),
+        ("scheduler", "0006_session_sent_reminder"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='session',
-            old_name='sent_reminder',
-            new_name='sent_payment_reminder',
+            model_name="session",
+            old_name="sent_reminder",
+            new_name="sent_payment_reminder",
         ),
         migrations.AddField(
-            model_name='session',
-            name='sent_upcoming_reminder',
+            model_name="session",
+            name="sent_upcoming_reminder",
             field=models.BooleanField(default=False),
         ),
     ]
