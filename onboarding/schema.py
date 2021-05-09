@@ -138,7 +138,6 @@ def create_course_templates(business_id, show_errors=False):
     wb.create_sheet("Instructor Roster (hidden)")
     wb.create_sheet("Step 1 - Subject Categories")
     wb.create_sheet("Step 2 - Classes")
-
     # instructors populate dropdown
     instructors_ws = wb.get_sheet_by_name("Instructor Roster (hidden)")
     instructors_ws.sheet_state = 'hidden'

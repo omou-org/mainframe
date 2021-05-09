@@ -609,6 +609,7 @@ class UploadCoursesMutation(graphene.Mutation):
                 for i in range(5)
                 if row.get(f"Session Day {i+1}")
             ]
+            
             # populate sessions and availabilities
             course_availabilities = create_availabilities_and_sessions(course, availabilities)
             
@@ -638,7 +639,7 @@ class UploadCoursesMutation(graphene.Mutation):
         # construct error excel
         error_excel = ""
         if total_failure > 0:
-            wb = create_course_templates(show_errors=True)
+            wb = create_course_templates(business_id, show_errors=True)
 
             categories_ws = wb.get_sheet_by_name("Step 1 - Subject Categories")
             categories_column_order = [cell.value for cell in categories_ws[2]]
