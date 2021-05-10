@@ -1,2 +1,2 @@
-def a(  b ):
+def a(b):
     print(b)
