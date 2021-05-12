@@ -448,7 +448,9 @@ def create_enrollment_templates(business_id, show_errors=False):
         )
 
     # course templates
-    active_and_future_courses = Course.objects.business(business_id).filter(end_date__gt=datetime.now())
+    active_and_future_courses = Course.objects.business(business_id).filter(
+        end_date__gt=datetime.now()
+    )
     for course in active_and_future_courses:
         sheet_name = f"{course.title} - {course.id}"
         wb.create_sheet(sheet_name)

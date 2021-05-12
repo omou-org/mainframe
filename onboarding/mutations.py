@@ -856,7 +856,7 @@ class UploadEnrollmentsMutation(graphene.Mutation):
         # check all course spreadsheets reflect courses that exist
         def isValidCourseSheetName(sheet_name):
             if sheet_name == "Student Roster (hidden)":
-                return True 
+                return True
             # check sheet name matches "name - id"
             valid_sheet_name = COURSE_SHEET_NAME_PATTERN.search(sheet_name)
 
@@ -864,12 +864,18 @@ class UploadEnrollmentsMutation(graphene.Mutation):
                 return False
             # check id and title exist in database
             course_title, course_id = valid_sheet_name.groups()
-            if not Course.objects.business(business_id).filter(id=course_id, title=course_title).exists():
+            if (
+                not Course.objects.business(business_id)
+                .filter(id=course_id, title=course_title)
+                .exists()
+            ):
                 return False
             return True
-        
+
         invalid_sheet_names = [
-            sheet_name for sheet_name in xls.sheet_names if not isValidCourseSheetName(sheet_name)
+            sheet_name
+            for sheet_name in xls.sheet_names
+            if not isValidCourseSheetName(sheet_name)
         ]
         if invalid_sheet_names:
             raise GraphQLError(
@@ -898,22 +904,32 @@ class UploadEnrollmentsMutation(graphene.Mutation):
                 )
 
             # extract the course
-            course_title, course_id = COURSE_SHEET_NAME_PATTERN.search(sheet_name).groups()
-            course = Course.objects.business(business_id).filter(id=int(course_id), title=course_title).first()
+            course_title, course_id = COURSE_SHEET_NAME_PATTERN.search(
+                sheet_name
+            ).groups()
+            course = (
+                Course.objects.business(business_id)
+                .filter(id=int(course_id), title=course_title)
+                .first()
+            )
 
             # create enrollments
             enrollment_df = enrollment_df.dropna(how="all")
             enrollment_error_df = []
             for _index, row in enrollment_df.iloc[0:].iterrows():
                 entry = row["Students Enrolled"]
-                student_email = entry[entry.find("(") + 1 : entry.find(")")] if entry.find("(") and entry.find(")") else ""
+                student_email = (
+                    entry[entry.find("(") + 1 : entry.find(")")]
+                    if entry.find("(") and entry.find(")")
+                    else ""
+                )
                 if not Student.objects.filter(user__email=student_email).exists():
                     enrollment_error_df.append(row.to_dict())
                     enrollment_error_df[-1][
                         "Error Message"
                     ] = "No student with that email exists. Please check the entry again."
                     continue
-                
+
                 try:
                     with transaction.atomic():
                         student = Student.objects.get(user__email=student_email)
