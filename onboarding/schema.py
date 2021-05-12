@@ -17,6 +17,8 @@ from account.models import Admin, Student, Parent, Instructor
 from course.models import Course
 from onboarding.models import Business, BusinessAvailability
 
+from datetime import datetime
+
 
 class BusinessAvailabilityType(DjangoObjectType):
     class Meta:
@@ -429,10 +431,7 @@ def create_course_templates(business_id, show_errors=False):
 
 # business_id used to populate students and courses from same business
 # show_errors=True adds error message column
-
-
 def create_enrollment_templates(business_id, show_errors=False):
-
     wb = Workbook()
     wb.create_sheet("Student Roster (hidden)")
 
@@ -449,7 +448,8 @@ def create_enrollment_templates(business_id, show_errors=False):
         )
 
     # course templates
-    for course in Course.objects.business(business_id):
+    active_and_future_courses = Course.objects.business(business_id).filter(end_date__gt=datetime.now())
+    for course in active_and_future_courses:
         sheet_name = f"{course.title} - {course.id}"
         wb.create_sheet(sheet_name)
         course_ws = wb.get_sheet_by_name(sheet_name)
