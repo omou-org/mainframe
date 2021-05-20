@@ -10,6 +10,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     "mainframe-dev.us-west-1.elasticbeanstalk.com",
     "mainframe-env.eba-yszaihyi.us-west-1.elasticbeanstalk.com",
+    "mainframe-new-env.eba-ucjfuudf.us-west-1.elasticbeanstalk.com",
     "api.omoulearning.com",
     "development.omoulearning.com",
     "getomou.com",

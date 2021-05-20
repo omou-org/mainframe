@@ -32,7 +32,7 @@ class CreateInvoice(graphene.Mutation):
         tutoring = List(TutoringQuote)
         parent = ID()
         registrations = List(EnrollmentQuote)
-        payment_status = PaymentChoiceEnum(required=True)
+        payment_status = PaymentChoiceEnum()
 
     invoice = Field(InvoiceType)
     stripe_connected_account = String()
@@ -92,7 +92,10 @@ class CreateInvoice(graphene.Mutation):
 
         # stripe integration
         stripe_checkout_id = None
-        if validated_data["method"] == "credit_card":
+        if (
+            validated_data.get("payment_status", None) == PaymentChoiceEnum.UNPAID and
+            validated_data["method"] == "credit_card"
+        ):
             stripe.api_key = settings.STRIPE_API_KEY
             line_items = []
             for registration in invoice.registration_set.all():

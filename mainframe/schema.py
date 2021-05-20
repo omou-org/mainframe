@@ -1,6 +1,5 @@
 import graphene
 import graphql_jwt
-import graphql_social_auth
 
 from account import schema as account_schema, mutations as account_mutations
 from comms import schema as comms_schema, mutations as comms_mutations
