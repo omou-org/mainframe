@@ -45,6 +45,8 @@ class PriceRule(models.Model):
         max_length=20, choices=COURSE_CHOICES, default=TUTORING
     )
 
+    instructors = models.ManyToManyField("account.Instructor", blank=True)
+
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
