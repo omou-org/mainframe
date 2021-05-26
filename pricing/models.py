@@ -23,16 +23,6 @@ class PriceRule(models.Model):
     HIGH_LVL = "high_lvl"
     COLLEGE_LVL = "college_lvl"
 
-    ACADEMIC_CHOICES = (
-        (ELEMENTARY_LVL, "Elementary"),
-        (MIDDLE_LVL, "Middle"),
-        (HIGH_LVL, "High"),
-        (COLLEGE_LVL, "College"),
-    )
-    academic_level = models.CharField(
-        max_length=20, choices=ACADEMIC_CHOICES, default=ELEMENTARY_LVL
-    )
-
     TUTORING = "tutoring"
     SMALL_GROUP = "small_group"
     CLASS = "class"
