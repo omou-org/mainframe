@@ -35,6 +35,7 @@ class PriceRule(models.Model):
         max_length=20, choices=COURSE_CHOICES, default=TUTORING
     )
 
+    all_instructors_apply = models.BooleanField(default=True)
     instructors = models.ManyToManyField("account.Instructor", blank=True)
 
     # Timestamps
