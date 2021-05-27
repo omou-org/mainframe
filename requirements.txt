@@ -1,5 +1,4 @@
 PyJWT==1.7.1
-apache-airflow~=1.10.10
 arrow~=0.15.4
 django~=2.2.3
 django-crontab~=0.7.1
@@ -12,7 +11,7 @@ django-graphql-social-auth[jwt]~=0.1.4
 graphene-django~=2.10.1
 graphene-graphiql-explorer~=0.0.1
 gunicorn~=19.9.0
-markdown~=2.6.10
+markdown~=3.3.4
 openpyxl~=3.0.5
 pandas~=1.2.2
 psycopg2~=2.8.2
