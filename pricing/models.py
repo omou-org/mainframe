@@ -1,4 +1,5 @@
 from django.db import models
+from account.models import Business
 from course.models import CourseCategory
 from django.core.validators import MaxValueValidator, MinValueValidator
 
@@ -37,6 +38,8 @@ class PriceRule(models.Model):
 
     all_instructors_apply = models.BooleanField(default=True)
     instructors = models.ManyToManyField("account.Instructor", blank=True)
+
+    business = models.ForeignKey(Business, on_delete=models.PROTECT, null=True)
 
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)
