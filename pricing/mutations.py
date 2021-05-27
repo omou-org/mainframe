@@ -1,6 +1,7 @@
 import graphene
 from graphql import GraphQLError
 
+from account.models import Admin
 from pricing.models import (
     PriceRule,
     Discount,
@@ -16,7 +17,7 @@ from pricing.schema import (
     DateRangeDiscountType,
     PaymentMethodDiscountType,
 )
-from course.mutations import AcademicLevelEnum, CourseTypeEnum
+from course.mutations import CourseTypeEnum
 
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE, DELETION
 from django.contrib.contenttypes.models import ContentType
@@ -31,8 +32,9 @@ class CreatePriceRule(graphene.Mutation):
         name = graphene.String()
         hourly_tuition = graphene.Float()
         category_id = graphene.Int(name="category")
-        academic_level = AcademicLevelEnum()
         course_type = CourseTypeEnum()
+        all_instructors_apply = graphene.Boolean()
+        instructors = graphene.List(graphene.ID)
 
     price_rule = graphene.Field(PriceRuleType)
     created = graphene.Boolean()
@@ -40,21 +42,33 @@ class CreatePriceRule(graphene.Mutation):
     @staticmethod
     @staff_member_required
     def mutate(root, info, **validated_data):
-        existing_rules = PriceRule.objects.filter(
-            Q(category=validated_data.get("category_id"))
-            & Q(academic_level=validated_data.get("academic_level"))
-            & Q(course_type=validated_data.get("course_type"))
+        business_id = Admin.objects.get(user__id = info.context.user.id).business.id
+
+        # check if rule with category and course type exists
+        existing_rules = PriceRule.objects.business(business_id).filter(
+            category=validated_data.get("category_id"),
+            course_type=validated_data.get("course_type")
         )
         if "rule_id" not in validated_data and existing_rules.count() > 0:
             raise GraphQLError("Failed mutation. PriceRule already exists.")
 
-        if "rule_id" in validated_data:
-            rule_id = validated_data.get("rule_id")
-            if not PriceRule.objects.filter(id=rule_id).exists():
-                raise GraphQLError("Failed update mutation. PriceRule does not exist.")
+        # check if rule with id exists
+        if "rule_id" in validated_data and not PriceRule.objects.business(business_id).filter(id=validated_data.get("rule_id")).exists():
+            raise GraphQLError("Failed update mutation. PriceRule does not exist.")
+
+        # must provide instructors if rule does not apply to all
+        if not validated_data.get("all_instructors_apply") and not validated_data.get("instructors"):
+            raise GraphQLError("Failed mutation. There must be some instructors provided if not all apply.")
+        
+        # pop instructors to add after update/creation
+        instructors = validated_data.pop("instructors")
+        if validated_data.get("all_instructors_apply"):
+            instructors = []
+
         price_rule, created = PriceRule.objects.update_or_create(
-            id=validated_data.get("rule_id", None), defaults=validated_data
+            id=validated_data.get("rule_id", None), business_id=business_id, defaults=validated_data
         )
+        price_rule.instructors.set(instructors)
 
         LogEntry.objects.log_action(
             user_id=info.context.user.id,
@@ -75,8 +89,10 @@ class DeletePriceRule(graphene.Mutation):
     @staticmethod
     @staff_member_required
     def mutate(root, info, **validated_data):
+        business_id = Admin.objects.get(user__id = info.context.user.id).business.id
+
         try:
-            price_rule_obj = PriceRule.objects.get(id=validated_data.get("id"))
+            price_rule_obj = PriceRule.objects.business(business_id).get(id=validated_data.get("id"))
         except ObjectDoesNotExist:
             raise GraphQLError("Failed delete mutation. PriceRule does not exist.")
 
