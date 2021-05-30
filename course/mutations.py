@@ -56,6 +56,7 @@ class CourseAvailabilityInput(graphene.InputObjectType):
     day_of_week = DayOfWeekEnum()
     start_time = Time()
     end_time = Time()
+    id = ID(name='id')
 
 
 class CreateCourse(graphene.Mutation):
