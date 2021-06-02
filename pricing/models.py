@@ -2,12 +2,12 @@ from django.db import models
 from account.models import Business
 from course.models import CourseCategory
 from django.core.validators import MaxValueValidator, MinValueValidator
-from pricing.managers import PriceRuleManager
+from pricing.managers import TuitionRuleManager
 
 # Create your models here.
 
 
-class PriceRule(models.Model):
+class TuitionRule(models.Model):
     # Basic price information
     name = models.CharField(
         max_length=1000,
@@ -46,7 +46,7 @@ class PriceRule(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    objects = PriceRuleManager()
+    objects = TuitionRuleManager()
 
 
 class Discount(models.Model):

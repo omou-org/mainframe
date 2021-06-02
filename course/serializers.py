@@ -9,7 +9,7 @@ from rest_framework import serializers
 
 from course.models import EnrollmentNote, CourseNote, Course, CourseCategory, Enrollment
 from invoice.serializers import InvoiceSerializer
-from pricing.models import PriceRule
+from pricing.models import TuitionRule
 from scheduler.models import Session
 
 
@@ -117,12 +117,12 @@ class CourseSerializer(serializers.ModelSerializer):
             course.hourly_tuition = 0
 
         if course.course_type == "small_group" or course.course_type == "tutoring":
-            priceRule = PriceRule.objects.filter(
+            tuitionRule = TuitionRule.objects.filter(
                 Q(category=course.course_category)
                 & Q(academic_level=course.academic_level)
                 & Q(course_type=course.course_type)
             )[0]
-            course.hourly_tuition = priceRule.hourly_tuition
+            course.hourly_tuition = tuitionRule.hourly_tuition
             course.total_tuition = course.hourly_tuition * course.num_sessions
 
         course.save()

@@ -72,7 +72,7 @@ class Query(object):
                 "registration",
                 "course",
                 "discount",
-                "pricerule",
+                "tuitionrule",
             ]
             if object_type not in object_types:
                 raise GraphQLError("Failed query. Invalid object type.")

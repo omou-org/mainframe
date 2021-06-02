@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from pricing.models import (
-    PriceRule,
+    TuitionRule,
     Discount,
     MultiCourseDiscount,
     DateRangeDiscount,
@@ -16,7 +16,7 @@ from rest_framework.response import Response
 from mainframe.permissions import IsDev, ReadOnly
 
 from pricing.serializers import (
-    PriceRuleSerializer,
+    TuitionRuleSerializer,
     DiscountSerializer,
     MultiCourseDiscountSerializer,
     DateRangeDiscountSerializer,
@@ -40,7 +40,7 @@ def price_quote_total(body):
 
     # extract tutoring costs (assuming category/level combo exists)
     for tutor_json in body.get("tutoring", []):
-        tutoring_price_rules = PriceRule.objects.filter(
+        tutoring_price_rules = TuitionRule.objects.filter(
             Q(category=tutor_json["category_id"])
             & Q(academic_level=tutor_json["academic_level"])
             & Q(course_type="tutoring")
@@ -177,15 +177,15 @@ class QuoteTotalView(APIView):
         return JsonResponse(price_quote_total(body))
 
 
-class PriceRuleViewSet(viewsets.ModelViewSet):
+class TuitionRuleViewSet(viewsets.ModelViewSet):
     """ "
     API endpoint that allows prices to be viewed, edited, or created
     """
 
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsDev | (IsAuthenticated & (IsAdminUser | ReadOnly))]
-    queryset = PriceRule.objects.all()
-    serializer_class = PriceRuleSerializer
+    queryset = TuitionRule.objects.all()
+    serializer_class = TuitionRuleSerializer
 
 
 class DiscountViewSet(viewsets.ModelViewSet):

@@ -2,7 +2,7 @@ from django.db import models
 from django.db.models import Q
 
 
-class PriceRuleManager(models.Manager):
+class TuitionRuleManager(models.Manager):
     def business(self, business_id):
         qs = self.get_queryset()
         if business_id is not None:

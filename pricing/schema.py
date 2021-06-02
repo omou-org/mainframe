@@ -6,7 +6,7 @@ from graphene.types.json import JSONString
 from django.db.models import Q
 
 from pricing.models import (
-    PriceRule,
+    TuitionRule,
     Discount,
     MultiCourseDiscount,
     DateRangeDiscount,
@@ -35,9 +35,9 @@ class DiscountInterface(graphene.Interface):
         description = "Shared discount properties"
 
 
-class PriceRuleType(DjangoObjectType):
+class TuitionRuleType(DjangoObjectType):
     class Meta:
-        model = PriceRule
+        model = TuitionRule
 
 
 class DiscountType(DjangoObjectType):
@@ -91,7 +91,7 @@ def price_quote_total(body):
 
     # extract tutoring costs (assuming category/level combo exists)
     for tutor_json in body.get("tutoring", []):
-        tutoring_price_rules = PriceRule.objects.filter(
+        tutoring_price_rules = TuitionRule.objects.filter(
             Q(category=tutor_json["category_id"])
             & Q(academic_level=tutor_json["academic_level"])
             & Q(course_type="tutoring")
@@ -230,7 +230,7 @@ class TutoringQuote(graphene.InputObjectType):
 
 
 class Query(object):
-    priceRule = Field(PriceRuleType, priceRule_id=ID())
+    tuitionRule = Field(TuitionRuleType, tuitionRule_id=ID())
     discount = Field(DiscountType, discount_id=ID())
     multiCourseDiscount = Field(MultiCourseDiscountType, multiCourseDiscount_id=ID())
     dateRangeDiscount = Field(DateRangeDiscountType, dateRangeDiscount_id=ID())
@@ -238,7 +238,7 @@ class Query(object):
         PaymentMethodDiscountType, paymentMethodDiscount_id=ID()
     )
 
-    priceRules = List(PriceRuleType)
+    tuitionRules = List(TuitionRuleType)
     discounts = List(DiscountType)
     multiCourseDiscounts = List(MultiCourseDiscountType)
     dateRangeDiscounts = List(DateRangeDiscountType)
@@ -266,11 +266,11 @@ class Query(object):
             parent=kwargs["parent"],
         )
 
-    def resolve_priceRule(self, info, **kwargs):
-        return PriceRule.objects.get(id=kwargs.get("priceRule_id"))
+    def resolve_tuitionRule(self, info, **kwargs):
+        return TuitionRule.objects.get(id=kwargs.get("tuitionRule_id"))
 
-    def resolve_priceRules(self, info, **kwargs):
-        return PriceRule.objects.all()
+    def resolve_tuitionRules(self, info, **kwargs):
+        return TuitionRule.objects.all()
 
     def resolve_discount(self, info, **kwargs):
         return Discount.objects.get(id=kwargs.get("discount_id"))

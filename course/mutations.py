@@ -37,7 +37,7 @@ from course.schema import (
     InterestType,
 )
 from scheduler.models import Session
-from pricing.models import PriceRule
+from pricing.models import TuitionRule
 
 
 class CourseTypeEnum(graphene.Enum):
@@ -397,7 +397,7 @@ class CreateCourse(graphene.Mutation):
             course.hourly_tuition = 0
 
         if course.course_type == "small_group" or course.course_type == "tutoring":
-            price_rule = PriceRule.objects.filter(
+            price_rule = TuitionRule.objects.filter(
                 Q(category=course.course_category)
                 & Q(course_type=course.course_type)
             )[0]

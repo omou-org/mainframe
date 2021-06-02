@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from pricing.models import (
-    PriceRule,
+    TuitionRule,
     Discount,
     DateRangeDiscount,
     MultiCourseDiscount,
@@ -9,9 +9,9 @@ from pricing.models import (
 )
 
 
-class PriceRuleSerializer(serializers.ModelSerializer):
+class TuitionRuleSerializer(serializers.ModelSerializer):
     class Meta:
-        model = PriceRule
+        model = TuitionRule
         read_only_fields = (
             "id",
             "updated_at",
