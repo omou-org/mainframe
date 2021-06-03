@@ -1,6 +1,5 @@
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 from decimal import Decimal
-from math import floor
 
 from django.conf import settings
 from django.db import models
@@ -224,6 +223,12 @@ class Enrollment(models.Model):
         ).order_by("start_datetime")
         last_index = min(self.sessions_left, len(future_sessions)) - 1
         return future_sessions[last_index].start_datetime
+
+    @property
+    def enrollment_status(self):
+        invoices = self.registration_set.values_list('invoice', flat=True)
+        if invoices:
+            return invoices.order_by('-created_at')[0].payment_status
 
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)

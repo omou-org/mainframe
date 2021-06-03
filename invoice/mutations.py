@@ -2,13 +2,13 @@ from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
 
+import arrow
 import graphene
 import stripe
 from graphene import Field, ID, Int, List, String, Float, Boolean
 from graphql import GraphQLError
 
 from account.models import Admin, Parent
-from course.models import Enrollment
 from invoice.models import Invoice, RegistrationCart
 from invoice.serializers import InvoiceSerializer
 from invoice.schema import PaymentChoiceEnum, InvoiceType, CartType
@@ -96,6 +96,8 @@ class CreateInvoice(graphene.Mutation):
             validated_data.get("payment_status", None) == PaymentChoiceEnum.UNPAID and
             validated_data["method"] == "credit_card"
         ):
+            invoice.payment_due_date = arrow.utcnow().date()
+            invoice.save()
             stripe.api_key = settings.STRIPE_API_KEY
             line_items = []
             for registration in invoice.registration_set.all():
@@ -122,6 +124,10 @@ class CreateInvoice(graphene.Mutation):
                 stripe_account="acct_1HqSAYETk4EmXsx3",
             )
             stripe_checkout_id = session.id
+        else:
+            # unpaid flow
+            invoice.payment_due_date = arrow.utcnow().shift(days=5)
+            invoice.save()
 
         return CreateInvoice(
             invoice=invoice,

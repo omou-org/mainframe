@@ -17,6 +17,7 @@ class Invoice(models.Model):
     total = models.DecimalField(max_digits=6, decimal_places=2)
     account_balance = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
     discount_total = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
+    payment_due_date = models.DateField(null=True, blank=True)
 
     PAID = "paid"
     UNPAID = "unpaid"
