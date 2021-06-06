@@ -31,8 +31,8 @@ class CreateInvoice(graphene.Mutation):
         classes = List(ClassQuote)
         tutoring = List(TutoringQuote)
         parent = ID()
+        pay_now = Boolean()
         registrations = List(EnrollmentQuote)
-        payment_status = PaymentChoiceEnum()
 
     invoice = Field(InvoiceType)
     stripe_connected_account = String()
@@ -44,8 +44,13 @@ class CreateInvoice(graphene.Mutation):
     def mutate(root, info, **validated_data):
         data = validated_data
 
+        if data.get('pay_now', False) and data['method'] != 'credit_card':
+            # only admins may create a cash/check invoice to be paid now
+            if not Admin.objects.filter(user__id=info.context.user.id).exists():
+                raise GraphQLError("Failed Mutation. Only Admins may create cash/check invoices to be paid now.")
+
         # update invoice
-        if data.get("invoice_id"):
+        if data.get('invoice_id'):
             # only admins may update an invoice
             if not Admin.objects.filter(user__id=info.context.user.id).exists():
                 raise GraphQLError("Failed Mutation. Only Admins may update Invoices.")
@@ -92,10 +97,7 @@ class CreateInvoice(graphene.Mutation):
 
         # stripe integration
         stripe_checkout_id = None
-        if (
-            validated_data.get("payment_status", None) == PaymentChoiceEnum.UNPAID and
-            validated_data["method"] == "credit_card"
-        ):
+        if data.get("pay_now", False) and data["method"] == "credit_card":
             invoice.payment_due_date = arrow.utcnow().date()
             invoice.save()
             stripe.api_key = settings.STRIPE_API_KEY

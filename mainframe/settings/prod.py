@@ -28,6 +28,7 @@ DATABASES = {
         "PORT": os.environ["RDS_PORT"],
     },
 }
+BASE_URL = "https://www.omoulearning.com"
 SECRET_KEY = os.environ.get("SECRET_KEY")
 SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY")
 STRIPE_API_KEY = os.environ.get("STRIP_API_KEY")

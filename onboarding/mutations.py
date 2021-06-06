@@ -972,14 +972,15 @@ class UploadEnrollmentsMutation(graphene.Mutation):
 
 class StripeOnboarding(graphene.Mutation):
     class Arguments:
-        pass
+        refresh_url_param = graphene.String(required=True)
+        return_url_param = graphene.String(required=True)
 
     onboarding_url = graphene.String()
 
     @staticmethod
     @login_required
     @staff_member_required
-    def mutate(root, info, **validated_data):
+    def mutate(root, info, refresh_url_param, return_url_param):
         user_id = info.context.user.id
         admin = Admin.objects.get(user__id=user_id)
         stripe.api_key = settings.STRIPE_API_KEY
@@ -987,8 +988,8 @@ class StripeOnboarding(graphene.Mutation):
         account = stripe.Account.create(type='standard', email=admin.user.email)
         account_links = stripe.AccountLink.create(
             account=account.id,
-            refresh_url='https://omoulearning.com/',
-            return_url='https://omoulearning.com/finished_onboarding',
+            refresh_url=f'{settings.BASE_URL}/{refresh_url_param}',
+            return_url=f'{settings.BASE_URL}/{return_url_param}',
             type='account_onboarding'
         )
 
