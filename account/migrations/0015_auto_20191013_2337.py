@@ -9,27 +9,29 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('account', '0014_merge_20191013_2337'),
+        ("account", "0014_merge_20191013_2337"),
     ]
 
     operations = [
         migrations.RenameModel(
-            old_name='ParentNote',
-            new_name='Note',
+            old_name="ParentNote",
+            new_name="Note",
         ),
         migrations.RemoveField(
-            model_name='studentnote',
-            name='user',
+            model_name="studentnote",
+            name="user",
         ),
         migrations.AlterField(
-            model_name='note',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+            model_name="note",
+            name="user",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL
+            ),
         ),
         migrations.DeleteModel(
-            name='InstructorNote',
+            name="InstructorNote",
         ),
         migrations.DeleteModel(
-            name='StudentNote',
+            name="StudentNote",
         ),
     ]

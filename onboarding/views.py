@@ -5,12 +5,13 @@ from openpyxl import load_workbook
 from course.models import Course, CourseCategory
 
 import_sheets = {
-    "student" : "students.xlsx",
-    "parent" : "parents.xlsx",
-    "course" : "course.xlsx",
-    "instructor" : "instructors.xlsx",
-    "course_categories" : "course_categories.xlsx"
+    "student": "students.xlsx",
+    "parent": "parents.xlsx",
+    "course": "course.xlsx",
+    "instructor": "instructors.xlsx",
+    "course_categories": "course_categories.xlsx",
 }
+
 
 def upload(request):
     # error = False
@@ -19,17 +20,17 @@ def upload(request):
 
     for c in CourseCategory.objects.all():
         print(c)
-    
+
     sheet = load_workbook(import_sheets.student).active
     for row in range(2, sheet.max_row + 1):
         for col in range(1, sheet.max_column + 1):
             print(sheet.cell(row=row, column=col).value)
 
-
     # if error:
     #     return HttpResponse("error")
     # else:
     #     return HttpResponse("success")
+
 
 def file_name_checker(ar):
     corrects = [False] * 5

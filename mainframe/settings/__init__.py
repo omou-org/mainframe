@@ -58,7 +58,7 @@ API_APPS = (
     "invoice.apps.InvoiceConfig",
     "comms.apps.CommsConfig",
     "log.apps.LogConfig",
-    "onboarding.apps.OnboardingConfig"
+    "onboarding.apps.OnboardingConfig",
 )
 COMMON_APPS = (
     "social_django",
@@ -140,7 +140,7 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "anon": "100/hour",
         "user": "1000/hour",
-    }
+    },
 }
 
 ROOT_URLCONF = "mainframe.urls"
@@ -167,35 +167,49 @@ CORS_ORIGIN_WHITELIST = (
     "https://www.omoulearning.com",
     "https://omoulearning.com",
     "https://development.omoulearning.com",
-    "https://www.development.omoulearning.com"
+    "https://www.development.omoulearning.com",
+    "https://www.getomou.com",
+    "https://getomou.com",
 )
 
 # GraphQL
 GRAPHENE = {
-    'SCHEMA': 'mainframe.schema.schema',
-    'DJANGO_CHOICE_FIELD_ENUM_V3_NAMING': True,
-    'MIDDLEWARE': [
-        'graphql_jwt.middleware.JSONWebTokenMiddleware',
+    "SCHEMA": "mainframe.schema.schema",
+    "DJANGO_CHOICE_FIELD_ENUM_V3_NAMING": True,
+    "MIDDLEWARE": [
+        "graphql_jwt.middleware.JSONWebTokenMiddleware",
     ],
 }
 AUTHENTICATION_BACKENDS = [
-    'graphql_jwt.backends.JSONWebTokenBackend',
-    'social_core.backends.google.GoogleOAuth2',
-    'django.contrib.auth.backends.ModelBackend',
+    "graphql_jwt.backends.JSONWebTokenBackend",
+    "social_core.backends.google.GoogleOAuth2",
+    "django.contrib.auth.backends.ModelBackend",
 ]
 SENDGRID_API_KEY = env.SENDGRID_API_KEY
 STRIPE_API_KEY = env.STRIPE_API_KEY
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = env.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = env.SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET
-TWILIO_ACCOUNT_SID = 'test'
-TWILIO_AUTH_TOKEN = 'test'
-BUSINESS_NAME = 'Stark Industries'
+TWILIO_ACCOUNT_SID = "test"
+TWILIO_AUTH_TOKEN = "test"
+BUSINESS_NAME = "Stark Industries"
 
 # Cronjobs
 CRONJOBS = [
-    ('* * * * *', 'comms.cronjobs.example.run', '>> /tmp/mainframe/comms/example.log'),  # Every minute
-    ('0 * * * *', 'comms.cronjobs.missed_session_reminder.run', '>> /tmp/mainframe/comms/missed_session_reminder.log'),  # Every minute
-    ('0 8 * * *', 'comms.cronjobs.send_session_reminders.run', '>> /tmp/mainframe/comms/send_session_reminders.log')  # every day at 8 AM
+    (
+        "* * * * *",
+        "comms.cronjobs.example.run",
+        ">> /tmp/mainframe/comms/example.log",
+    ),  # Every minute
+    (
+        "0 * * * *",
+        "comms.cronjobs.missed_session_reminder.run",
+        ">> /tmp/mainframe/comms/missed_session_reminder.log",
+    ),  # Every minute
+    (
+        "0 8 * * *",
+        "comms.cronjobs.send_session_reminders.run",
+        ">> /tmp/mainframe/comms/send_session_reminders.log",
+    ),  # every day at 8 AM
 ]
-CRONTAB_COMMAND_PREFIX = 'DJANGO_ENV_MODULE=mainframe.settings.local'
-CRONTAB_COMMAND_SUFFIX = '2>&1'
+CRONTAB_COMMAND_PREFIX = "DJANGO_ENV_MODULE=mainframe.settings.local"
+CRONTAB_COMMAND_SUFFIX = "2>&1"

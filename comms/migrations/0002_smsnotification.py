@@ -6,21 +6,29 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('comms', '0001_initial'),
+        ("comms", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='SMSNotification',
+            name="SMSNotification",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('sender', models.CharField(default='+12513024126', max_length=15)),
-                ('recipient', models.CharField(max_length=15)),
-                ('body', models.CharField(max_length=1000)),
-                ('response_status', models.CharField(max_length=20)),
-                ('response_body', models.CharField(max_length=1000)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("sender", models.CharField(default="+12513024126", max_length=15)),
+                ("recipient", models.CharField(max_length=15)),
+                ("body", models.CharField(max_length=1000)),
+                ("response_status", models.CharField(max_length=20)),
+                ("response_body", models.CharField(max_length=1000)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
         ),
     ]

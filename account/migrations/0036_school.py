@@ -6,17 +6,25 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('account', '0035_instructor_subjects'),
+        ("account", "0035_instructor_subjects"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='School',
+            name="School",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('zipcode', models.CharField(max_length=10)),
-                ('district', models.CharField(blank=True, max_length=100, null=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
+                ("zipcode", models.CharField(max_length=10)),
+                ("district", models.CharField(blank=True, max_length=100, null=True)),
             ],
         ),
     ]

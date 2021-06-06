@@ -7,23 +7,31 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('account', '0039_auto_20200602_0359'),
-        ('comms', '0004_auto_20200619_0146'),
+        ("account", "0039_auto_20200602_0359"),
+        ("comms", "0004_auto_20200619_0146"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ParentNotificationSettings',
+            name="ParentNotificationSettings",
             fields=[
-                ('parent', models.OneToOneField(on_delete=django.db.models.deletion.PROTECT, primary_key=True, serialize=False, to='account.Parent')),
-                ('session_reminder_email', models.BooleanField(default=True)),
-                ('session_reminder_sms', models.BooleanField(default=False)),
-                ('payment_reminder_email', models.BooleanField(default=True)),
-                ('payment_reminder_sms', models.BooleanField(default=False)),
-                ('schedule_updates_sms', models.BooleanField(default=False)),
-                ('course_requests_sms', models.BooleanField(default=False)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
+                (
+                    "parent",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        primary_key=True,
+                        serialize=False,
+                        to="account.Parent",
+                    ),
+                ),
+                ("session_reminder_email", models.BooleanField(default=True)),
+                ("session_reminder_sms", models.BooleanField(default=False)),
+                ("payment_reminder_email", models.BooleanField(default=True)),
+                ("payment_reminder_sms", models.BooleanField(default=False)),
+                ("schedule_updates_sms", models.BooleanField(default=False)),
+                ("course_requests_sms", models.BooleanField(default=False)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
         ),
     ]

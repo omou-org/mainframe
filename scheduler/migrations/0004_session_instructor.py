@@ -7,14 +7,19 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('account', '0028_auto_20200103_2235'),
-        ('scheduler', '0003_auto_20191128_2321'),
+        ("account", "0028_auto_20200103_2235"),
+        ("scheduler", "0003_auto_20191128_2321"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='session',
-            name='instructor',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to='account.Instructor'),
+            model_name="session",
+            name="instructor",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                to="account.Instructor",
+            ),
         ),
     ]

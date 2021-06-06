@@ -7,20 +7,34 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('course', '0008_coursenote'),
+        ("course", "0008_coursenote"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='EnrollmentNote',
+            name="EnrollmentNote",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('timestamp', models.DateTimeField(auto_now_add=True)),
-                ('title', models.TextField(blank=True)),
-                ('body', models.TextField()),
-                ('important', models.BooleanField(default=False)),
-                ('complete', models.BooleanField(default=False)),
-                ('enrollment', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='course.Enrollment')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("timestamp", models.DateTimeField(auto_now_add=True)),
+                ("title", models.TextField(blank=True)),
+                ("body", models.TextField()),
+                ("important", models.BooleanField(default=False)),
+                ("complete", models.BooleanField(default=False)),
+                (
+                    "enrollment",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to="course.Enrollment",
+                    ),
+                ),
             ],
         ),
     ]

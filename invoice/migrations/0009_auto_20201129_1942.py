@@ -7,56 +7,99 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('account', '0043_auto_20201003_1659'),
-        ('course', '0030_courseavailability_active'),
-        ('invoice', '0008_registrationcart'),
+        ("account", "0043_auto_20201003_1659"),
+        ("course", "0030_courseavailability_active"),
+        ("invoice", "0008_registrationcart"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Invoice',
+            name="Invoice",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('sub_total', models.DecimalField(decimal_places=2, max_digits=6)),
-                ('price_adjustment', models.DecimalField(decimal_places=2, default=0.0, max_digits=6)),
-                ('total', models.DecimalField(decimal_places=2, max_digits=6)),
-                ('account_balance', models.DecimalField(decimal_places=2, default=0.0, max_digits=6)),
-                ('discount_total', models.DecimalField(decimal_places=2, default=0.0, max_digits=6)),
-                ('payment_status', models.BooleanField(default=False)),
-                ('method', models.CharField(choices=[('cash', 'Cash'), ('course_credit', 'Course Credit'), ('credit_card', 'Credit Card'), ('check', 'Check'), ('intl_credit_card', 'International Credit Card')], max_length=20)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("sub_total", models.DecimalField(decimal_places=2, max_digits=6)),
+                (
+                    "price_adjustment",
+                    models.DecimalField(decimal_places=2, default=0.0, max_digits=6),
+                ),
+                ("total", models.DecimalField(decimal_places=2, max_digits=6)),
+                (
+                    "account_balance",
+                    models.DecimalField(decimal_places=2, default=0.0, max_digits=6),
+                ),
+                (
+                    "discount_total",
+                    models.DecimalField(decimal_places=2, default=0.0, max_digits=6),
+                ),
+                ("payment_status", models.BooleanField(default=False)),
+                (
+                    "method",
+                    models.CharField(
+                        choices=[
+                            ("cash", "Cash"),
+                            ("course_credit", "Course Credit"),
+                            ("credit_card", "Credit Card"),
+                            ("check", "Check"),
+                            ("intl_credit_card", "International Credit Card"),
+                        ],
+                        max_length=20,
+                    ),
+                ),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
         ),
         migrations.RemoveField(
-            model_name='deduction',
-            name='payment',
+            model_name="deduction",
+            name="payment",
         ),
         migrations.RemoveField(
-            model_name='registration',
-            name='payment',
+            model_name="registration",
+            name="payment",
         ),
         migrations.DeleteModel(
-            name='Payment',
+            name="Payment",
         ),
         migrations.AddField(
-            model_name='invoice',
-            name='enrollments',
-            field=models.ManyToManyField(related_name='payment_list', through='invoice.Registration', to='course.Enrollment'),
+            model_name="invoice",
+            name="enrollments",
+            field=models.ManyToManyField(
+                related_name="payment_list",
+                through="invoice.Registration",
+                to="course.Enrollment",
+            ),
         ),
         migrations.AddField(
-            model_name='invoice',
-            name='parent',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='account.Parent'),
+            model_name="invoice",
+            name="parent",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, to="account.Parent"
+            ),
         ),
         migrations.AddField(
-            model_name='deduction',
-            name='invoice',
-            field=models.ForeignKey(default=None, on_delete=django.db.models.deletion.CASCADE, to='invoice.Invoice'),
+            model_name="deduction",
+            name="invoice",
+            field=models.ForeignKey(
+                default=None,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="invoice.Invoice",
+            ),
         ),
         migrations.AddField(
-            model_name='registration',
-            name='invoice',
-            field=models.ForeignKey(default=None, on_delete=django.db.models.deletion.CASCADE, to='invoice.Invoice'),
+            model_name="registration",
+            name="invoice",
+            field=models.ForeignKey(
+                default=None,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="invoice.Invoice",
+            ),
         ),
     ]

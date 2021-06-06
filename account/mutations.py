@@ -44,32 +44,32 @@ from comms.templates import (
 
 
 class GenderEnum(graphene.Enum):
-    MALE = 'male'
-    FEMALE = 'female'
-    UNSPECIFIED = 'unspecified'
+    MALE = "male"
+    FEMALE = "female"
+    UNSPECIFIED = "unspecified"
 
 
 class AdminTypeEnum(graphene.Enum):
-    OWNER = 'owner'
-    RECEPTIONIST = 'receptionist'
-    ASSISTANT = 'assistant'
+    OWNER = "owner"
+    RECEPTIONIST = "receptionist"
+    ASSISTANT = "assistant"
 
 
 class DayOfWeekEnum(graphene.Enum):
-    MONDAY = 'monday'
-    TUESDAY = 'tuesday'
-    WEDNESDAY = 'wednesday'
-    THURSDAY = 'thursday'
-    FRIDAY = 'friday'
-    SATURDAY = 'saturday'
-    SUNDAY = 'sunday'
+    MONDAY = "monday"
+    TUESDAY = "tuesday"
+    WEDNESDAY = "wednesday"
+    THURSDAY = "thursday"
+    FRIDAY = "friday"
+    SATURDAY = "saturday"
+    SUNDAY = "sunday"
 
 
 class RelationshipEnum(graphene.Enum):
-    MOTHER = 'mother'
-    FATHER = 'father'
-    GUARDIAN = 'guardian'
-    OTHER = 'other'
+    MOTHER = "mother"
+    FATHER = "father"
+    GUARDIAN = "guardian"
+    OTHER = "other"
 
 
 class CreateSchool(graphene.Mutation):
@@ -85,8 +85,7 @@ class CreateSchool(graphene.Mutation):
     @staticmethod
     def mutate(root, info, **validated_data):
         school, created = School.objects.update_or_create(
-            id=validated_data.pop('id', None),
-            defaults=validated_data
+            id=validated_data.pop("id", None), defaults=validated_data
         )
         return CreateSchool(school=school, created=created)
 
@@ -112,9 +111,9 @@ class StudentInput(graphene.InputObjectType):
 
     # Student fields
     grade = graphene.Int()
-    school_id = graphene.ID(name='school')
-    primary_parent_id = graphene.ID(name='primaryParent')
-    secondary_parent_id = graphene.ID(name='secondaryParent')
+    school_id = graphene.ID(name="school")
+    primary_parent_id = graphene.ID(name="primaryParent")
+    secondary_parent_id = graphene.ID(name="secondaryParent")
 
 
 class CreateStudent(graphene.Mutation):
@@ -131,9 +130,9 @@ class CreateStudent(graphene.Mutation):
 
         # Student fields
         grade = graphene.Int()
-        school_id = graphene.ID(name='school')
-        primary_parent_id = graphene.ID(name='primaryParent')
-        secondary_parent_id = graphene.ID(name='secondaryParent')
+        school_id = graphene.ID(name="school")
+        primary_parent_id = graphene.ID(name="primaryParent")
+        secondary_parent_id = graphene.ID(name="secondaryParent")
 
     student = graphene.Field(StudentType)
     created = graphene.Boolean()
@@ -144,8 +143,8 @@ class CreateStudent(graphene.Mutation):
 
         with transaction.atomic():
             # update request
-            if user.get('id'):
-                user_id = user.pop('id')
+            if user.get("id"):
+                user_id = user.pop("id")
                 User.objects.filter(id=user_id).update(**user)
                 Student.objects.filter(user__id=user_id).update(**validated_data)
                 student = Student.objects.get(user__id=user_id)
@@ -157,25 +156,23 @@ class CreateStudent(graphene.Mutation):
                     content_type_id=ContentType.objects.get_for_model(Student).pk,
                     object_id=student.user.id,
                     object_repr=f"{student.user.first_name} {student.user.last_name}",
-                    action_flag=CHANGE
+                    action_flag=CHANGE,
                 )
                 return CreateStudent(student=student, created=False)
 
             # create user and token
             user_object = User.objects.create_user(
                 username=uuid.uuid4(),
-                password='password',
-                first_name=user['first_name'],
-                last_name=user['last_name'],
-                email=user.get('email')
+                password="password",
+                first_name=user["first_name"],
+                last_name=user["last_name"],
+                email=user.get("email"),
             )
             Token.objects.get_or_create(user=user_object)
 
             # create account
             student = Student.objects.create(
-                user=user_object,
-                account_type='student',
-                **validated_data
+                user=user_object, account_type="student", **validated_data
             )
 
             LogEntry.objects.log_action(
@@ -183,7 +180,7 @@ class CreateStudent(graphene.Mutation):
                 content_type_id=ContentType.objects.get_for_model(Student).pk,
                 object_id=student.user.id,
                 object_repr=f"{student.user.first_name} {student.user.last_name}",
-                action_flag=ADDITION
+                action_flag=ADDITION,
             )
             return CreateStudent(student=student, created=True)
 
@@ -200,11 +197,11 @@ class CreateStudents(graphene.Mutation):
     def mutate(root, info, students):
         student_list = []
         for student_data in students:
-            user = student_data.pop('user')
+            user = student_data.pop("user")
             with transaction.atomic():
                 # update request
-                if user.get('id'):
-                    user_id = user.pop('id')
+                if user.get("id"):
+                    user_id = user.pop("id")
                     User.objects.filter(id=user_id).update(**user)
                     Student.objects.filter(user__id=user_id).update(**student_data)
                     student = Student.objects.get(user__id=user_id)
@@ -216,25 +213,23 @@ class CreateStudents(graphene.Mutation):
                         content_type_id=ContentType.objects.get_for_model(Student).pk,
                         object_id=student.user.id,
                         object_repr=f"{student.user.first_name} {student.user.last_name}",
-                        action_flag=CHANGE
+                        action_flag=CHANGE,
                     )
                     return CreateStudent(student=student, created=False)
 
                 # create user and token
                 user_object = User.objects.create_user(
                     username=uuid.uuid4(),
-                    password='password',
-                    first_name=user['first_name'],
-                    last_name=user['last_name'],
-                    email=user.get('email')
+                    password="password",
+                    first_name=user["first_name"],
+                    last_name=user["last_name"],
+                    email=user.get("email"),
                 )
                 Token.objects.get_or_create(user=user_object)
 
                 # create account
                 student = Student.objects.create(
-                    user=user_object,
-                    account_type='student',
-                    **student_data
+                    user=user_object, account_type="student", **student_data
                 )
 
                 LogEntry.objects.log_action(
@@ -242,7 +237,7 @@ class CreateStudents(graphene.Mutation):
                     content_type_id=ContentType.objects.get_for_model(Student).pk,
                     object_id=student.user.id,
                     object_repr=f"{student.user.first_name} {student.user.last_name}",
-                    action_flag=ADDITION
+                    action_flag=ADDITION,
                 )
                 student_list.append(student)
         return CreateStudents(students=student_list, created=True)
@@ -272,8 +267,8 @@ class CreateParent(graphene.Mutation):
     def mutate(root, info, user, **validated_data):
         with transaction.atomic():
             # update request
-            if user.get('id'):
-                user_id = user.pop('id')
+            if user.get("id"):
+                user_id = user.pop("id")
                 User.objects.filter(id=user_id).update(**user)
                 Parent.objects.filter(user__id=user_id).update(**validated_data)
                 parent = Parent.objects.get(user__id=user_id)
@@ -285,25 +280,23 @@ class CreateParent(graphene.Mutation):
                     content_type_id=ContentType.objects.get_for_model(Parent).pk,
                     object_id=parent.user.id,
                     object_repr=f"{parent.user.first_name} {parent.user.last_name}",
-                    action_flag=CHANGE
+                    action_flag=CHANGE,
                 )
                 return CreateParent(parent=parent, created=False)
 
             # create user and token
             user_object = User.objects.create_user(
-                username=user.get('email', uuid.uuid4()),
-                email=user.get('email', None),
-                first_name=user['first_name'],
-                last_name=user['last_name'],
-                password=user['password'],
+                username=user.get("email", uuid.uuid4()),
+                email=user.get("email", None),
+                first_name=user["first_name"],
+                last_name=user["last_name"],
+                password=user["password"],
             )
             Token.objects.get_or_create(user=user_object)
 
             # create account
             parent = Parent.objects.create(
-                user=user_object,
-                account_type='parent',
-                **validated_data
+                user=user_object, account_type="parent", **validated_data
             )
             ParentNotificationSettings.objects.create(parent=parent)
 
@@ -311,9 +304,9 @@ class CreateParent(graphene.Mutation):
                 template_id=WELCOME_PARENT_TEMPLATE,
                 recipient=parent.user.email,
                 data={
-                    'parent_name': parent.user.first_name,
-                    'business_name': settings.BUSINESS_NAME,
-                }
+                    "parent_name": parent.user.first_name,
+                    "business_name": settings.BUSINESS_NAME,
+                },
             )
 
             LogEntry.objects.log_action(
@@ -321,7 +314,7 @@ class CreateParent(graphene.Mutation):
                 content_type_id=ContentType.objects.get_for_model(Parent).pk,
                 object_id=parent.user.id,
                 object_repr=f"{parent.user.first_name} {parent.user.last_name}",
-                action_flag=ADDITION
+                action_flag=ADDITION,
             )
             return CreateParent(parent=parent, created=True)
 
@@ -356,12 +349,12 @@ class CreateInstructor(graphene.Mutation):
     def mutate(root, info, user, **validated_data):
         with transaction.atomic():
             # update request
-            if user.get('id'):
-                user_id = user.pop('id')
+            if user.get("id"):
+                user_id = user.pop("id")
                 User.objects.filter(id=user_id).update(**user)
                 instructor = Instructor.objects.get(user__id=user_id)
-                if 'subjects' in validated_data:
-                    subjects = validated_data.pop('subjects')
+                if "subjects" in validated_data:
+                    subjects = validated_data.pop("subjects")
                     instructor.subjects.set(subjects)
                     instructor.save()
                 Instructor.objects.filter(user__id=user_id).update(**validated_data)
@@ -372,25 +365,25 @@ class CreateInstructor(graphene.Mutation):
                     content_type_id=ContentType.objects.get_for_model(Instructor).pk,
                     object_id=instructor.user.id,
                     object_repr=f"{instructor.user.first_name} {instructor.user.last_name}",
-                    action_flag=CHANGE
+                    action_flag=CHANGE,
                 )
                 return CreateInstructor(instructor=instructor, created=False)
 
             # create user and token
             user_object = User.objects.create_user(
-                username=user.get('email', uuid.uuid4()),
-                email=user.get('email', None),
-                first_name=user['first_name'],
-                last_name=user['last_name'],
-                password=user['password'],
+                username=user.get("email", uuid.uuid4()),
+                email=user.get("email", None),
+                first_name=user["first_name"],
+                last_name=user["last_name"],
+                password=user["password"],
             )
             Token.objects.get_or_create(user=user_object)
-            subjects = validated_data.pop('subjects')
+            subjects = validated_data.pop("subjects")
 
             # create account
             instructor = Instructor.objects.create(
                 user=user_object,
-                account_type='instructor',
+                account_type="instructor",
                 **validated_data,
             )
             instructor.subjects.set(subjects)
@@ -401,7 +394,7 @@ class CreateInstructor(graphene.Mutation):
                 content_type_id=ContentType.objects.get_for_model(Instructor).pk,
                 object_id=instructor.user.id,
                 object_repr=f"{instructor.user.first_name} {instructor.user.last_name}",
-                action_flag=ADDITION
+                action_flag=ADDITION,
             )
 
             return CreateInstructor(instructor=instructor, created=True)
@@ -410,7 +403,7 @@ class CreateInstructor(graphene.Mutation):
 class CreateInstructorAvailability(graphene.Mutation):
     class Arguments:
         id = graphene.ID()
-        instructor_id = graphene.ID(name='instructor')
+        instructor_id = graphene.ID(name="instructor")
         day_of_week = DayOfWeekEnum()
         start_time = graphene.Time()
         end_time = graphene.Time()
@@ -421,18 +414,16 @@ class CreateInstructorAvailability(graphene.Mutation):
     @staticmethod
     def mutate(root, info, **validated_data):
         instructor_avail, created = InstructorAvailability.objects.update_or_create(
-            id=validated_data.pop('id', None),
-            defaults=validated_data
+            id=validated_data.pop("id", None), defaults=validated_data
         )
         return CreateInstructorAvailability(
-            instructor_availability=instructor_avail,
-            created=created
+            instructor_availability=instructor_avail, created=created
         )
 
 
 class InstructorAvailabilityInput(graphene.InputObjectType):
     id = graphene.ID()
-    instructor_id = graphene.ID(name='instructor')
+    instructor_id = graphene.ID(name="instructor")
     day_of_week = DayOfWeekEnum()
     start_time = graphene.Time()
     end_time = graphene.Time()
@@ -446,7 +437,9 @@ class CreateInstructorAvailabilities(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, **validated_data):
-        objs = [InstructorAvailability(**data) for data in validated_data['availabilities']]
+        objs = [
+            InstructorAvailability(**data) for data in validated_data["availabilities"]
+        ]
         instructor_availabilities = InstructorAvailability.objects.bulk_create(objs)
         return CreateInstructorAvailabilities(
             instructor_availabilities=instructor_availabilities
@@ -462,15 +455,15 @@ class DeleteInstructorAvailabilities(graphene.Mutation):
     @staticmethod
     def mutate(root, info, **validated_data):
         price_rule_objs = InstructorAvailability.objects.filter(
-            id__in=validated_data['availabilities']
-            )
+            id__in=validated_data["availabilities"]
+        )
         price_rule_objs.delete()
         return DeleteInstructorAvailabilities(deleted=True)
 
 
 class CreateInstructorOOO(graphene.Mutation):
     class Arguments:
-        instructor_id = graphene.ID(name='instructor')
+        instructor_id = graphene.ID(name="instructor")
         start_datetime = graphene.DateTime(required=True)
         end_datetime = graphene.DateTime(required=True)
         description = graphene.String()
@@ -478,13 +471,19 @@ class CreateInstructorOOO(graphene.Mutation):
     instructor_ooo = graphene.Field(InstructorOutOfOfficeType)
 
     @staticmethod
-    def mutate(root, info, instructor_id, start_datetime, end_datetime, description=''):
+    def mutate(root, info, instructor_id, start_datetime, end_datetime, description=""):
         start_datetime = start_datetime.replace(tzinfo=None)
         end_datetime = end_datetime.replace(tzinfo=None)
-        start_datetime_obj = pytz.timezone(
-            'America/Los_Angeles').localize(start_datetime).astimezone(pytz.utc)
-        end_datetime_obj = pytz.timezone(
-            'America/Los_Angeles').localize(end_datetime).astimezone(pytz.utc)
+        start_datetime_obj = (
+            pytz.timezone("America/Los_Angeles")
+            .localize(start_datetime)
+            .astimezone(pytz.utc)
+        )
+        end_datetime_obj = (
+            pytz.timezone("America/Los_Angeles")
+            .localize(end_datetime)
+            .astimezone(pytz.utc)
+        )
         instructor_ooo = InstructorOutOfOffice.objects.create(
             instructor_id=instructor_id,
             start_datetime=start_datetime_obj,
@@ -503,9 +502,9 @@ class DeleteInstructorOOO(graphene.Mutation):
     @staticmethod
     def mutate(root, info, **validated_data):
         try:
-            ooo_obj = InstructorOutOfOffice.objects.get(id=validated_data.get('id'))
+            ooo_obj = InstructorOutOfOffice.objects.get(id=validated_data.get("id"))
         except ObjectDoesNotExist:
-            raise GraphQLError('Failed delete mutation. InstructorOOO does not exist.')
+            raise GraphQLError("Failed delete mutation. InstructorOOO does not exist.")
         ooo_obj.delete()
         return DeleteInstructorOOO(deleted=True)
 
@@ -522,6 +521,7 @@ class CreateAdmin(graphene.Mutation):
         state = graphene.String()
         zipcode = graphene.String()
         google_auth_enabled = graphene.Boolean()
+        google_auth_email = graphene.String()
 
         # Admin fields
         admin_type = AdminTypeEnum(required=True)
@@ -533,8 +533,8 @@ class CreateAdmin(graphene.Mutation):
     def mutate(root, info, user, **validated_data):
         with transaction.atomic():
             # update request
-            if user.get('id'):
-                user_id = user.pop('id')
+            if user.get("id"):
+                user_id = user.pop("id")
                 User.objects.filter(id=user_id).update(**user)
                 Admin.objects.filter(user__id=user_id).update(**validated_data)
                 admin = Admin.objects.get(user__id=user_id)
@@ -542,35 +542,34 @@ class CreateAdmin(graphene.Mutation):
                     user_object = User.objects.get(id=user_id)
                     user_object.is_staff = True
                     user_object.save()
-                admin.refresh_from_db()
+                if not admin.google_auth_enabled:
+                    admin.google_auth_enabled = None
                 admin.save()
                 return CreateAdmin(admin=admin, created=False)
 
             # create user and token
             user_object = User.objects.create_user(
-                email=user['email'],
-                username=user['email'],
-                password=user['password'],
-                first_name=user['first_name'],
-                last_name=user['last_name'],
+                email=user["email"],
+                username=user["email"],
+                password=user["password"],
+                first_name=user["first_name"],
+                last_name=user["last_name"],
             )
-            if validated_data['admin_type'] == Admin.OWNER_TYPE:
+            if validated_data["admin_type"] == Admin.OWNER_TYPE:
                 user_object.is_staff = True
             user_object.save()
             Token.objects.get_or_create(user=user_object)
 
             # create account
             admin = Admin.objects.create(
-                user=user_object,
-                account_type='admin',
-                **validated_data
+                user=user_object, account_type="admin", **validated_data
             )
             return CreateAdmin(admin=admin)
 
 
 class CreateAccountNote(graphene.Mutation):
     class Arguments:
-        note_id = graphene.ID(name='id')
+        note_id = graphene.ID(name="id")
         user_id = graphene.ID()
         title = graphene.String()
         body = graphene.String()
@@ -584,24 +583,23 @@ class CreateAccountNote(graphene.Mutation):
     @staff_member_required
     def mutate(root, info, **validated_data):
         account_note, created = AccountNote.objects.update_or_create(
-            id=validated_data.pop('note_id', None),
-            defaults=validated_data
+            id=validated_data.pop("note_id", None), defaults=validated_data
         )
         return CreateAccountNote(account_note=account_note, created=created)
 
 
 class DeleteAccountNote(graphene.Mutation):
     class Arguments:
-        note_id = graphene.ID(name='id')
+        note_id = graphene.ID(name="id")
 
     deleted = graphene.Boolean()
 
     @staticmethod
     def mutate(root, info, **validated_data):
         try:
-            note_obj = AccountNote.objects.get(id=validated_data.get('note_id'))
+            note_obj = AccountNote.objects.get(id=validated_data.get("note_id"))
         except ObjectDoesNotExist:
-            raise GraphQLError('Failed delete mutation. PriceRule does not exist.')
+            raise GraphQLError("Failed delete mutation. PriceRule does not exist.")
         note_obj.delete()
         return DeleteAccountNote(deleted=True)
 
@@ -618,17 +616,23 @@ class RequestPasswordReset(graphene.Mutation):
         try:
             user = User.objects.get(email=email)
         except Exception:
-            return RequestPasswordReset(status='failed', error_message='No such user exists.')
+            return RequestPasswordReset(
+                status="failed", error_message="No such user exists."
+            )
 
-        token = jwt.encode({'email': email}, settings.SECRET_KEY, algorithm='HS256').decode('utf-8')
+        token = jwt.encode(
+            {"email": email}, settings.SECRET_KEY, algorithm="HS256"
+        ).decode("utf-8")
 
         email = Email.objects.create(
             template_id=RESET_PASSWORD_TEMPLATE,
             recipient=email,
-            data={'username': user.first_name, 'token': token}
+            data={"username": user.first_name, "token": token},
         )
 
-        return RequestPasswordReset(status=email.status, error_message=email.response_body)
+        return RequestPasswordReset(
+            status=email.status, error_message=email.response_body
+        )
 
 
 class ResetPassword(graphene.Mutation):
@@ -643,17 +647,17 @@ class ResetPassword(graphene.Mutation):
     @staff_member_required
     def mutate(root, info, **validated_data):
         user_obj = User.objects.filter(
-            Q(id = validated_data.get('user_id', None)) |
-            Q(username = validated_data.get('username', None))
+            Q(id=validated_data.get("user_id", None))
+            | Q(username=validated_data.get("username", None))
         )
 
         if user_obj.exists():
-            status = 'success'
+            status = "success"
             user_obj = user_obj[0]
-            user_obj.set_password(validated_data.get('new_password'))
+            user_obj.set_password(validated_data.get("new_password"))
             user_obj.save()
         else:
-            status = 'failure'
+            status = "failure"
 
         return ResetPassword(status=status)
 
@@ -670,22 +674,26 @@ class InviteStudent(graphene.Mutation):
         try:
             student = Student.objects.get(user__email=email)
         except Exception:
-            return InviteStudent(status='failed', error_message='No such user exists.')
+            return InviteStudent(status="failed", error_message="No such user exists.")
 
-        token = jwt.encode({'email': email}, settings.SECRET_KEY, algorithm='HS256').decode('utf-8')
+        token = jwt.encode(
+            {"email": email}, settings.SECRET_KEY, algorithm="HS256"
+        ).decode("utf-8")
 
         invite_email = Email.objects.create(
             template_id=INVITE_STUDENT_TEMPLATE,
             recipient=email,
             data={
-                'student_name': student.user.first_name,
-                'parent_name': student.primary_parent.user.first_name,
-                'token': token,
-                'business_name': 'Stark Industries'
-            }
+                "student_name": student.user.first_name,
+                "parent_name": student.primary_parent.user.first_name,
+                "token": token,
+                "business_name": "Stark Industries",
+            },
         )
 
-        return InviteStudent(status=invite_email.status, error_message=invite_email.response_body)
+        return InviteStudent(
+            status=invite_email.status, error_message=invite_email.response_body
+        )
 
 
 class InviteInstructor(graphene.Mutation):
@@ -700,21 +708,27 @@ class InviteInstructor(graphene.Mutation):
         try:
             instructor = Instructor.objects.get(user__email=email)
         except Exception:
-            return InviteInstructor(status='failed', error_message='No such user exists.')
+            return InviteInstructor(
+                status="failed", error_message="No such user exists."
+            )
 
-        token = jwt.encode({'email': email}, settings.SECRET_KEY, algorithm='HS256').decode('utf-8')
+        token = jwt.encode(
+            {"email": email}, settings.SECRET_KEY, algorithm="HS256"
+        ).decode("utf-8")
 
         invite_email = Email.objects.create(
             template_id=INVITE_INSTRUCTOR_TEMPLATE,
             recipient=email,
             data={
-                'instructor_name': instructor.user.first_name,
-                'token': token,
-                'business_name': 'Stark Industries'
-            }
+                "instructor_name": instructor.user.first_name,
+                "token": token,
+                "business_name": "Stark Industries",
+            },
         )
 
-        return InviteInstructor(status=invite_email.status, error_message=invite_email.response_body)
+        return InviteInstructor(
+            status=invite_email.status, error_message=invite_email.response_body
+        )
 
 
 class Mutation(graphene.ObjectType):

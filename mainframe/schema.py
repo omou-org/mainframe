@@ -1,6 +1,5 @@
 import graphene
 import graphql_jwt
-import graphql_social_auth
 
 from account import schema as account_schema, mutations as account_mutations
 from comms import schema as comms_schema, mutations as comms_mutations
@@ -13,19 +12,32 @@ from pricing import schema as pricing_schema, mutations as pricing_mutations
 from log import schema as log_schema
 
 
-class Query(account_schema.Query, comms_schema.Query, course_schema.Query,
-            invoice_schema.Query, scheduler_schema.Query, search_schema.Query,
-            pricing_schema.Query, log_schema.Query, onboarding_schema.Query,
-            graphene.ObjectType):
+class Query(
+    account_schema.Query,
+    comms_schema.Query,
+    course_schema.Query,
+    invoice_schema.Query,
+    scheduler_schema.Query,
+    search_schema.Query,
+    pricing_schema.Query,
+    log_schema.Query,
+    onboarding_schema.Query,
+    graphene.ObjectType,
+):
     pass
 
 
-class Mutation(account_mutations.Mutation, comms_mutations.Mutation,
-               course_mutations.Mutation, pricing_mutations.Mutation,
-               scheduler_mutations.Mutation, invoice_mutations.Mutation,
-               onboarding_mutations.Mutation, graphene.ObjectType):
+class Mutation(
+    account_mutations.Mutation,
+    comms_mutations.Mutation,
+    course_mutations.Mutation,
+    pricing_mutations.Mutation,
+    scheduler_mutations.Mutation,
+    invoice_mutations.Mutation,
+    onboarding_mutations.Mutation,
+    graphene.ObjectType,
+):
     token_auth = graphql_jwt.ObtainJSONWebToken.Field()
-    social_auth = graphql_social_auth.SocialAuthJWT.Field()
     verify_token = graphql_jwt.Verify.Field()
     refresh_token = graphql_jwt.Refresh.Field()
 

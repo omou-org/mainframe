@@ -7,13 +7,13 @@ from course.models import Course, Enrollment, EnrollmentNote
 
 
 class Command(BaseCommand):
-    help = 'Closes the specified poll for voting'
+    help = "Closes the specified poll for voting"
 
     bad_rows = []
     rowNum = 2
 
     def handle(self, *args, **options):
-        self.stdout.write(self.style.SUCCESS('Successfully called'))
+        self.stdout.write(self.style.SUCCESS("Successfully called"))
         dataframe = self.read_data_from_file("data/summit_enrollment.csv")
 
         self.insert_accounts(dataframe)
@@ -52,15 +52,15 @@ class Command(BaseCommand):
             notes = row[6]
 
             enrollment = Enrollment.objects.create(
-                student=student,
-                course=course,
-                payment=payment
+                student=student, course=course, payment=payment
             )
             enrollment.save()
 
             # enrollment note
             if isinstance(notes, str):
-                enrollment_note = EnrollmentNote.objects.create(enrollment=enrollment, body=notes)
+                enrollment_note = EnrollmentNote.objects.create(
+                    enrollment=enrollment, body=notes
+                )
                 enrollment_note.save()
         except Exception as e:
             print("ERROR: creating enrollment obj", row)

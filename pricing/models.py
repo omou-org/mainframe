@@ -30,9 +30,7 @@ class PriceRule(models.Model):
         (COLLEGE_LVL, "College"),
     )
     academic_level = models.CharField(
-        max_length=20,
-        choices=ACADEMIC_CHOICES,
-        default=ELEMENTARY_LVL
+        max_length=20, choices=ACADEMIC_CHOICES, default=ELEMENTARY_LVL
     )
 
     TUTORING = "tutoring"
@@ -44,15 +42,12 @@ class PriceRule(models.Model):
         (CLASS, "Class"),
     )
     course_type = models.CharField(
-        max_length=20,
-        choices=COURSE_CHOICES,
-        default=TUTORING
+        max_length=20, choices=COURSE_CHOICES, default=TUTORING
     )
 
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
-
 
 
 class Discount(models.Model):

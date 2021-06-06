@@ -12,13 +12,13 @@ from django.contrib.auth.models import User
 
 
 class Command(BaseCommand):
-    help = 'Closes the specified poll for voting'
+    help = "Closes the specified poll for voting"
 
     bad_rows = []
     rowNum = 1
 
     def handle(self, *args, **options):
-        self.stdout.write(self.style.SUCCESS('Successfully called'))
+        self.stdout.write(self.style.SUCCESS("Successfully called"))
         dataframe = self.read_data_from_file("data/summit_tutoring.csv")
 
         self.insert_courses(dataframe)
@@ -39,15 +39,14 @@ class Command(BaseCommand):
         if isinstance(row[3], float):
             return None
         try:
-            tokens = row[3].split(' ')
+            tokens = row[3].split(" ")
             first_name = tokens[0]
             last_name = ""
             if len(tokens) > 1:
                 last_name = tokens[1]
 
             queryset = Instructor.objects.filter(
-                user__first_name=first_name,
-                user__last_name=last_name
+                user__first_name=first_name, user__last_name=last_name
             )
             if queryset.count() > 0:
                 return queryset[0]
@@ -59,7 +58,9 @@ class Command(BaseCommand):
                     first_name=first_name,
                     last_name=last_name,
                 )
-                instructor = Instructor.objects.create(user=instructor_user, account_type="INSTRUCTOR")
+                instructor = Instructor.objects.create(
+                    user=instructor_user, account_type="INSTRUCTOR"
+                )
                 instructor.save()
                 return instructor
         except Exception as e:
@@ -93,16 +94,13 @@ class Command(BaseCommand):
                     day_of_week=day_of_week,
                     start_time=start_time,
                     end_time=end_time,
-                    type='T',
-                    course_category=course_category
+                    type="T",
+                    course_category=course_category,
                 )
                 course.save()
 
                 if isinstance(note, str):
-                    course_note = CourseNote.objects.create(
-                        body=note,
-                        course=course
-                    )
+                    course_note = CourseNote.objects.create(body=note, course=course)
                     course_note.save()
                 return course
         except Exception as e:
@@ -110,6 +108,7 @@ class Command(BaseCommand):
             print(e)
             self.bad_rows.append(str(self.rowNum) + " course")
             return None
+
 
 # Index to column name mapping:
 # 1 "Criteria"

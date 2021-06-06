@@ -8,22 +8,32 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Email',
+            name="Email",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('template_id', models.CharField(max_length=50)),
-                ('sender', models.EmailField(default='omoudev@gmail.com', max_length=254)),
-                ('recipient', models.EmailField(max_length=254)),
-                ('data', django.contrib.postgres.fields.jsonb.JSONField()),
-                ('response_status', models.CharField(max_length=10)),
-                ('response_body', models.CharField(max_length=1000)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("template_id", models.CharField(max_length=50)),
+                (
+                    "sender",
+                    models.EmailField(default="omoudev@gmail.com", max_length=254),
+                ),
+                ("recipient", models.EmailField(max_length=254)),
+                ("data", django.contrib.postgres.fields.jsonb.JSONField()),
+                ("response_status", models.CharField(max_length=10)),
+                ("response_body", models.CharField(max_length=1000)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
         ),
     ]

@@ -8,46 +8,71 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('account', '0007_admin'),
-        ('course', '0003_auto_20190604_0443'),
+        ("account", "0007_admin"),
+        ("course", "0003_auto_20190604_0443"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='course',
-            name='created_at',
-            field=models.DateTimeField(auto_now_add=True, default=django.utils.timezone.now),
+            model_name="course",
+            name="created_at",
+            field=models.DateTimeField(
+                auto_now_add=True, default=django.utils.timezone.now
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='course',
-            name='updated_at',
+            model_name="course",
+            name="updated_at",
             field=models.DateTimeField(auto_now=True),
         ),
         migrations.AddField(
-            model_name='coursecategory',
-            name='created_at',
-            field=models.DateTimeField(auto_now_add=True, default=django.utils.timezone.now),
+            model_name="coursecategory",
+            name="created_at",
+            field=models.DateTimeField(
+                auto_now_add=True, default=django.utils.timezone.now
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='coursecategory',
-            name='updated_at',
+            model_name="coursecategory",
+            name="updated_at",
             field=models.DateTimeField(auto_now=True),
         ),
         migrations.AlterField(
-            model_name='course',
-            name='instructor',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='account.Instructor'),
+            model_name="course",
+            name="instructor",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, to="account.Instructor"
+            ),
         ),
         migrations.CreateModel(
-            name='Enrollment',
+            name="Enrollment",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('course', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='course.Course')),
-                ('student', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='account.Student')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "course",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, to="course.Course"
+                    ),
+                ),
+                (
+                    "student",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to="account.Student",
+                    ),
+                ),
             ],
         ),
     ]

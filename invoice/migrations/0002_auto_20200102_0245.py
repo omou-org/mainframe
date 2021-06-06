@@ -6,13 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('invoice', '0001_initial'),
+        ("invoice", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='payment',
-            name='enrollments',
-            field=models.ManyToManyField(related_name='payment_list', through='invoice.Registration', to='course.Enrollment'),
+            model_name="payment",
+            name="enrollments",
+            field=models.ManyToManyField(
+                related_name="payment_list",
+                through="invoice.Registration",
+                to="course.Enrollment",
+            ),
         ),
     ]

@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('comms', '0006_auto_20200725_0550'),
+        ("comms", "0006_auto_20200725_0550"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='parentnotificationsettings',
-            name='course_requests_sms',
+            model_name="parentnotificationsettings",
+            name="course_requests_sms",
             field=models.BooleanField(default=False),
         ),
     ]

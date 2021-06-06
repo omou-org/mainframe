@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('course', '0025_optional_day_of_week'),
-        ('account', '0034_instructoroutofoffice_description'),
+        ("course", "0025_optional_day_of_week"),
+        ("account", "0034_instructoroutofoffice_description"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='instructor',
-            name='subjects',
+            model_name="instructor",
+            name="subjects",
         ),
         migrations.AddField(
-            model_name='instructor',
-            name='subjects',
-            field=models.ManyToManyField(blank=True, to='course.CourseCategory'),
+            model_name="instructor",
+            name="subjects",
+            field=models.ManyToManyField(blank=True, to="course.CourseCategory"),
         ),
     ]

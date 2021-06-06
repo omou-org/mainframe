@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('comms', '0002_smsnotification'),
+        ("comms", "0002_smsnotification"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='smsnotification',
-            name='response_body',
+            model_name="smsnotification",
+            name="response_body",
             field=models.CharField(max_length=1000, null=True),
         ),
         migrations.AlterField(
-            model_name='smsnotification',
-            name='response_status',
+            model_name="smsnotification",
+            name="response_status",
             field=models.CharField(max_length=20, null=True),
         ),
     ]

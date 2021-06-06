@@ -6,21 +6,29 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('course', '0019_auto_20191229_2155'),
+        ("course", "0019_auto_20191229_2155"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='enrollment',
-            name='num_sessions',
+            model_name="enrollment",
+            name="num_sessions",
         ),
         migrations.RemoveField(
-            model_name='enrollment',
-            name='payment',
+            model_name="enrollment",
+            name="payment",
         ),
         migrations.AlterField(
-            model_name='course',
-            name='type',
-            field=models.CharField(choices=[('class', 'Class'), ('small_group', 'Small Group'), ('tutoring', 'Tutoring')], default='class', max_length=15),
+            model_name="course",
+            name="type",
+            field=models.CharField(
+                choices=[
+                    ("class", "Class"),
+                    ("small_group", "Small Group"),
+                    ("tutoring", "Tutoring"),
+                ],
+                default="class",
+                max_length=15,
+            ),
         ),
     ]

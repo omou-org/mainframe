@@ -7,25 +7,39 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('account', '0042_userschoolinfo'),
+        ("account", "0042_userschoolinfo"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='StudentSchoolInfo',
+            name="StudentSchoolInfo",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=512)),
-                ('textbook', models.CharField(max_length=512)),
-                ('teacher', models.CharField(max_length=100)),
-                ('current_grade', models.CharField(max_length=5)),
-                ('current_topic', models.CharField(max_length=64)),
-                ('student_strengths', models.CharField(max_length=1024)),
-                ('student_weaknesses', models.CharField(max_length=1024)),
-                ('student', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='account.Student')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=512)),
+                ("textbook", models.CharField(max_length=512)),
+                ("teacher", models.CharField(max_length=100)),
+                ("current_grade", models.CharField(max_length=5)),
+                ("current_topic", models.CharField(max_length=64)),
+                ("student_strengths", models.CharField(max_length=1024)),
+                ("student_weaknesses", models.CharField(max_length=1024)),
+                (
+                    "student",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to="account.Student",
+                    ),
+                ),
             ],
         ),
         migrations.DeleteModel(
-            name='UserSchoolInfo',
+            name="UserSchoolInfo",
         ),
     ]

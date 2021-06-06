@@ -6,18 +6,18 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('invoice', '0005_auto_20200225_0516'),
+        ("invoice", "0005_auto_20200225_0516"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='payment',
-            old_name='base_amount',
-            new_name='sub_total',
+            model_name="payment",
+            old_name="base_amount",
+            new_name="sub_total",
         ),
         migrations.RenameField(
-            model_name='payment',
-            old_name='total_amount',
-            new_name='total',
+            model_name="payment",
+            old_name="total_amount",
+            new_name="total",
         ),
     ]

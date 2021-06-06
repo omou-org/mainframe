@@ -14,22 +14,17 @@ from account.models import (
     Parent,
     ParentManager,
     Admin,
-    AdminManager
+    AdminManager,
 )
 
-from course.models import (
-    Course,
-    Enrollment
-)
+from course.models import Course, Enrollment
 
-from scheduler.models import (
-    Session
-)
+from scheduler.models import Session
 
 from search.serializers import SearchViewSerializer
 
 
-class AccountsSearchView(generics.ListAPIView): 
+class AccountsSearchView(generics.ListAPIView):
     serializer_class = SearchViewSerializer
 
     def list(self, request, *args, **kwargs):
@@ -45,33 +40,35 @@ class AccountsSearchView(generics.ListAPIView):
         searchResults = Student.objects.none()
 
         # query input check
-        queries = self.request.query_params.get('query', None)
+        queries = self.request.query_params.get("query", None)
         if queries is None or False in [query.isalnum() for query in queries.split()]:
             return list(searchResults)
 
         # query with profile filter
-        profileFilter = self.request.query_params.get('profile', None)
+        profileFilter = self.request.query_params.get("profile", None)
         if profileFilter is not None:
             filterToSearch = {
-                "student" : getattr(StudentManager, "search"),
-                "instructor" : getattr(InstructorManager, "search"),
-                "parent" : getattr(ParentManager, "search"),
-                "admin" : getattr(AdminManager, "search"),
+                "student": getattr(StudentManager, "search"),
+                "instructor": getattr(InstructorManager, "search"),
+                "parent": getattr(ParentManager, "search"),
+                "admin": getattr(AdminManager, "search"),
             }
             filterToModel = {
-                "student" : Student.objects,
-                "instructor" : Instructor.objects,
-                "parent" : Parent.objects,
-                "admin" : Admin.objects
+                "student": Student.objects,
+                "instructor": Instructor.objects,
+                "parent": Parent.objects,
+                "admin": Admin.objects,
             }
 
             for query in queries.split():
                 if filterToSearch.get(profileFilter):
-                    searchResults = filterToSearch[profileFilter](filterToModel[profileFilter], query, searchResults)
-            
+                    searchResults = filterToSearch[profileFilter](
+                        filterToModel[profileFilter], query, searchResults
+                    )
+
             if profileFilter == "student":
                 try:
-                    gradeFilter = int(self.request.query_params.get('grade', None))
+                    gradeFilter = int(self.request.query_params.get("grade", None))
                     if 1 <= gradeFilter and gradeFilter <= 13:
                         searchResults = Student.objects.filter(grade=gradeFilter)
                 except:
@@ -84,43 +81,66 @@ class AccountsSearchView(generics.ListAPIView):
             instructorSearchResults = Instructor.objects.none()
             adminSearchResults = Admin.objects.none()
             for query in queries.split():
-                studentSearchResults = Student.objects.search(query, studentSearchResults)
+                studentSearchResults = Student.objects.search(
+                    query, studentSearchResults
+                )
                 parentSearchResults = Parent.objects.search(query, parentSearchResults)
-                instructorSearchResults = Instructor.objects.search(query, instructorSearchResults)
+                instructorSearchResults = Instructor.objects.search(
+                    query, instructorSearchResults
+                )
                 adminSearchResults = Admin.objects.search(query, adminSearchResults)
-            searchResults = chain(studentSearchResults, parentSearchResults, instructorSearchResults, adminSearchResults)
+            searchResults = chain(
+                studentSearchResults,
+                parentSearchResults,
+                instructorSearchResults,
+                adminSearchResults,
+            )
 
         # sort results
-        sortFilter = self.request.query_params.get('sort', None)
+        sortFilter = self.request.query_params.get("sort", None)
         if sortFilter is not None:
             if sortFilter == "alphaAsc":
-                searchResults = sorted(searchResults, key=attrgetter('user.first_name','user.last_name'))
+                searchResults = sorted(
+                    searchResults, key=attrgetter("user.first_name", "user.last_name")
+                )
             elif sortFilter == "alphaDesc":
-                searchResults = sorted(searchResults, key=attrgetter('user.first_name','user.last_name'), reverse=True)
+                searchResults = sorted(
+                    searchResults,
+                    key=attrgetter("user.first_name", "user.last_name"),
+                    reverse=True,
+                )
             elif sortFilter == "idAsc":
-                searchResults = sorted(searchResults, key=lambda obj:obj.user.id)
-            elif sortFilter == "idDesc": 
-                searchResults = sorted(searchResults, key=lambda obj:obj.user.id, reverse=True)
+                searchResults = sorted(searchResults, key=lambda obj: obj.user.id)
+            elif sortFilter == "idDesc":
+                searchResults = sorted(
+                    searchResults, key=lambda obj: obj.user.id, reverse=True
+                )
             elif sortFilter == "updateAsc":
-                searchResults = sorted(searchResults, key=lambda obj:obj.updated_at)
+                searchResults = sorted(searchResults, key=lambda obj: obj.updated_at)
             elif sortFilter == "updateDesc":
-                searchResults = sorted(searchResults, key=lambda obj:obj.updated_at, reverse=True)
+                searchResults = sorted(
+                    searchResults, key=lambda obj: obj.updated_at, reverse=True
+                )
 
         searchResults = list(searchResults)
         self.request.session["count"] = len(searchResults)
 
         # extract searches in page range
-        pageFilter = self.request.query_params.get('page', None)
-        pageSize = self.request.query_params.get('size', None)
+        pageFilter = self.request.query_params.get("page", None)
+        pageSize = self.request.query_params.get("size", None)
         self.request.session["page"] = pageFilter
         if pageFilter is not None and pageSize is not None:
             try:
                 pageSize = int(pageSize)
                 pageNumber = int(pageFilter)
                 resultLen = len(searchResults)
-                rangeEnd = pageSize*pageNumber
-                if pageNumber > 0 and rangeEnd-pageSize < resultLen:
-                    searchResults = searchResults[rangeEnd-pageSize : resultLen if resultLen <= rangeEnd else rangeEnd]
+                rangeEnd = pageSize * pageNumber
+                if pageNumber > 0 and rangeEnd - pageSize < resultLen:
+                    searchResults = searchResults[
+                        rangeEnd - pageSize : resultLen
+                        if resultLen <= rangeEnd
+                        else rangeEnd
+                    ]
                 else:
                     searchResults = Course.objects.none()
             except ValueError:
@@ -145,19 +165,19 @@ class CoursesSearchView(generics.ListAPIView):
         searchResults = Course.objects.none()
 
         # query input check
-        query = self.request.query_params.get('query', None)
+        query = self.request.query_params.get("query", None)
         if query is None or False in [word.isalnum() for word in query.split()]:
-            return list(searchResults) 
+            return list(searchResults)
 
         for word in query.split():
             dayOfWeekDic = {
-                "monday":"MON",
-                "tuesday":"TUE",
-                "wednesday":"WED",
-                "thursday":"THU",
-                "friday":"FRI",
-                "saturday":"SAT",
-                "sunday":"SUN"
+                "monday": "MON",
+                "tuesday": "TUE",
+                "wednesday": "WED",
+                "thursday": "THU",
+                "friday": "FRI",
+                "saturday": "SAT",
+                "sunday": "SUN",
             }
             # date check
             if dayOfWeekDic.get(word.lower()):
@@ -165,47 +185,49 @@ class CoursesSearchView(generics.ListAPIView):
             searchResults = Course.objects.search(word, searchResults)
 
         # course filter
-        courseFilter = self.request.query_params.get('course', None)
+        courseFilter = self.request.query_params.get("course", None)
         if courseFilter is not None:
             if courseFilter == "tutoring":
-                searchResults = searchResults.filter(max_capacity = 1)
+                searchResults = searchResults.filter(max_capacity=1)
             if courseFilter == "group":
-                searchResults = searchResults.filter(max_capacity__lte = 5) 
+                searchResults = searchResults.filter(max_capacity__lte=5)
             if courseFilter == "class":
-                searchResults = searchResults.filter(max_capacity__gt = 5)
-        
+                searchResults = searchResults.filter(max_capacity__gt=5)
+
         # size filter
-        sizeFilter = self.request.query_params.get('size', None)
+        sizeFilter = self.request.query_params.get("size", None)
         if sizeFilter is not None:
             size = int(sizeFilter)
             course_ids = []
             for course in searchResults:
-                curr_size = len(Enrollment.objects.filter(course = course.id))
+                curr_size = len(Enrollment.objects.filter(course=course.id))
                 if curr_size <= size:
                     course_ids.append(course.id)
-            searchResults = Course.objects.filter(id__in = course_ids) 
+            searchResults = Course.objects.filter(id__in=course_ids)
 
         # availability filter
-        availabilityFilter = self.request.query_params.get('availability', None)
-        if availabilityFilter is not None and (availabilityFilter == "open" or availabilityFilter == "filled"):
+        availabilityFilter = self.request.query_params.get("availability", None)
+        if availabilityFilter is not None and (
+            availabilityFilter == "open" or availabilityFilter == "filled"
+        ):
             # calculate availability
             course_ids = []
             for course in searchResults:
-                capacity = len(Enrollment.objects.filter(course = course.id))
+                capacity = len(Enrollment.objects.filter(course=course.id))
                 if availabilityFilter == "open" and capacity < course.max_capacity:
                     course_ids.append(course.id)
                 if availabilityFilter == "filled" and capacity >= course.max_capacity:
                     course_ids.append(course.id)
-            searchResults = Course.objects.filter(id__in = course_ids)        
-            
+            searchResults = Course.objects.filter(id__in=course_ids)
+
         # sort results
-        sortFilter = self.request.query_params.get('sort', None)
+        sortFilter = self.request.query_params.get("sort", None)
         if sortFilter is not None:
             sortToParameter = {
-                "dateAsc":"start_date",
-                "dateDesc":"-start_date",
-                "timeAsc":"start_time",
-                "timeDesc":"-start_time"
+                "dateAsc": "start_date",
+                "dateDesc": "-start_date",
+                "timeAsc": "start_time",
+                "timeDesc": "-start_time",
             }
             if sortToParameter.get(sortFilter):
                 searchResults = searchResults.order_by(sortToParameter[sortFilter])
@@ -214,17 +236,21 @@ class CoursesSearchView(generics.ListAPIView):
         self.request.session["count"] = len(searchResults)
 
         # extract searches in page range
-        pageFilter = self.request.query_params.get('page', None)
-        pageSize = self.request.query_params.get('size', None)
+        pageFilter = self.request.query_params.get("page", None)
+        pageSize = self.request.query_params.get("size", None)
         self.request.session["page"] = pageFilter
         if pageFilter is not None and pageSize is not None:
             try:
                 pageSize = int(pageSize)
                 pageNumber = int(pageFilter)
                 resultLen = len(searchResults)
-                rangeEnd = pageSize*pageNumber
-                if pageNumber > 0 and rangeEnd-pageSize < resultLen:
-                    searchResults = searchResults[rangeEnd-pageSize : resultLen if resultLen <= rangeEnd else rangeEnd]
+                rangeEnd = pageSize * pageNumber
+                if pageNumber > 0 and rangeEnd - pageSize < resultLen:
+                    searchResults = searchResults[
+                        rangeEnd - pageSize : resultLen
+                        if resultLen <= rangeEnd
+                        else rangeEnd
+                    ]
                 else:
                     searchResults = Course.objects.none()
             except ValueError:
@@ -248,50 +274,59 @@ class SessionsSearchView(generics.ListAPIView):
     def get_queryset(self):
         searchResults = Session.objects.all()
 
-        query = self.request.query_params.get('query', None)
+        query = self.request.query_params.get("query", None)
         if query is not None:
             for word in query.split():
                 searchResults = Session.objects.search(word, searchResults)
-        
+
         # time filter
-        timeFilter = self.request.query_params.get('time', None)
-        if timeFilter is not None: # all is default
+        timeFilter = self.request.query_params.get("time", None)
+        if timeFilter is not None:  # all is default
             if timeFilter == "future":
-                searchResults = searchResults.filter(start_datetime__gte = datetime.utcnow())
+                searchResults = searchResults.filter(
+                    start_datetime__gte=datetime.utcnow()
+                )
             elif timeFilter == "past":
-                searchResults = searchResults.filter(start_datetime__lte = datetime.utcnow())
+                searchResults = searchResults.filter(
+                    start_datetime__lte=datetime.utcnow()
+                )
             elif timeFilter == "today":
-                searchResults = searchResults.filter(start_datetime__date = datetime.utcnow())
+                searchResults = searchResults.filter(
+                    start_datetime__date=datetime.utcnow()
+                )
 
         # sort results
-        sortFilter = self.request.query_params.get('sort', None)
+        sortFilter = self.request.query_params.get("sort", None)
         if sortFilter is not None:
             sortToParameter = {
-                "timeAsc":"start_datetime",
-                "timeDesc":"-start_datetime"
+                "timeAsc": "start_datetime",
+                "timeDesc": "-start_datetime",
             }
             if sortToParameter.get(sortFilter):
                 searchResults = searchResults.order_by(sortToParameter[sortFilter])
-        
+
         searchResults = list(searchResults)
         self.request.session["count"] = len(searchResults)
 
         # extract searches in page range
-        pageFilter = self.request.query_params.get('page', None)
-        pageSize = self.request.query_params.get('size', None)
+        pageFilter = self.request.query_params.get("page", None)
+        pageSize = self.request.query_params.get("size", None)
         self.request.session["page"] = pageFilter
         if pageFilter is not None and pageSize is not None:
             try:
                 pageSize = int(pageSize)
                 pageNumber = int(pageFilter)
                 resultLen = len(searchResults)
-                rangeEnd = pageSize*pageNumber
-                if pageNumber > 0 and rangeEnd-pageSize < resultLen:
-                    searchResults = searchResults[rangeEnd-pageSize : resultLen if resultLen <= rangeEnd else rangeEnd]
+                rangeEnd = pageSize * pageNumber
+                if pageNumber > 0 and rangeEnd - pageSize < resultLen:
+                    searchResults = searchResults[
+                        rangeEnd - pageSize : resultLen
+                        if resultLen <= rangeEnd
+                        else rangeEnd
+                    ]
                 else:
                     searchResults = Course.objects.none()
             except ValueError:
                 pass
-        
-        return searchResults
 
+        return searchResults

@@ -9,21 +9,40 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('course', '0027_auto_20200720_0339'),
-        ('comms', '0007_parentnotificationsettings_course_requests_sms'),
+        ("course", "0027_auto_20200720_0339"),
+        ("comms", "0007_parentnotificationsettings_course_requests_sms"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Announcement',
+            name="Announcement",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('subject', models.TextField()),
-                ('body', models.TextField()),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('course', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='course.Course')),
-                ('poster', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("subject", models.TextField()),
+                ("body", models.TextField()),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "course",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, to="course.Course"
+                    ),
+                ),
+                (
+                    "poster",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]

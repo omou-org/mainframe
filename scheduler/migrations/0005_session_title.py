@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('scheduler', '0004_session_instructor'),
+        ("scheduler", "0004_session_instructor"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='session',
-            name='title',
+            model_name="session",
+            name="title",
             field=models.TextField(blank=True),
         ),
     ]

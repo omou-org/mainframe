@@ -7,15 +7,18 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('course', '0029_auto_20201116_1018'),
-        ('scheduler', '0008_sessionnote'),
+        ("course", "0029_auto_20201116_1018"),
+        ("scheduler", "0008_sessionnote"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='session',
-            name='availability',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='course.CourseAvailability'),
+            model_name="session",
+            name="availability",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT,
+                to="course.CourseAvailability",
+            ),
             preserve_default=False,
         ),
     ]
