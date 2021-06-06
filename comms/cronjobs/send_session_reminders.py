@@ -1,6 +1,6 @@
 import arrow
 
-from comms.models import Email, InstructorNotificationSettings, ParentNotificationSettings
+from comms.models import Email, InstructorNotificationSettings, ParentNotificationSettings, SMSNotification
 from comms.templates import SESSION_REMINDER_TEMPLATE
 from scheduler.models import Session
 
@@ -43,11 +43,19 @@ def run():
         for enrollment in session.course.enrollment_set.all():
             primary_parent = enrollment.student.primary_parent
             parent_settings = ParentNotificationSettings.objects.get(parent=primary_parent)
+            sender=SMSNotification.objects.get(sender)
+            print(sender)
             if parent_settings.session_reminder_email:
                 Email.objects.create(
                     template_id=SESSION_REMINDER_TEMPLATE,
                     recipient=primary_parent.user.email,
                     data=email_data
+                )
+            if parent_settings.session_reminder_sms:
+                SMSNotification.objects.create(
+                    from_='+15865018299',
+                    to=primary_parent.phone_number,
+                    body='The session is about to start'
                 )
 
         session.sent_upcoming_reminder = True
