@@ -984,12 +984,12 @@ class StripeOnboarding(graphene.Mutation):
         admin = Admin.objects.get(user__id=user_id)
         stripe.api_key = settings.STRIPE_API_KEY
 
-        account = stripe.Account.create(type='standard', email=admin.user.email)
+        account = stripe.Account.create(type="standard", email=admin.user.email)
         account_links = stripe.AccountLink.create(
             account=account.id,
-            refresh_url='https://omoulearning.com/',
-            return_url='https://omoulearning.com/finished_onboarding',
-            type='account_onboarding'
+            refresh_url="https://omoulearning.com/",
+            return_url="https://omoulearning.com/finished_onboarding",
+            type="account_onboarding",
         )
 
         return StripeOnboarding(onboarding_url=account_links.url)

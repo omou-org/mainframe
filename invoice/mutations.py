@@ -93,8 +93,8 @@ class CreateInvoice(graphene.Mutation):
         # stripe integration
         stripe_checkout_id = None
         if (
-            validated_data.get("payment_status", None) == PaymentChoiceEnum.UNPAID and
-            validated_data["method"] == "credit_card"
+            validated_data.get("payment_status", None) == PaymentChoiceEnum.UNPAID
+            and validated_data["method"] == "credit_card"
         ):
             stripe.api_key = settings.STRIPE_API_KEY
             line_items = []
