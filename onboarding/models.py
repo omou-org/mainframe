@@ -6,6 +6,7 @@ class Business(models.Model):
     phone_number = models.CharField(max_length=10)
     email = models.EmailField(max_length=200)
     address = models.CharField(max_length=200)
+    stripe_account_id = models.CharField(max_length=50, null=True, blank=True)
 
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)
