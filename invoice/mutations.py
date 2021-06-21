@@ -2,13 +2,13 @@ from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
 
+import arrow
 import graphene
 import stripe
 from graphene import Field, ID, Int, List, String, Float, Boolean
 from graphql import GraphQLError
 
 from account.models import Admin, Parent
-from course.models import Enrollment
 from invoice.models import Invoice, RegistrationCart
 from invoice.serializers import InvoiceSerializer
 from invoice.schema import PaymentChoiceEnum, InvoiceType, CartType
@@ -31,8 +31,8 @@ class CreateInvoice(graphene.Mutation):
         classes = List(ClassQuote)
         tutoring = List(TutoringQuote)
         parent = ID()
+        pay_now = Boolean()
         registrations = List(EnrollmentQuote)
-        payment_status = PaymentChoiceEnum()
 
     invoice = Field(InvoiceType)
     stripe_connected_account = String()
@@ -44,8 +44,13 @@ class CreateInvoice(graphene.Mutation):
     def mutate(root, info, **validated_data):
         data = validated_data
 
+        if data.get('pay_now', False) and data['method'] != 'credit_card':
+            # only admins may create a cash/check invoice to be paid now
+            if not Admin.objects.filter(user__id=info.context.user.id).exists():
+                raise GraphQLError("Failed Mutation. Only Admins may create cash/check invoices to be paid now.")
+
         # update invoice
-        if data.get("invoice_id"):
+        if data.get('invoice_id'):
             # only admins may update an invoice
             if not Admin.objects.filter(user__id=info.context.user.id).exists():
                 raise GraphQLError("Failed Mutation. Only Admins may update Invoices.")
@@ -92,10 +97,9 @@ class CreateInvoice(graphene.Mutation):
 
         # stripe integration
         stripe_checkout_id = None
-        if (
-            validated_data.get("payment_status", None) == PaymentChoiceEnum.UNPAID
-            and validated_data["method"] == "credit_card"
-        ):
+        if data.get("pay_now", False) and data["method"] == "credit_card":
+            invoice.payment_due_date = arrow.utcnow().date()
+            invoice.save()
             stripe.api_key = settings.STRIPE_API_KEY
             line_items = []
             for registration in invoice.registration_set.all():
@@ -122,6 +126,10 @@ class CreateInvoice(graphene.Mutation):
                 stripe_account="acct_1HqSAYETk4EmXsx3",
             )
             stripe_checkout_id = session.id
+        else:
+            # unpaid flow
+            invoice.payment_due_date = arrow.utcnow().shift(days=5)
+            invoice.save()
 
         return CreateInvoice(
             invoice=invoice,
