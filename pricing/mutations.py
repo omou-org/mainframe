@@ -44,13 +44,17 @@ class CreateTuitionRule(graphene.Mutation):
     def mutate(root, info, **validated_data):
         business_id = Admin.objects.get(user__id = info.context.user.id).business.id
 
-        # check if rule with category and course type exists
+        # check if rule with category, course type, and same instructors exists
         existing_rules = TuitionRule.objects.business(business_id).filter(
             category=validated_data.get("category_id"),
-            course_type=validated_data.get("course_type")
+            course_type=validated_data.get("course_type"),
+            instructors__in=validated_data.get("instructors", [])
         )
         if "rule_id" not in validated_data and existing_rules.count() > 0:
             raise GraphQLError("Failed mutation. TuitionRule already exists.")
+        # also check if any instructors in another rule. maybe above does it already
+
+
 
         # check if rule with id exists
         if "rule_id" in validated_data and not TuitionRule.objects.business(business_id).filter(id=validated_data.get("rule_id")).exists():
