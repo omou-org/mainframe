@@ -1,4 +1,5 @@
 import graphene
+import stripe
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required, staff_member_required
 from graphene_file_upload.scalars import Upload
@@ -273,7 +274,7 @@ def check_account_sheet_row(row, account_type, business_id=None):
         if not phone or not PHONE_PATTERN.search(str(phone)):
             return "The phone number is invalid. Please check the phone number again."
 
-        if account_type is "parent" and not zipcode:
+        if account_type == "parent" and not zipcode:
             pass
         elif not zipcode or not ZIP_PATTERN.search(str(zipcode)):
             return "The zip code is invalid. Please check the zip code again."
@@ -969,9 +970,55 @@ class UploadEnrollmentsMutation(graphene.Mutation):
         )
 
 
+class StripeOnboarding(graphene.Mutation):
+    class Arguments:
+        refresh_url_param = graphene.String(required=True)
+        return_url_param = graphene.String(required=True)
+
+    onboarding_url = graphene.String()
+
+    @staticmethod
+    @login_required
+    @staff_member_required
+    def mutate(root, info, refresh_url_param, return_url_param):
+        user_id = info.context.user.id
+        admin = Admin.objects.get(user__id=user_id)
+        stripe.api_key = settings.STRIPE_API_KEY
+
+        account = stripe.Account.create(type='standard', email=admin.user.email)
+        business = admin.business
+        business.stripe_account_id = account.stripe_id
+        business.save()
+
+        account_links = stripe.AccountLink.create(
+            account=account.id,
+            refresh_url=f'{settings.BASE_URL}/{refresh_url_param}',
+            return_url=f'{settings.BASE_URL}/{return_url_param}',
+            type='account_onboarding'
+        )
+
+        return StripeOnboarding(onboarding_url=account_links.url)
+
+
+class CheckStripeOnboardingStatus(graphene.Mutation):
+    details_submitted = graphene.Boolean()
+
+    @staticmethod
+    @login_required
+    @staff_member_required
+    def mutate(root, info):
+        user_id = info.context.user.id
+        admin = Admin.objects.get(user__id=user_id)
+        stripe.api_key = settings.STRIPE_API_KEY
+        account = stripe.Account.retrieve(admin.business.stripe_account_id)
+        return StripeOnboarding(details_submitted=account.details_submitted)
+
+
 class Mutation(graphene.ObjectType):
     update_business = UpdateBusiness.Field()
     create_owner_and_business = CreateOwnerAndBusiness.Field()
     upload_accounts = UploadAccountsMutation.Field()
     upload_courses = UploadCoursesMutation.Field()
     upload_enrollments = UploadEnrollmentsMutation.Field()
+    stripe_onboarding = StripeOnboarding.Field()
+    check_stripe_onboarding_status = StripeOnboarding.Field()

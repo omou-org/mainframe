@@ -543,7 +543,7 @@ class CreateAdmin(graphene.Mutation):
                     user_object.is_staff = True
                     user_object.save()
                 if not admin.google_auth_enabled:
-                    admin.google_auth_enabled = None
+                    admin.google_auth_email = None
                 admin.save()
                 return CreateAdmin(admin=admin, created=False)
 
