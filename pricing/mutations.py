@@ -46,45 +46,58 @@ class CreateTuitionRule(graphene.Mutation):
     def mutate(root, info, **validated_data):
         business_id = Admin.objects.get(user__id = info.context.user.id).business.id
 
-        # check if rule with category, course type, and same instructors exists
-        existing_rules = TuitionRule.objects.business(business_id).filter(
-            category=validated_data.get("category_id"),
-            course_type=validated_data.get("course_type"),
-            instructors__in=validated_data.get("instructors", [])
-        )
-        if "rule_id" not in validated_data and existing_rules.count() > 0:
-            raise GraphQLError("Failed mutation. TuitionRule already exists.")
-
-        # check if rule with id exists
-        if "rule_id" in validated_data and not TuitionRule.objects.business(business_id).filter(id=validated_data.get("rule_id")).exists():
-            raise GraphQLError("Failed update mutation. TuitionRule does not exist.")
-
-        # must provide instructors if rule does not apply to all
-        if not validated_data.get("all_instructors_apply") and not validated_data.get("instructors"):
-            raise GraphQLError("Failed mutation. There must be some instructors provided if not all apply.")
-        
         instructors = validated_data.pop("instructors", [])
         hourly_tuition = validated_data.pop("hourly_tuition", None)
+        all_instructors_apply = validated_data.pop("all_instructors_apply", None)
 
-        tuition_rule, created = TuitionRule.objects.update_or_create(
-            id=validated_data.get("rule_id", None), business_id=business_id, defaults=validated_data
-        )
+        # editing
+        if "rule_id" in validated_data:
+            rule_id = validated_data.pop("rule_id")
+            tuition_rule_set = TuitionRule.objects.business(business_id).filter(id=rule_id)  
+            if not tuition_rule_set.exists():
+                raise GraphQLError("Failed update mutation. TuitionRule with id does not exist.")
 
-        if validated_data.get("all_instructors_apply"):
-            instructors = []
+            tuition_rule = tuition_rule_set.first()
+            general_tuition_rule = TuitionRule.objects.business(business_id).filter(
+                category=tuition_rule.category,
+                course_type=tuition_rule.course_type
+            )
+
+            if general_tuition_rule.count() > 1:
+                raise GraphQLError("Failed mutation. Some instructors already paired with TuitionRules of the same category and type.")
+            
+            general_tuition_rule.update(**validated_data)
+            tuition_rule.refresh_from_db()            
+        # creating
+        else:
+            existing_rules = TuitionRule.objects.business(business_id).filter(
+                category=validated_data.get("category_id"),
+                course_type=validated_data.get("course_type"),
+                instructors__in=instructors
+            )
+            if existing_rules.count() > 0:
+                raise GraphQLError("Failed mutation. TuitionRule already exists.")
+
+            tuition_rule = TuitionRule(
+                business_id=business_id, **validated_data
+            )
+            tuition_rule.save()
+
+        if all_instructors_apply:
+            instructors=[]
+
+        # add instructors
         tuition_rule.instructors.set(instructors)
+        tuition_rule.save()
 
-        if hourly_tuition:
-            TuitionPrice.objects.create(hourly_tuition=hourly_tuition, tuition_rule=tuition_rule)
-
-        LogEntry.objects.log_action(
-            user_id=info.context.user.id,
-            content_type_id=ContentType.objects.get_for_model(TuitionRule).pk,
-            object_id=tuition_rule.id,
-            object_repr=str(tuition_rule.id),
-            action_flag=CHANGE if "rule_id" in validated_data else ADDITION,
+        # add tuition price
+        TuitionPrice.objects.create(
+            hourly_tuition=hourly_tuition,
+            tuition_rule=tuition_rule,
+            all_instructors_apply=all_instructors_apply
         )
-        return CreateTuitionRule(tuition_rule=tuition_rule, created=created)
+
+        return CreateTuitionRule(tuition_rule=tuition_rule, created=True)
 
 
 class DeleteTuitionRule(graphene.Mutation):

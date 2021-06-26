@@ -36,7 +36,6 @@ class TuitionRule(models.Model):
         max_length=20, choices=COURSE_CHOICES, default=TUTORING
     )
 
-    all_instructors_apply = models.BooleanField(default=True)
     instructors = models.ManyToManyField("account.Instructor", blank=True)
     retired = models.BooleanField(default=False)
 
@@ -59,6 +58,7 @@ class TuitionPrice(models.Model):
         on_delete=models.PROTECT,
         default=-1
     )
+    all_instructors_apply = models.BooleanField(default=True)
     hourly_tuition = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
 
     # Timestamps
