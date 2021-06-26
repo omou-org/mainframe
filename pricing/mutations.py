@@ -3,6 +3,7 @@ from graphql import GraphQLError
 
 from account.models import Admin
 from pricing.models import (
+    TuitionPrice,
     TuitionRule,
     Discount,
     MultiCourseDiscount,
@@ -35,6 +36,7 @@ class CreateTuitionRule(graphene.Mutation):
         course_type = CourseTypeEnum()
         all_instructors_apply = graphene.Boolean()
         instructors = graphene.List(graphene.ID)
+        retired = graphene.Boolean()
 
     tuition_rule = graphene.Field(TuitionRuleType)
     created = graphene.Boolean()
@@ -52,9 +54,6 @@ class CreateTuitionRule(graphene.Mutation):
         )
         if "rule_id" not in validated_data and existing_rules.count() > 0:
             raise GraphQLError("Failed mutation. TuitionRule already exists.")
-        # also check if any instructors in another rule. maybe above does it already
-
-
 
         # check if rule with id exists
         if "rule_id" in validated_data and not TuitionRule.objects.business(business_id).filter(id=validated_data.get("rule_id")).exists():
@@ -64,15 +63,19 @@ class CreateTuitionRule(graphene.Mutation):
         if not validated_data.get("all_instructors_apply") and not validated_data.get("instructors"):
             raise GraphQLError("Failed mutation. There must be some instructors provided if not all apply.")
         
-        # pop instructors to add after update/creation
-        instructors = validated_data.pop("instructors")
-        if validated_data.get("all_instructors_apply"):
-            instructors = []
+        instructors = validated_data.pop("instructors", [])
+        hourly_tuition = validated_data.pop("hourly_tuition", None)
 
         tuition_rule, created = TuitionRule.objects.update_or_create(
             id=validated_data.get("rule_id", None), business_id=business_id, defaults=validated_data
         )
+
+        if validated_data.get("all_instructors_apply"):
+            instructors = []
         tuition_rule.instructors.set(instructors)
+
+        if hourly_tuition:
+            TuitionPrice.objects.create(hourly_tuition=hourly_tuition, tuition_rule=tuition_rule)
 
         LogEntry.objects.log_action(
             user_id=info.context.user.id,

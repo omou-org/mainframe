@@ -23,6 +23,10 @@ class CourseCategory(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def active_tuition_rule_count(self):
+        return self.tuitionrule_set.filter(retired=False).count()
+
 
 class Course(models.Model):
     TUTORING = "tutoring"

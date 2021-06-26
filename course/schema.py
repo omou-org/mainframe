@@ -46,6 +46,7 @@ class CourseType(DjangoObjectType):
 
 
 class CourseCategoryType(DjangoObjectType):
+    active_tuition_rule_count = Int(source='active_tuition_rule_count')
     class Meta:
         model = CourseCategory
 
@@ -218,7 +219,9 @@ class Query(object):
 
     @login_required
     def resolve_course_categories(self, info, **kwargs):
-        return CourseCategory.objects.all()
+        categories = CourseCategory.objects.all()
+        sorted_categories = sorted(categories, key=lambda t: -t.active_tuition_rule_count)
+        return sorted_categories
 
     @login_required
     def resolve_course_notes(self, info, **kwargs):

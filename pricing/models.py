@@ -38,6 +38,7 @@ class TuitionRule(models.Model):
 
     all_instructors_apply = models.BooleanField(default=True)
     instructors = models.ManyToManyField("account.Instructor", blank=True)
+    retired = models.BooleanField(default=False)
 
     business = models.ForeignKey(Business, on_delete=models.PROTECT, null=True)
 
@@ -49,7 +50,7 @@ class TuitionRule(models.Model):
 
     @property
     def tuition_price_list(self):
-        return [tuition_price for tuition_price in self.tuitionprice_set.all()]
+        return [tuition_price for tuition_price in self.tuitionprice_set.order_by('-created_at')]
 
 
 class TuitionPrice(models.Model):
@@ -59,7 +60,6 @@ class TuitionPrice(models.Model):
         default=-1
     )
     hourly_tuition = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
-    is_retired = models.BooleanField(default=False)
 
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)

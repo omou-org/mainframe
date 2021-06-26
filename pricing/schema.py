@@ -6,6 +6,7 @@ from graphene.types.json import JSONString
 from django.db.models import Q
 
 from pricing.models import (
+    TuitionPrice,
     TuitionRule,
     Discount,
     MultiCourseDiscount,
@@ -35,7 +36,13 @@ class DiscountInterface(graphene.Interface):
         description = "Shared discount properties"
 
 
+class TuitionPriceType(DjangoObjectType):
+    class Meta:
+        model = TuitionPrice
+
+
 class TuitionRuleType(DjangoObjectType):
+    tuition_price_list = List(TuitionPriceType, source='tuition_price_list')
     class Meta:
         model = TuitionRule
 
