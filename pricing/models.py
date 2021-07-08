@@ -97,22 +97,22 @@ class Discount(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
-class MultiCourseDiscount(Discount):
-    discount = Discount()
+# class MultiCourseDiscount(Discount):
+#     discount = Discount()
 
-    num_sessions = models.IntegerField(
-        validators=[MinValueValidator(2), MaxValueValidator(1000)],
-    )
-
-
-class DateRangeDiscount(Discount):
-    discount = Discount()
-
-    start_date = models.DateField()
-    end_date = models.DateField()
+#     num_sessions = models.IntegerField(
+#         validators=[MinValueValidator(2), MaxValueValidator(1000)],
+#     )
 
 
-class PaymentMethodDiscount(Discount):
-    discount = Discount()
+# class DateRangeDiscount(Discount):
+#     discount = Discount()
 
-    payment_method = models.CharField(max_length=50)
+#     start_date = models.DateField()
+#     end_date = models.DateField()
+
+
+# class PaymentMethodDiscount(Discount):
+#     discount = Discount()
+
+#     payment_method = models.CharField(max_length=50)

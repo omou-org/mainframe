@@ -2,9 +2,9 @@ from django.shortcuts import render
 from pricing.models import (
     TuitionRule,
     Discount,
-    MultiCourseDiscount,
-    DateRangeDiscount,
-    PaymentMethodDiscount,
+    # MultiCourseDiscount,
+    # DateRangeDiscount,
+    # PaymentMethodDiscount,
 )
 from account.models import Parent
 
@@ -18,9 +18,9 @@ from mainframe.permissions import IsDev, ReadOnly
 from pricing.serializers import (
     TuitionRuleSerializer,
     DiscountSerializer,
-    MultiCourseDiscountSerializer,
-    DateRangeDiscountSerializer,
-    PaymentMethodDiscountSerializer,
+    # MultiCourseDiscountSerializer,
+    # DateRangeDiscountSerializer,
+    # PaymentMethodDiscountSerializer,
 )
 
 import json
@@ -58,80 +58,80 @@ def price_quote_total(body):
         if course.course_type == "class":
             course_students.add(course_json["student_id"])
 
-            # DateRangeDiscount
-            date_range_discounts = DateRangeDiscount.objects.filter(
-                (
-                    Q(start_date__lte=course.start_date)
-                    & Q(end_date__lte=course.end_date)
-                )
-                | (
-                    Q(start_date__gte=course.start_date)
-                    & Q(start_date__lte=course.end_date)
-                )
-                | (
-                    Q(end_date__gte=course.start_date)
-                    & Q(end_date__lte=course.end_date)
-                )
-            )
+            # # DateRangeDiscount
+            # date_range_discounts = DateRangeDiscount.objects.filter(
+            #     (
+            #         Q(start_date__lte=course.start_date)
+            #         & Q(end_date__lte=course.end_date)
+            #     )
+            #     | (
+            #         Q(start_date__gte=course.start_date)
+            #         & Q(start_date__lte=course.end_date)
+            #     )
+            #     | (
+            #         Q(end_date__gte=course.start_date)
+            #         & Q(end_date__lte=course.end_date)
+            #     )
+            # )
 
-            for discount in date_range_discounts:
-                if discount.id not in disabled_discounts and discount.active:
-                    if discount.amount_type == "percent":
-                        amount = (
-                            float(course.hourly_tuition)
-                            * (100.0 - float(discount.amount))
-                            / 100.0
-                        )
-                    else:
-                        amount = float(discount.amount)
-                    total_discount_val += amount
-                    used_discounts.append(
-                        {"id": discount.id, "name": discount.name, "amount": amount}
-                    )
+            # for discount in date_range_discounts:
+            #     if discount.id not in disabled_discounts and discount.active:
+            #         if discount.amount_type == "percent":
+            #             amount = (
+            #                 float(course.hourly_tuition)
+            #                 * (100.0 - float(discount.amount))
+            #                 / 100.0
+            #             )
+            #         else:
+            #             amount = float(discount.amount)
+            #         total_discount_val += amount
+            #         used_discounts.append(
+            #             {"id": discount.id, "name": discount.name, "amount": amount}
+            #         )
 
-            # MultiCourseDiscount (sessions on course basis)
-            multicourse_discounts = MultiCourseDiscount.objects.filter(
-                num_sessions__lte=float(course_json["sessions"])
-            )
-            for discount in multicourse_discounts.order_by("-num_sessions"):
-                # take highest applicable discount based on session count
-                if discount.id not in disabled_discounts and discount.active:
-                    if discount.amount_type == "percent":
-                        amount = (
-                            float(course.hourly_tuition)
-                            * (100.0 - float(discount.amount))
-                            / 100.0
-                        )
-                    else:
-                        amount = float(discount.amount)
-                    total_discount_val += amount
-                    used_discounts.append(
-                        {"id": discount.id, "name": discount.name, "amount": amount}
-                    )
-                    break
+            # # MultiCourseDiscount (sessions on course basis)
+            # multicourse_discounts = MultiCourseDiscount.objects.filter(
+            #     num_sessions__lte=float(course_json["sessions"])
+            # )
+            # for discount in multicourse_discounts.order_by("-num_sessions"):
+            #     # take highest applicable discount based on session count
+            #     if discount.id not in disabled_discounts and discount.active:
+            #         if discount.amount_type == "percent":
+            #             amount = (
+            #                 float(course.hourly_tuition)
+            #                 * (100.0 - float(discount.amount))
+            #                 / 100.0
+            #             )
+            #         else:
+            #             amount = float(discount.amount)
+            #         total_discount_val += amount
+            #         used_discounts.append(
+            #             {"id": discount.id, "name": discount.name, "amount": amount}
+            #         )
+            #         break
 
         sub_total += course_sub_total
 
-    # sibling discount
-    if len(course_students) > 1:
-        total_discount_val += 25
-        used_discounts.append(("Siblings Discount", 25))
+    # # sibling discount
+    # if len(course_students) > 1:
+    #     total_discount_val += 25
+    #     used_discounts.append(("Siblings Discount", 25))
 
-    # PaymentMethodDiscount
-    payment_method = body["method"]
-    payment_method_discounts = PaymentMethodDiscount.objects.filter(
-        payment_method=payment_method
-    )
-    for discount in payment_method_discounts:
-        if discount.id not in disabled_discounts and discount.active:
-            if discount.amount_type == "percent":
-                amount = float(sub_total) * (100.0 - float(discount.amount)) / 100.0
-            else:
-                amount = float(discount.amount)
-            total_discount_val += amount
-            used_discounts.append(
-                {"id": discount.id, "name": discount.name, "amount": amount}
-            )
+    # # PaymentMethodDiscount
+    # payment_method = body["method"]
+    # payment_method_discounts = PaymentMethodDiscount.objects.filter(
+    #     payment_method=payment_method
+    # )
+    # for discount in payment_method_discounts:
+    #     if discount.id not in disabled_discounts and discount.active:
+    #         if discount.amount_type == "percent":
+    #             amount = float(sub_total) * (100.0 - float(discount.amount)) / 100.0
+    #         else:
+    #             amount = float(discount.amount)
+    #         total_discount_val += amount
+    #         used_discounts.append(
+            #     {"id": discount.id, "name": discount.name, "amount": amount}
+            # )
 
     # price adjustment
     price_adjustment = body.get("price_adjustment", 0)
@@ -199,34 +199,34 @@ class DiscountViewSet(viewsets.ModelViewSet):
     serializer_class = DiscountSerializer
 
 
-class MultiCourseDiscountViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows custom multi-course and account discounts to be viewed, edited, or created
-    """
+# class MultiCourseDiscountViewSet(viewsets.ModelViewSet):
+#     """
+#     API endpoint that allows custom multi-course and account discounts to be viewed, edited, or created
+#     """
 
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsDev | (IsAuthenticated & (IsAdminUser | ReadOnly))]
-    queryset = MultiCourseDiscount.objects.all()
-    serializer_class = MultiCourseDiscountSerializer
-
-
-class DateRangeDiscountViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows custom date range discounts to be viewed, edited, or created
-    """
-
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsDev | (IsAuthenticated & (IsAdminUser | ReadOnly))]
-    queryset = DateRangeDiscount.objects.all()
-    serializer_class = DateRangeDiscountSerializer
+#     authentication_classes = [TokenAuthentication]
+#     permission_classes = [IsDev | (IsAuthenticated & (IsAdminUser | ReadOnly))]
+#     queryset = MultiCourseDiscount.objects.all()
+#     serializer_class = MultiCourseDiscountSerializer
 
 
-class PaymentMethodDiscountViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows custom payment method discounts to be viewed, edited, or created
-    """
+# class DateRangeDiscountViewSet(viewsets.ModelViewSet):
+#     """
+#     API endpoint that allows custom date range discounts to be viewed, edited, or created
+#     """
 
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsDev | (IsAuthenticated & (IsAdminUser | ReadOnly))]
-    queryset = PaymentMethodDiscount.objects.all()
-    serializer_class = PaymentMethodDiscountSerializer
+#     authentication_classes = [TokenAuthentication]
+#     permission_classes = [IsDev | (IsAuthenticated & (IsAdminUser | ReadOnly))]
+#     queryset = DateRangeDiscount.objects.all()
+#     serializer_class = DateRangeDiscountSerializer
+
+
+# class PaymentMethodDiscountViewSet(viewsets.ModelViewSet):
+#     """
+#     API endpoint that allows custom payment method discounts to be viewed, edited, or created
+#     """
+
+#     authentication_classes = [TokenAuthentication]
+#     permission_classes = [IsDev | (IsAuthenticated & (IsAdminUser | ReadOnly))]
+#     queryset = PaymentMethodDiscount.objects.all()
+#     serializer_class = PaymentMethodDiscountSerializer
