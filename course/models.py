@@ -230,9 +230,9 @@ class Enrollment(models.Model):
 
     @property
     def enrollment_status(self):
-        invoices = self.registration_set.values_list('invoice', flat=True)
+        invoices = self.registration_set.values_list("invoice", flat=True)
         if invoices:
-            return invoices.order_by('-created_at')[0].payment_status
+            return invoices.order_by("-created_at")[0].payment_status
 
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)

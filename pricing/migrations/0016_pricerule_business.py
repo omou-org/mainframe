@@ -7,14 +7,18 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('onboarding', '0002_auto_20210502_0028'),
-        ('pricing', '0015_pricerule_all_instructors_apply'),
+        ("onboarding", "0002_auto_20210502_0028"),
+        ("pricing", "0015_pricerule_all_instructors_apply"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='pricerule',
-            name='business',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, to='onboarding.Business'),
+            model_name="pricerule",
+            name="business",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                to="onboarding.Business",
+            ),
         ),
     ]

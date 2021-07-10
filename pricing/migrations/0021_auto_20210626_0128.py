@@ -6,17 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('pricing', '0020_remove_tuitionprice_is_retired'),
+        ("pricing", "0020_remove_tuitionprice_is_retired"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='tuitionrule',
-            name='all_instructors_apply',
+            model_name="tuitionrule",
+            name="all_instructors_apply",
         ),
         migrations.AddField(
-            model_name='tuitionprice',
-            name='all_instructors_apply',
+            model_name="tuitionprice",
+            name="all_instructors_apply",
             field=models.BooleanField(default=True),
         ),
     ]

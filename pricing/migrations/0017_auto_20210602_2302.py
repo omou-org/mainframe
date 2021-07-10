@@ -6,15 +6,15 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('course', '0035_course_business'),
-        ('onboarding', '0002_auto_20210502_0028'),
-        ('account', '0047_merge_20210508_1931'),
-        ('pricing', '0016_pricerule_business'),
+        ("course", "0035_course_business"),
+        ("onboarding", "0002_auto_20210502_0028"),
+        ("account", "0047_merge_20210508_1931"),
+        ("pricing", "0016_pricerule_business"),
     ]
 
     operations = [
         migrations.RenameModel(
-            old_name='PriceRule',
-            new_name='TuitionRule',
+            old_name="PriceRule",
+            new_name="TuitionRule",
         ),
     ]

@@ -130,8 +130,8 @@ def price_quote_total(body):
     #             amount = float(discount.amount)
     #         total_discount_val += amount
     #         used_discounts.append(
-            #     {"id": discount.id, "name": discount.name, "amount": amount}
-            # )
+    #     {"id": discount.id, "name": discount.name, "amount": amount}
+    # )
 
     # price adjustment
     price_adjustment = body.get("price_adjustment", 0)

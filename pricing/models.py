@@ -49,15 +49,14 @@ class TuitionRule(models.Model):
 
     @property
     def tuition_price_list(self):
-        return [tuition_price for tuition_price in self.tuitionprice_set.order_by('-created_at')]
+        return [
+            tuition_price
+            for tuition_price in self.tuitionprice_set.order_by("-created_at")
+        ]
 
 
 class TuitionPrice(models.Model):
-    tuition_rule = models.ForeignKey(
-        TuitionRule,
-        on_delete=models.PROTECT,
-        default=-1
-    )
+    tuition_rule = models.ForeignKey(TuitionRule, on_delete=models.PROTECT, default=-1)
     all_instructors_apply = models.BooleanField(default=True)
     hourly_tuition = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
 
@@ -73,7 +72,7 @@ class Discount(models.Model):
         blank=True,
     )
     auto_apply = models.BooleanField(default=False)
-    
+
     PERCENT = "percent"
     FIXED = "fixed"
     AMOUNT_CHOICES = (
@@ -93,10 +92,10 @@ class Discount(models.Model):
     end_date = models.DateField(blank=True, null=True)
 
     min_courses = models.IntegerField(
-        validators=[MinValueValidator(2), MaxValueValidator(1000)], 
-        blank=True, 
+        validators=[MinValueValidator(2), MaxValueValidator(1000)],
+        blank=True,
         null=True,
-    )  
+    )
 
     CASH = "cash"
     CREDIT_CARD = "credit_card"

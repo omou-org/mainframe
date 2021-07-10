@@ -7,23 +7,41 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('pricing', '0017_auto_20210602_2302'),
+        ("pricing", "0017_auto_20210602_2302"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='tuitionrule',
-            name='hourly_tuition',
+            model_name="tuitionrule",
+            name="hourly_tuition",
         ),
         migrations.CreateModel(
-            name='TuitionPrice',
+            name="TuitionPrice",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('hourly_tuition', models.DecimalField(decimal_places=2, default=0.0, max_digits=8)),
-                ('is_retired', models.BooleanField(default=False)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('tuition_rule', models.ForeignKey(default=-1, on_delete=django.db.models.deletion.PROTECT, to='pricing.TuitionRule')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "hourly_tuition",
+                    models.DecimalField(decimal_places=2, default=0.0, max_digits=8),
+                ),
+                ("is_retired", models.BooleanField(default=False)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "tuition_rule",
+                    models.ForeignKey(
+                        default=-1,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to="pricing.TuitionRule",
+                    ),
+                ),
             ],
         ),
     ]

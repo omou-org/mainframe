@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('pricing', '0014_remove_pricerule_academic_level'),
+        ("pricing", "0014_remove_pricerule_academic_level"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='pricerule',
-            name='all_instructors_apply',
+            model_name="pricerule",
+            name="all_instructors_apply",
             field=models.BooleanField(default=True),
         ),
     ]

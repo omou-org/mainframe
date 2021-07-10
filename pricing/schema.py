@@ -43,7 +43,8 @@ class TuitionPriceType(DjangoObjectType):
 
 
 class TuitionRuleType(DjangoObjectType):
-    tuition_price_list = List(TuitionPriceType, source='tuition_price_list')
+    tuition_price_list = List(TuitionPriceType, source="tuition_price_list")
+
     class Meta:
         model = TuitionRule
 
@@ -244,9 +245,11 @@ class Query(object):
     # paymentMethodDiscount = Field(
     #     PaymentMethodDiscountType, paymentMethodDiscount_id=ID()
     # )
-    
+
     tuitionRules = List(TuitionRuleType)
-    discounts = List(DiscountType, is_active=Boolean(), start_date=Date(), end_date=Date())
+    discounts = List(
+        DiscountType, is_active=Boolean(), start_date=Date(), end_date=Date()
+    )
     # multiCourseDiscounts = List(MultiCourseDiscountType)
     # dateRangeDiscounts = List(DateRangeDiscountType)
     # paymentMethodDiscounts = List(PaymentMethodDiscountType)
@@ -292,7 +295,9 @@ class Query(object):
         if isActive is not None:
             discounts = discounts.filter(active=isActive)
         if startDate and endDate:
-            discounts = discounts.filter(start_date__gte=startDate, end_date__lte=endDate)
+            discounts = discounts.filter(
+                start_date__gte=startDate, end_date__lte=endDate
+            )
         return discounts
 
     # def resolve_multiCourseDiscount(self, info, **kwargs):

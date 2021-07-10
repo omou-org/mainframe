@@ -6,26 +6,26 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('invoice', '0011_invoice_payment_due_date'),
-        ('pricing', '0021_auto_20210626_0128'),
+        ("invoice", "0011_invoice_payment_due_date"),
+        ("pricing", "0021_auto_20210626_0128"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='multicoursediscount',
-            name='discount_ptr',
+            model_name="multicoursediscount",
+            name="discount_ptr",
         ),
         migrations.RemoveField(
-            model_name='paymentmethoddiscount',
-            name='discount_ptr',
+            model_name="paymentmethoddiscount",
+            name="discount_ptr",
         ),
         migrations.DeleteModel(
-            name='DateRangeDiscount',
+            name="DateRangeDiscount",
         ),
         migrations.DeleteModel(
-            name='MultiCourseDiscount',
+            name="MultiCourseDiscount",
         ),
         migrations.DeleteModel(
-            name='PaymentMethodDiscount',
+            name="PaymentMethodDiscount",
         ),
     ]

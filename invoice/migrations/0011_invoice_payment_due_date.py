@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('invoice', '0010_auto_20210221_0420'),
+        ("invoice", "0010_auto_20210221_0420"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='invoice',
-            name='payment_due_date',
+            model_name="invoice",
+            name="payment_due_date",
             field=models.DateField(blank=True, null=True),
         ),
     ]

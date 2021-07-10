@@ -398,8 +398,7 @@ class CreateCourse(graphene.Mutation):
 
         if course.course_type == "small_group" or course.course_type == "tutoring":
             price_rule = TuitionRule.objects.filter(
-                Q(category=course.course_category)
-                & Q(course_type=course.course_type)
+                Q(category=course.course_category) & Q(course_type=course.course_type)
             )[0]
             course.hourly_tuition = price_rule.hourly_tuition
             course.total_tuition = course.hourly_tuition * course.num_sessions

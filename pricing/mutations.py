@@ -44,7 +44,7 @@ class CreateTuitionRule(graphene.Mutation):
     @staticmethod
     @staff_member_required
     def mutate(root, info, **validated_data):
-        business_id = Admin.objects.get(user__id = info.context.user.id).business.id
+        business_id = Admin.objects.get(user__id=info.context.user.id).business.id
 
         instructors = validated_data.pop("instructors", [])
         hourly_tuition = validated_data.pop("hourly_tuition", None)
@@ -53,38 +53,41 @@ class CreateTuitionRule(graphene.Mutation):
         # editing
         if "rule_id" in validated_data:
             rule_id = validated_data.pop("rule_id")
-            tuition_rule_set = TuitionRule.objects.business(business_id).filter(id=rule_id)  
+            tuition_rule_set = TuitionRule.objects.business(business_id).filter(
+                id=rule_id
+            )
             if not tuition_rule_set.exists():
-                raise GraphQLError("Failed update mutation. TuitionRule with id does not exist.")
+                raise GraphQLError(
+                    "Failed update mutation. TuitionRule with id does not exist."
+                )
 
             tuition_rule = tuition_rule_set.first()
             general_tuition_rule = TuitionRule.objects.business(business_id).filter(
-                category=tuition_rule.category,
-                course_type=tuition_rule.course_type
+                category=tuition_rule.category, course_type=tuition_rule.course_type
             )
 
             if general_tuition_rule.count() > 1:
-                raise GraphQLError("Failed mutation. Some instructors already paired with TuitionRules of the same category and type.")
-            
+                raise GraphQLError(
+                    "Failed mutation. Some instructors already paired with TuitionRules of the same category and type."
+                )
+
             general_tuition_rule.update(**validated_data)
-            tuition_rule.refresh_from_db()            
+            tuition_rule.refresh_from_db()
         # creating
         else:
             existing_rules = TuitionRule.objects.business(business_id).filter(
                 category=validated_data.get("category_id"),
                 course_type=validated_data.get("course_type"),
-                instructors__in=instructors
+                instructors__in=instructors,
             )
             if existing_rules.count() > 0:
                 raise GraphQLError("Failed mutation. TuitionRule already exists.")
 
-            tuition_rule = TuitionRule(
-                business_id=business_id, **validated_data
-            )
+            tuition_rule = TuitionRule(business_id=business_id, **validated_data)
             tuition_rule.save()
 
         if all_instructors_apply:
-            instructors=[]
+            instructors = []
 
         # add instructors
         tuition_rule.instructors.set(instructors)
@@ -94,7 +97,7 @@ class CreateTuitionRule(graphene.Mutation):
         TuitionPrice.objects.create(
             hourly_tuition=hourly_tuition,
             tuition_rule=tuition_rule,
-            all_instructors_apply=all_instructors_apply
+            all_instructors_apply=all_instructors_apply,
         )
 
         return CreateTuitionRule(tuition_rule=tuition_rule, created=True)
@@ -109,10 +112,12 @@ class DeleteTuitionRule(graphene.Mutation):
     @staticmethod
     @staff_member_required
     def mutate(root, info, **validated_data):
-        business_id = Admin.objects.get(user__id = info.context.user.id).business.id
+        business_id = Admin.objects.get(user__id=info.context.user.id).business.id
 
         try:
-            tuition_rule_obj = TuitionRule.objects.business(business_id).get(id=validated_data.get("id"))
+            tuition_rule_obj = TuitionRule.objects.business(business_id).get(
+                id=validated_data.get("id")
+            )
         except ObjectDoesNotExist:
             raise GraphQLError("Failed delete mutation. TuitionRule does not exist.")
 
@@ -148,12 +153,12 @@ class CreateDiscount(graphene.Mutation):
     @staff_member_required
     def mutate(root, info, **validated_data):
         if Discount.objects.filter(code=validated_data["code"]).exists():
-            raise GraphQLError("Failed create mutation. Discount with code already exists.")
+            raise GraphQLError(
+                "Failed create mutation. Discount with code already exists."
+            )
 
         courses = validated_data.pop("courses", None)
-        discount = Discount.objects.create(
-            **validated_data
-        )
+        discount = Discount.objects.create(**validated_data)
         # add courses
         if discount.all_courses_apply:
             courses = []
@@ -172,7 +177,7 @@ class CreateDiscount(graphene.Mutation):
 class RetireDiscount(graphene.Mutation):
     class Arguments:
         id = graphene.ID()
-        
+
     retired = graphene.Boolean()
 
     @staticmethod
@@ -182,6 +187,7 @@ class RetireDiscount(graphene.Mutation):
         discount.active = False
         discount.save()
         return RetireDiscount(retired=True)
+
 
 # class CreateMultiCourseDiscount(graphene.Mutation):
 #     class Arguments:
