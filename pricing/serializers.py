@@ -1,17 +1,17 @@
 from rest_framework import serializers
 
 from pricing.models import (
-    PriceRule,
+    TuitionRule,
     Discount,
-    DateRangeDiscount,
-    MultiCourseDiscount,
-    PaymentMethodDiscount,
+    # DateRangeDiscount,
+    # MultiCourseDiscount,
+    # PaymentMethodDiscount,
 )
 
 
-class PriceRuleSerializer(serializers.ModelSerializer):
+class TuitionRuleSerializer(serializers.ModelSerializer):
     class Meta:
-        model = PriceRule
+        model = TuitionRule
         read_only_fields = (
             "id",
             "updated_at",
@@ -49,65 +49,65 @@ class DiscountSerializer(serializers.ModelSerializer):
         )
 
 
-class MultiCourseDiscountSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = MultiCourseDiscount
-        read_only_fields = (
-            "id",
-            "updated_at",
-            "created_at",
-        )
-        fields = (
-            "id",
-            "name",
-            "description",
-            "num_sessions",
-            "amount",
-            "amount_type",
-            "active",
-            "updated_at",
-            "created_at",
-        )
+# class MultiCourseDiscountSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = MultiCourseDiscount
+#         read_only_fields = (
+#             "id",
+#             "updated_at",
+#             "created_at",
+#         )
+#         fields = (
+#             "id",
+#             "name",
+#             "description",
+#             "num_sessions",
+#             "amount",
+#             "amount_type",
+#             "active",
+#             "updated_at",
+#             "created_at",
+#         )
 
 
-class DateRangeDiscountSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = DateRangeDiscount
-        read_only_fields = (
-            "id",
-            "updated_at",
-            "created_at",
-        )
-        fields = (
-            "id",
-            "name",
-            "description",
-            "start_date",
-            "end_date",
-            "amount",
-            "amount_type",
-            "active",
-            "updated_at",
-            "created_at",
-        )
+# class DateRangeDiscountSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = DateRangeDiscount
+#         read_only_fields = (
+#             "id",
+#             "updated_at",
+#             "created_at",
+#         )
+#         fields = (
+#             "id",
+#             "name",
+#             "description",
+#             "start_date",
+#             "end_date",
+#             "amount",
+#             "amount_type",
+#             "active",
+#             "updated_at",
+#             "created_at",
+#         )
 
 
-class PaymentMethodDiscountSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PaymentMethodDiscount
-        read_only_fields = (
-            "id",
-            "updated_at",
-            "created_at",
-        )
-        fields = (
-            "id",
-            "name",
-            "description",
-            "payment_method",
-            "amount",
-            "amount_type",
-            "active",
-            "updated_at",
-            "created_at",
-        )
+# class PaymentMethodDiscountSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = PaymentMethodDiscount
+#         read_only_fields = (
+#             "id",
+#             "updated_at",
+#             "created_at",
+#         )
+#         fields = (
+#             "id",
+#             "name",
+#             "description",
+#             "payment_method",
+#             "amount",
+#             "amount_type",
+#             "active",
+#             "updated_at",
+#             "created_at",
+#         )

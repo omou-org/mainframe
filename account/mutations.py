@@ -599,7 +599,7 @@ class DeleteAccountNote(graphene.Mutation):
         try:
             note_obj = AccountNote.objects.get(id=validated_data.get("note_id"))
         except ObjectDoesNotExist:
-            raise GraphQLError("Failed delete mutation. PriceRule does not exist.")
+            raise GraphQLError("Failed delete mutation. Account Note does not exist.")
         note_obj.delete()
         return DeleteAccountNote(deleted=True)
 

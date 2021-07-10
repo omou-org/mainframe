@@ -1,16 +1,18 @@
 import graphene
-from graphene import Field, ID, Int, List, String, Float
+from graphene import Field, ID, Int, List, String, Float, Boolean
+from graphene.types.datetime import Date
 from graphene_django.types import DjangoObjectType
 from graphene.types.json import JSONString
 
 from django.db.models import Q
 
 from pricing.models import (
-    PriceRule,
+    TuitionPrice,
+    TuitionRule,
     Discount,
-    MultiCourseDiscount,
-    DateRangeDiscount,
-    PaymentMethodDiscount,
+    # MultiCourseDiscount,
+    # DateRangeDiscount,
+    # PaymentMethodDiscount,
 )
 from course.models import Course
 from account.models import Parent
@@ -23,45 +25,51 @@ class AmountTypeEnum(graphene.Enum):
     FIXED = "fixed"
 
 
-class DiscountInterface(graphene.Interface):
-    id = graphene.ID(required=True)
-    name = graphene.String()
-    description = graphene.String()
-    amount = graphene.Float()
-    amount_type = AmountTypeEnum()
-    active = graphene.Boolean()
+# class DiscountInterface(graphene.Interface):
+#     id = graphene.ID(required=True)
+#     name = graphene.String()
+#     description = graphene.String()
+#     amount = graphene.Float()
+#     amount_type = AmountTypeEnum()
+#     active = graphene.Boolean()
+
+#     class Meta:
+#         description = "Shared discount properties"
+
+
+class TuitionPriceType(DjangoObjectType):
+    class Meta:
+        model = TuitionPrice
+
+
+class TuitionRuleType(DjangoObjectType):
+    tuition_price_list = List(TuitionPriceType, source="tuition_price_list")
 
     class Meta:
-        description = "Shared discount properties"
-
-
-class PriceRuleType(DjangoObjectType):
-    class Meta:
-        model = PriceRule
+        model = TuitionRule
 
 
 class DiscountType(DjangoObjectType):
     class Meta:
-        interfaces = (DiscountInterface,)
         model = Discount
 
 
-class MultiCourseDiscountType(DjangoObjectType):
-    class Meta:
-        interfaces = (DiscountInterface,)
-        model = MultiCourseDiscount
+# class MultiCourseDiscountType(DjangoObjectType):
+#     class Meta:
+#         interfaces = (DiscountInterface,)
+#         model = MultiCourseDiscount
 
 
-class DateRangeDiscountType(DjangoObjectType):
-    class Meta:
-        interfaces = (DiscountInterface,)
-        model = DateRangeDiscount
+# class DateRangeDiscountType(DjangoObjectType):
+#     class Meta:
+#         interfaces = (DiscountInterface,)
+#         model = DateRangeDiscount
 
 
-class PaymentMethodDiscountType(DjangoObjectType):
-    class Meta:
-        interfaces = (DiscountInterface,)
-        model = PaymentMethodDiscount
+# class PaymentMethodDiscountType(DjangoObjectType):
+#     class Meta:
+#         interfaces = (DiscountInterface,)
+#         model = PaymentMethodDiscount
 
 
 class DiscountQuoteType(graphene.ObjectType):
@@ -91,7 +99,7 @@ def price_quote_total(body):
 
     # extract tutoring costs (assuming category/level combo exists)
     for tutor_json in body.get("tutoring", []):
-        tutoring_price_rules = PriceRule.objects.filter(
+        tutoring_price_rules = TuitionRule.objects.filter(
             Q(category=tutor_json["category_id"])
             & Q(academic_level=tutor_json["academic_level"])
             & Q(course_type="tutoring")
@@ -101,68 +109,68 @@ def price_quote_total(body):
             tuition * float(tutor_json["duration"]) * float(tutor_json["sessions"])
         )
 
-    # extract course costs and discounts
-    for course_json in body.get("classes", []):
-        course = Course.objects.filter(id=course_json["course_id"])[0]
-        course_sub_total = float(course.hourly_tuition) * float(course_json["sessions"])
+    # # extract course costs and discounts
+    # for course_json in body.get("classes", []):
+    #     course = Course.objects.filter(id=course_json["course_id"])[0]
+    #     course_sub_total = float(course.hourly_tuition) * float(course_json["sessions"])
 
-        if course.course_type == "class":
-            course_students.add(course_json["student_id"])
+    #     if course.course_type == "class":
+    #         course_students.add(course_json["student_id"])
 
-            # DateRangeDiscount
-            date_range_discounts = DateRangeDiscount.objects.filter(
-                (
-                    Q(start_date__lte=course.start_date)
-                    & Q(end_date__lte=course.end_date)
-                )
-                | (
-                    Q(start_date__gte=course.start_date)
-                    & Q(start_date__lte=course.end_date)
-                )
-                | (
-                    Q(end_date__gte=course.start_date)
-                    & Q(end_date__lte=course.end_date)
-                )
-            )
-            date_range_discounts = []
+    #         # DateRangeDiscount
+    #         date_range_discounts = DateRangeDiscount.objects.filter(
+    #             (
+    #                 Q(start_date__lte=course.start_date)
+    #                 & Q(end_date__lte=course.end_date)
+    #             )
+    #             | (
+    #                 Q(start_date__gte=course.start_date)
+    #                 & Q(start_date__lte=course.end_date)
+    #             )
+    #             | (
+    #                 Q(end_date__gte=course.start_date)
+    #                 & Q(end_date__lte=course.end_date)
+    #             )
+    #         )
+    #         date_range_discounts = []
 
-            for discount in date_range_discounts:
-                if discount.id not in disabled_discounts and discount.active:
-                    if discount.amount_type == "percent":
-                        amount = (
-                            float(course.hourly_tuition)
-                            * (100.0 - float(discount.amount))
-                            / 100.0
-                        )
-                    else:
-                        amount = float(discount.amount)
-                    total_discount_val += amount
-                    used_discounts.append(
-                        {"id": discount.id, "name": discount.name, "amount": amount}
-                    )
+    #         for discount in date_range_discounts:
+    #             if discount.id not in disabled_discounts and discount.active:
+    #                 if discount.amount_type == "percent":
+    #                     amount = (
+    #                         float(course.hourly_tuition)
+    #                         * (100.0 - float(discount.amount))
+    #                         / 100.0
+    #                     )
+    #                 else:
+    #                     amount = float(discount.amount)
+    #                 total_discount_val += amount
+    #                 used_discounts.append(
+    #                     {"id": discount.id, "name": discount.name, "amount": amount}
+    #                 )
 
-            # MultiCourseDiscount (sessions on course basis)
-            multicourse_discounts = MultiCourseDiscount.objects.filter(
-                num_sessions__lte=float(course_json["sessions"])
-            )
-            for discount in multicourse_discounts.order_by("-num_sessions"):
-                # take highest applicable discount based on session count
-                if discount.id not in disabled_discounts and discount.active:
-                    if discount.amount_type == "percent":
-                        amount = (
-                            float(course.hourly_tuition)
-                            * (100.0 - float(discount.amount))
-                            / 100.0
-                        )
-                    else:
-                        amount = float(discount.amount)
-                    total_discount_val += amount
-                    used_discounts.append(
-                        {"id": discount.id, "name": discount.name, "amount": amount}
-                    )
-                    break
+    #         # MultiCourseDiscount (sessions on course basis)
+    #         multicourse_discounts = MultiCourseDiscount.objects.filter(
+    #             num_sessions__lte=float(course_json["sessions"])
+    #         )
+    #         for discount in multicourse_discounts.order_by("-num_sessions"):
+    #             # take highest applicable discount based on session count
+    #             if discount.id not in disabled_discounts and discount.active:
+    #                 if discount.amount_type == "percent":
+    #                     amount = (
+    #                         float(course.hourly_tuition)
+    #                         * (100.0 - float(discount.amount))
+    #                         / 100.0
+    #                     )
+    #                 else:
+    #                     amount = float(discount.amount)
+    #                 total_discount_val += amount
+    #                 used_discounts.append(
+    #                     {"id": discount.id, "name": discount.name, "amount": amount}
+    #                 )
+    #                 break
 
-        sub_total += course_sub_total
+    #     sub_total += course_sub_total
 
     # TODO: create base discount for siblings discount as soon as db is created
     # sibling discount
@@ -170,21 +178,21 @@ def price_quote_total(body):
     #     total_discount_val += 25
     #     used_discounts.append(("Siblings Discount", 25))
 
-    # PaymentMethodDiscount
-    payment_method = body["method"]
-    payment_method_discounts = PaymentMethodDiscount.objects.filter(
-        payment_method=payment_method
-    )
-    for discount in payment_method_discounts:
-        if discount.id not in disabled_discounts and discount.active:
-            if discount.amount_type == "percent":
-                amount = float(sub_total) * (100.0 - float(discount.amount)) / 100.0
-            else:
-                amount = float(discount.amount)
-            total_discount_val += amount
-            used_discounts.append(
-                {"id": discount.id, "name": discount.name, "amount": amount}
-            )
+    # # PaymentMethodDiscount
+    # payment_method = body["method"]
+    # payment_method_discounts = PaymentMethodDiscount.objects.filter(
+    #     payment_method=payment_method
+    # )
+    # for discount in payment_method_discounts:
+    #     if discount.id not in disabled_discounts and discount.active:
+    #         if discount.amount_type == "percent":
+    #             amount = float(sub_total) * (100.0 - float(discount.amount)) / 100.0
+    #         else:
+    #             amount = float(discount.amount)
+    #         total_discount_val += amount
+    #         used_discounts.append(
+    #             {"id": discount.id, "name": discount.name, "amount": amount}
+    #         )
 
     # price adjustment
     price_adjustment = body.get("price_adjustment", 0)
@@ -230,19 +238,21 @@ class TutoringQuote(graphene.InputObjectType):
 
 
 class Query(object):
-    priceRule = Field(PriceRuleType, priceRule_id=ID())
+    tuitionRule = Field(TuitionRuleType, tuitionRule_id=ID())
     discount = Field(DiscountType, discount_id=ID())
-    multiCourseDiscount = Field(MultiCourseDiscountType, multiCourseDiscount_id=ID())
-    dateRangeDiscount = Field(DateRangeDiscountType, dateRangeDiscount_id=ID())
-    paymentMethodDiscount = Field(
-        PaymentMethodDiscountType, paymentMethodDiscount_id=ID()
-    )
+    # multiCourseDiscount = Field(MultiCourseDiscountType, multiCourseDiscount_id=ID())
+    # dateRangeDiscount = Field(DateRangeDiscountType, dateRangeDiscount_id=ID())
+    # paymentMethodDiscount = Field(
+    #     PaymentMethodDiscountType, paymentMethodDiscount_id=ID()
+    # )
 
-    priceRules = List(PriceRuleType)
-    discounts = List(DiscountType)
-    multiCourseDiscounts = List(MultiCourseDiscountType)
-    dateRangeDiscounts = List(DateRangeDiscountType)
-    paymentMethodDiscounts = List(PaymentMethodDiscountType)
+    tuitionRules = List(TuitionRuleType)
+    discounts = List(
+        DiscountType, is_active=Boolean(), start_date=Date(), end_date=Date()
+    )
+    # multiCourseDiscounts = List(MultiCourseDiscountType)
+    # dateRangeDiscounts = List(DateRangeDiscountType)
+    # paymentMethodDiscounts = List(PaymentMethodDiscountType)
 
     priceQuote = Field(
         PriceQuoteType,
@@ -266,34 +276,46 @@ class Query(object):
             parent=kwargs["parent"],
         )
 
-    def resolve_priceRule(self, info, **kwargs):
-        return PriceRule.objects.get(id=kwargs.get("priceRule_id"))
+    def resolve_tuitionRule(self, info, **kwargs):
+        return TuitionRule.objects.get(id=kwargs.get("tuitionRule_id"))
 
-    def resolve_priceRules(self, info, **kwargs):
-        return PriceRule.objects.all()
+    def resolve_tuitionRules(self, info, **kwargs):
+        return TuitionRule.objects.all()
 
     def resolve_discount(self, info, **kwargs):
         return Discount.objects.get(id=kwargs.get("discount_id"))
 
     def resolve_discounts(self, info, **kwargs):
-        return Discount.objects.all()
+        startDate = kwargs.get("start_date")
+        endDate = kwargs.get("end_date")
+        isActive = kwargs.get("is_active")
+        discounts = Discount.objects.all()
 
-    def resolve_multiCourseDiscount(self, info, **kwargs):
-        return MultiCourseDiscount.objects.get(id=kwargs.get("multiCourseDiscount_id"))
+        # check if active status is a boolean. None is treated as all
+        if isActive is not None:
+            discounts = discounts.filter(active=isActive)
+        if startDate and endDate:
+            discounts = discounts.filter(
+                start_date__gte=startDate, end_date__lte=endDate
+            )
+        return discounts
 
-    def resolve_multiCourseDiscounts(self, info, **kwargs):
-        return MultiCourseDiscount.objects.all()
+    # def resolve_multiCourseDiscount(self, info, **kwargs):
+    #     return MultiCourseDiscount.objects.get(id=kwargs.get("multiCourseDiscount_id"))
 
-    def resolve_dateRangeDiscount(self, info, **kwargs):
-        return DateRangeDiscount.objects.get(id=kwargs.get("dateRangeDiscount_id"))
+    # def resolve_multiCourseDiscounts(self, info, **kwargs):
+    #     return MultiCourseDiscount.objects.all()
 
-    def resolve_dateRangeDiscounts(self, info, **kwargs):
-        return DateRangeDiscount.objects.all()
+    # def resolve_dateRangeDiscount(self, info, **kwargs):
+    #     return DateRangeDiscount.objects.get(id=kwargs.get("dateRangeDiscount_id"))
 
-    def resolve_paymentMethodDiscount(self, info, **kwargs):
-        return PaymentMethodDiscount.objects.get(
-            id=kwargs.get("paymentMethodDiscount_id")
-        )
+    # def resolve_dateRangeDiscounts(self, info, **kwargs):
+    #     return DateRangeDiscount.objects.all()
 
-    def resolve_paymentMethodDiscounts(self, info, **kwargs):
-        return PaymentMethodDiscount.objects.all()
+    # def resolve_paymentMethodDiscount(self, info, **kwargs):
+    #     return PaymentMethodDiscount.objects.get(
+    #         id=kwargs.get("paymentMethodDiscount_id")
+    #     )
+
+    # def resolve_paymentMethodDiscounts(self, info, **kwargs):
+    #     return PaymentMethodDiscount.objects.all()
