@@ -1000,20 +1000,6 @@ class StripeOnboarding(graphene.Mutation):
         return StripeOnboarding(onboarding_url=account_links.url)
 
 
-class CheckStripeOnboardingStatus(graphene.Mutation):
-    details_submitted = graphene.Boolean()
-
-    @staticmethod
-    @login_required
-    @staff_member_required
-    def mutate(root, info):
-        user_id = info.context.user.id
-        admin = Admin.objects.get(user__id=user_id)
-        stripe.api_key = settings.STRIPE_API_KEY
-        account = stripe.Account.retrieve(admin.business.stripe_account_id)
-        return StripeOnboarding(details_submitted=account.details_submitted)
-
-
 class Mutation(graphene.ObjectType):
     update_business = UpdateBusiness.Field()
     create_owner_and_business = CreateOwnerAndBusiness.Field()
@@ -1021,4 +1007,3 @@ class Mutation(graphene.ObjectType):
     upload_courses = UploadCoursesMutation.Field()
     upload_enrollments = UploadEnrollmentsMutation.Field()
     stripe_onboarding = StripeOnboarding.Field()
-    check_stripe_onboarding_status = StripeOnboarding.Field()

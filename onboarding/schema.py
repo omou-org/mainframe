@@ -1,4 +1,5 @@
-from graphene import Field, ID, List, String
+import stripe
+from graphene import Field, List, String, Boolean
 from graphene_django.types import DjangoObjectType
 from graphql_jwt.decorators import login_required, staff_member_required
 
@@ -11,8 +12,8 @@ from tempfile import NamedTemporaryFile
 import base64
 
 from mainframe.permissions import IsOwner
+from django.conf import settings
 from django_graphene_permissions import permissions_checker
-
 from account.models import Admin, Student, Parent, Instructor
 from course.models import Course
 from onboarding.models import Business, BusinessAvailability
@@ -550,6 +551,7 @@ class Query(object):
     account_templates = String()
     course_templates = String()
     enrollment_templates = String()
+    stripe_onboarding_status = Boolean()
 
     @login_required
     def resolve_business(self, info, **kwargs):
@@ -584,3 +586,11 @@ class Query(object):
         owner = Admin.objects.get(user=info.context.user)
         wb = create_enrollment_templates(owner.business.id)
         return workbook_to_base64(wb)
+
+    @login_required
+    def resolve_stripe_onboarding_status(self, info, **kwargs):
+        user_id = info.context.user.id
+        admin = Admin.objects.get(user__id=user_id)
+        stripe.api_key = settings.STRIPE_API_KEY
+        account = stripe.Account.retrieve(admin.business.stripe_account_id)
+        return account.details_submitted
