@@ -26,6 +26,7 @@ class Invoice(models.Model):
     payment_status = models.CharField(
         max_length=20,
         choices=PAYMENT_CHOICES,
+        default=UNPAID,
     )
 
     CASH = "cash"
