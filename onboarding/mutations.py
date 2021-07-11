@@ -985,16 +985,16 @@ class StripeOnboarding(graphene.Mutation):
         admin = Admin.objects.get(user__id=user_id)
         stripe.api_key = settings.STRIPE_API_KEY
 
-        account = stripe.Account.create(type='standard', email=admin.user.email)
+        account = stripe.Account.create(type="standard", email=admin.user.email)
         business = admin.business
         business.stripe_account_id = account.stripe_id
         business.save()
 
         account_links = stripe.AccountLink.create(
             account=account.id,
-            refresh_url=f'{settings.BASE_URL}/{refresh_url_param}',
-            return_url=f'{settings.BASE_URL}/{return_url_param}',
-            type='account_onboarding'
+            refresh_url=f"{settings.BASE_URL}/{refresh_url_param}",
+            return_url=f"{settings.BASE_URL}/{return_url_param}",
+            type="account_onboarding",
         )
 
         return StripeOnboarding(onboarding_url=account_links.url)

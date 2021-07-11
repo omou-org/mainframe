@@ -44,22 +44,22 @@ class CreateInvoice(graphene.Mutation):
     def mutate(root, info, **validated_data):
         data = validated_data
 
-        if data.get('pay_now', False) and data['method'] != 'credit_card':
+        if data.get("pay_now", False) and data["method"] != "credit_card":
             # only admins may create a cash/check invoice to be paid now
             if not Admin.objects.filter(user__id=info.context.user.id).exists():
-                raise GraphQLError("Failed Mutation. Only Admins may create cash/check invoices to be paid now.")
+                raise GraphQLError(
+                    "Failed Mutation. Only Admins may create cash/check invoices to be paid now."
+                )
 
         # update invoice
-        if data.get('invoice_id'):
+        if data.get("invoice_id"):
             # only admins may update an invoice
             if not Admin.objects.filter(user__id=info.context.user.id).exists():
                 raise GraphQLError("Failed Mutation. Only Admins may update Invoices.")
 
             # can only update method or payment_status
             updatedData = {
-                key: data[key]
-                for key in ("method", "payment_status")
-                if key in data
+                key: data[key] for key in ("method", "payment_status") if key in data
             }
 
             # update
@@ -126,7 +126,9 @@ class CreateInvoice(graphene.Mutation):
                 stripe_account="acct_1HqSAYETk4EmXsx3",
             )
             stripe_checkout_id = session.id
-        elif data.get("pay_now", False) and (data["method"] == "cash" or data["method"] == "check"):
+        elif data.get("pay_now", False) and (
+            data["method"] == "cash" or data["method"] == "check"
+        ):
             invoice.payment_status = "paid"
             invoice.payment_method = data["method"]
             invoice.save()
