@@ -130,7 +130,7 @@ class CreateInvoice(graphene.Mutation):
             stripe_checkout_id = session.id
         else:
             # unpaid flow
-            invoice.payment_due_date = arrow.utcnow().shift(days=5)
+            invoice.payment_due_date = arrow.utcnow().shift(days=5).date()
             invoice.save()
 
         return CreateInvoice(
