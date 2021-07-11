@@ -1,5 +1,4 @@
 from datetime import datetime, time, timedelta, date
-from typing import final
 from account.models import (
     Instructor,
     InstructorAvailability,
@@ -7,9 +6,10 @@ from account.models import (
 )
 from onboarding.models import Business
 from scheduler.models import Session
-from django.utils.timezone import make_aware
 from django.utils import timezone
 from course.models import Course
+
+print("something")
 
 
 def time_to_index(time: datetime, day_of_week: str, business_id: int) -> int:
@@ -78,14 +78,13 @@ def get_instructor_sessions(instructor_id: int, start_date, end_date) -> list:
     )
 
     # Need to get start & end time of course
-    instructor_availability = InstructorAvailability.instructor
-    print(instructor_availability.instructor)
+    instructor_availability = InstructorAvailability.objects.filter(instructor=2)
+
+    print(instructor_availability)
 
     for e in instructor_sessions:
         if weekdays[e.start_datetime.weekday()] not in instructor_availabilities_dict:
             instructor_availabilities_dict[weekdays[e.start_datetime.weekday()]] = 1
-
-    print(instructor_availabilities_dict)
 
 
 def set_instructor_business_availabilities(instructor_id: int) -> dict:
@@ -105,7 +104,7 @@ et = time(11, 00)
 sd = datetime(2020, 1, 26, 10, 0, tzinfo=timezone.utc)
 ed = datetime(2021, 10, 15, 11, 0, tzinfo=timezone.utc)
 # print(get_instructor_availabilities(2, sd, ed))
-print(get_instructor_sessions(5, sd, ed))
-# print(get_buessiness_hours_map(buesiness_id=1))
+# print(get_instructor_sessions(5, sd, ed))
+print(get_buessiness_hours_map(buesiness_id=1))
 # print(index_to_time(1, "monday", 1))
 # print(time_to_index(selected_time, "monday", 1))
