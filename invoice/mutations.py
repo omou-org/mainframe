@@ -58,15 +58,13 @@ class CreateInvoice(graphene.Mutation):
                 raise GraphQLError("Failed Mutation. Only Admins may update Invoices.")
 
             # can only update method or payment_status
-            data = {
-                key: data[key]
-                for key in ("method", "payment_status", "invoice_id")
-                if key in data
+            updatedData = {
+                key: data[key] for key in ("method", "payment_status") if key in data
             }
 
             # update
             invoice = Invoice.objects.get(id=data.pop("invoice_id"))
-            Invoice.objects.filter(id=invoice.id).update(**data)
+            Invoice.objects.filter(id=invoice.id).update(**updatedData)
             invoice.refresh_from_db()
 
             operation = CHANGE
@@ -128,6 +126,12 @@ class CreateInvoice(graphene.Mutation):
                 stripe_account="acct_1HqSAYETk4EmXsx3",
             )
             stripe_checkout_id = session.id
+        elif data.get("pay_now", False) and (
+            data["method"] == "cash" or data["method"] == "check"
+        ):
+            invoice.payment_status = "paid"
+            invoice.payment_method = data["method"]
+            invoice.save()
         else:
             # unpaid flow
             invoice.payment_due_date = arrow.utcnow().shift(days=5)
