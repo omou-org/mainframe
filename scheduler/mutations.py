@@ -10,10 +10,10 @@ from comms.templates import (
     SCHEDULE_UPDATE_INSTRUCTOR_TEMPLATE,
     SCHEDULE_UPDATE_PARENT_TEMPLATE,
 )
-from scheduler.models import Session, SessionNote, Attendance
-from scheduler.schema import SessionType, SessionNoteType, AttendanceType
+from scheduler.models import Session, SessionNote, Attendance, TutoringRequest
+from scheduler.schema import SessionType, SessionNoteType, AttendanceType, TutoringRequestType
 
-from graphene import Boolean, DateTime, ID, String, Enum
+from graphene import Boolean, DateTime, ID, String, Enum, Date, Time, Int
 from graphql_jwt.decorators import staff_member_required
 
 
@@ -138,10 +138,35 @@ class UpdateAttendance(graphene.Mutation):
         return UpdateAttendance(attendance=attendance)
 
 
+class CreateTutoringRequest(graphene.Mutation):
+    class Arguments:
+        tutoring_request_id = ID(name="id")
+        student_id = ID()
+        instructor_id = ID()
+        course_category_id = ID()
+        start_date = Date()
+        end_date = Date()
+        day_of_week = String()
+        start_time = Time()
+        duration = Int()
+        request_status = String()
+        invoice_setting = String()
+
+    tutoring_request = graphene.Field(TutoringRequestType)
+    created = Boolean()
+
+    @staticmethod
+    def mutate(root, info, **validated_data):
+        tutoring_request, created = TutoringRequest.objects.update_or_create(
+            id=validated_data.pop("tutoring_request_id", None), defaults=validated_data
+        )
+        return CreateTutoringRequest(tutoring_request=tutoring_request, created=created)
+
+
 class Mutation(graphene.ObjectType):
     create_session = CreateSession.Field()
     create_session_note = CreateSessionNote.Field()
-
     delete_session_note = DeleteSessionNote.Field()
-
     update_attendance = UpdateAttendance.Field()
+    create_tutoring_request = CreateTutoringRequest.Field()
+
