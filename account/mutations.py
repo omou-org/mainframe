@@ -255,6 +255,7 @@ class CreateParent(graphene.Mutation):
         state = graphene.String()
         zipcode = graphene.String()
 
+        business_id = graphene.ID(name="business")
         # Parent fields
         relationship = RelationshipEnum()
         secondary_phone_number = graphene.String()
