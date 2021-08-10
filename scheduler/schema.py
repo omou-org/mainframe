@@ -1,12 +1,14 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import arrow
 import calendar
 import pytz
 
 from django.db.models import Q
-from graphene import Boolean, Field, ID, Int, List, String, DateTime
+from graphene import Boolean, Field, ID, Int, List, String, DateTime, Time, Float
 from graphene_django.types import DjangoObjectType, ObjectType
 from graphql_jwt.decorators import login_required
+
+from account.schema import InstructorType
 
 from account.models import (
     Admin,
@@ -15,10 +17,12 @@ from account.models import (
     Student,
     InstructorAvailability,
     InstructorOutOfOffice,
+    UserInfo,
 )
 
 from course.models import Course, Enrollment
 from scheduler.models import Session, SessionNote, Attendance
+from scheduler.utilities import get_instructor_tutoring_availablity
 
 
 class SessionType(DjangoObjectType):
@@ -29,6 +33,21 @@ class SessionType(DjangoObjectType):
 class SessionNoteType(DjangoObjectType):
     class Meta:
         model = SessionNote
+
+
+class TutoringAvailabilitiesType(ObjectType):
+    monday = List(Time)
+    tuesday = List(Time)
+    wednesday = List(Time)
+    thursday = List(Time)
+    friday = List(Time)
+    saturday = List(Time)
+    sunday = List(Time)
+
+
+class InstructorTutoringAvailabilitiesType(ObjectType):
+    instructor = Field(InstructorType)
+    tutoring_availability = Field(TutoringAvailabilitiesType)
 
 
 class ValidateScheduleType(ObjectType):
@@ -73,6 +92,15 @@ class Query(object):
         end_time=String(required=True),
         start_date=String(required=True),
         end_date=String(required=True),
+    )
+
+    # Tutoring Availability query
+    instructor_tutoring_availablity = List(
+        InstructorTutoringAvailabilitiesType,
+        start_date=String(required=True),
+        end_date=String(required=True),
+        duration=Float(required=True),
+        topic=ID(required=True),
     )
 
     @login_required
@@ -312,3 +340,44 @@ class Query(object):
             queryset = queryset.filter(session__course=course_id)
 
         return queryset
+
+    @login_required
+    def resolve_instructor_tutoring_availablity(
+        self,
+        info,
+        start_date,
+        end_date,
+        duration,
+        topic,
+    ):
+
+        user = Parent.objects.get(user=info.context.user)
+        business_id = user.business.id
+        queryset = Instructor.objects.all()
+        
+        if topic is not None:
+            queryset = queryset.filter(subjects=topic)
+
+        sd = datetime.strptime(start_date, "%Y-%d-%m")
+        ed = datetime.strptime(end_date, "%Y-%d-%m")
+        new_start_date = datetime(sd.year, sd.month, sd.day, tzinfo=timezone.utc)
+        new_end_date = datetime(ed.year, ed.month, ed.day, tzinfo=timezone.utc)
+
+        tutoring_availabilities = []
+        for instructor in queryset:
+            instructor_id = instructor.user.id
+            tutoring_availabilities.append(
+                {
+                    "instructor": queryset.get(user=instructor_id),
+                    "tutoring_availability": get_instructor_tutoring_availablity(
+                        instructor_id,
+                        business_id,
+                        new_start_date,
+                        new_end_date,
+                        duration
+                    ),
+                }
+            )
+
+        return tutoring_availabilities
+
