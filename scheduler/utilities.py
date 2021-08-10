@@ -1,8 +1,8 @@
-from datetime import datetime, time, timedelta, 
+from datetime import datetime, time, timedelta
 from account.models import (
     Instructor,
     InstructorAvailability,
-    InstructorOutOfOffice,
+    InstructorOutOfOffice
 )
 from onboarding.models import Business
 from scheduler.models import Session
@@ -38,7 +38,7 @@ def index_to_time(index: int, day_of_week: str, business_id: int) -> datetime:
 
 
 # Returns a list of False given a start and end time
-def duration_to_boolean_list(start_time, end_time):
+def duration_to_boolean_list(start_time, end_time) -> list:
     today = datetime.today()
     start_time = datetime.combine(today, start_time)
     end_time = datetime.combine(today, end_time)
@@ -94,8 +94,8 @@ def get_instructor_availabilities(instructor_id: int, business_id: int) -> dict:
 
 # create an object of keys as the day of week and array of unique start times
 def find_instructor_teaching_schedule(
-    day_of_week, instructor_sessions, business_id, weekdays
-):
+    day_of_week:str, instructor_sessions:list, business_id: int, weekdays: dict
+) -> list:
 
     # filter all sessions by day of week
     sessions_for_day_of_week = [
@@ -131,6 +131,97 @@ def find_instructor_teaching_schedule(
         return unique_unavailable_start_times_for_day_of_week
     else:
         return []
+
+# helper function to find start time indicies from list of availablities 
+def find_all_start_time_indices(inst_avail_list:list)-> list:
+    counter = 0
+    consecutive_index = []
+    pos = -1
+    for idx, val in enumerate(inst_avail_list):
+        if val == True and pos == -1:
+            counter += 1
+            pos = idx
+        elif val == True:
+            counter += 1
+        elif pos != -1:
+            consecutive_index.append(pos)
+            pos = -1
+            counter = 0
+    if counter > 0:
+        consecutive_index.append(pos)
+
+    return consecutive_index
+
+
+
+# helper function to set instructor hours
+def set_instructor_availability_map(
+    instructor_teaching_schedule:dict, inst_avail_dict:dict, duration:float
+) -> dict:
+    duration_map = {
+        0.5: 1,
+        1.0: 2,
+        1.5: 3,
+        2.0: 4,
+    }
+
+    # loop through business_hours array
+    for day in instructor_teaching_schedule:
+        for teaching_range in sorted(
+            instructor_teaching_schedule[day], key=lambda tup: tup[0]
+        ):
+            teaching_range_start_index = teaching_range[0]
+            teaching_range_end_index = teaching_range[1]
+            for time_index in range(
+                teaching_range_start_index, teaching_range_end_index
+            ):
+                inst_avail_dict[day][time_index] = False
+
+    
+    for day in inst_avail_dict:
+        
+        # Find all available start time indices
+        requested_start_index_list = find_all_start_time_indices(inst_avail_dict[day])
+        # For each start time indices
+        
+        for requested_start_time_index in requested_start_index_list:
+                
+            shortest_index_distance = None
+            closest_teaching_range = None    
+            # Find requested end time index
+            requested_end_time_index = requested_start_time_index + duration_map[duration]
+            # loops through tuple of instructor session start time & end time indices 
+            for instructor_teaching_hours_range in instructor_teaching_schedule[day]:
+                # finds the shortest distances by subtracting the requested end time index with the start time of session
+
+                current_index_distance = abs(requested_end_time_index - instructor_teaching_hours_range[0])
+
+                if shortest_index_distance is None or closest_teaching_range is None:
+                    closest_teaching_range = instructor_teaching_hours_range
+                    shortest_index_distance = current_index_distance
+
+                if current_index_distance < shortest_index_distance and shortest_index_distance is not None and closest_teaching_range is not None:
+                    closest_teaching_range = instructor_teaching_hours_range
+                    shortest_index_distance = current_index_distance
+                    
+                    
+            # helper function to set the instructors availability dict output     
+            def set_instructor_availability_dict(start_time_index:int,end_time_index:int):
+                for time_index in range(start_time_index, end_time_index):
+                    inst_avail_dict[day][time_index] = False
+
+
+            if closest_teaching_range is not None:
+                
+                # checks if the next 30 min session goes over the duration 
+                if abs(requested_start_time_index + 1 - closest_teaching_range[0]) < duration_map[duration]:
+                    set_instructor_availability_dict(requested_start_time_index + 1, closest_teaching_range[0])
+                    
+                
+                if requested_end_time_index > closest_teaching_range[0]:
+                    set_instructor_availability_dict(requested_start_time_index, closest_teaching_range[0])
+                
+    return inst_avail_dict
 
 
 # Returns a dict of days of week as keys and instructors availability
@@ -171,97 +262,8 @@ def get_instructor_tutoring_availablity(
             ] = find_instructor_teaching_schedule(
                 day, instructor_sessions, business_id, weekdays
             )
-
-
-    def find_all_start_time_indices(
-            inst_avail_list,
-        ):
-            counter = 0
-            consecutive_index = []
-            pos = -1
-            for idx, val in enumerate(inst_avail_list):
-                if val == True and pos == -1:
-                    counter += 1
-                    pos = idx
-                elif val == True:
-                    counter += 1
-                elif pos != -1:
-                    consecutive_index.append(pos)
-                    pos = -1
-                    counter = 0
-            if counter > 0:
-                consecutive_index.append(pos)
-
-            return consecutive_index
-    # helper function to set instructor hours
-    def set_instructor_availability_map(
-        instructor_teaching_schedule, inst_avail_dict, duration
-    ):
-        duration_map = {
-            0.5: 1,
-            1.0: 2,
-            1.5: 3,
-            2.0: 4,
-        }
-
-        # loop through business_hours array
-        for day in instructor_teaching_schedule:
-            for teaching_range in sorted(
-                instructor_teaching_schedule[day], key=lambda tup: tup[0]
-            ):
-                teaching_range_start_index = teaching_range[0]
-                teaching_range_end_index = teaching_range[1]
-                for time_index in range(
-                    teaching_range_start_index, teaching_range_end_index
-                ):
-                    inst_avail_dict[day][time_index] = False
-
-        
-        for day in inst_avail_dict:
-            
-            # Find all available start time indices
-            requested_start_index_list = find_all_start_time_indices(inst_avail_dict[day])
-            # For each start time indices
-            
-            for requested_start_time_index in requested_start_index_list:
-                 
-                shortest_index_distance = None
-                closest_teaching_range = None    
-                # Find requested end time index
-                requested_end_time_index = requested_start_time_index + duration_map[duration]
-                # loops through tuple of instructor session start time & end time indices 
-                for instructor_teaching_hours_range in instructor_teaching_schedule_dict[day]:
-                    # finds the shortest distances by subtracting the requested end time index with the start time of session
-
-                    current_index_distance = abs(requested_end_time_index - instructor_teaching_hours_range[0])
-
-                    if shortest_index_distance is None or closest_teaching_range is None:
-                        closest_teaching_range = instructor_teaching_hours_range
-                        shortest_index_distance = current_index_distance
-
-                    if current_index_distance < shortest_index_distance and shortest_index_distance is not None and closest_teaching_range is not None:
-                        closest_teaching_range = instructor_teaching_hours_range
-                        shortest_index_distance = current_index_distance
-                        
-                      
-                # helper function to set the instructors availability dict output     
-                def set_instructor_availability_dict(start_time_index,end_time_index):
-                    for time_index in range(start_time_index, end_time_index):
-                        inst_avail_dict[day][time_index] = False
-
-
-                if closest_teaching_range is not None:
-                    
-                    # checks if the next 30 min session goes over the duration 
-                    if abs(requested_start_time_index + 1 - closest_teaching_range[0]) < duration_map[duration]:
-                        set_instructor_availability_dict(requested_start_time_index + 1, closest_teaching_range[0])
-                        
-                    
-                    if requested_end_time_index > closest_teaching_range[0]:
-                        set_instructor_availability_dict(requested_start_time_index, closest_teaching_range[0])
-                    
-        return inst_avail_dict
-
+    
+    # sets dict of instructors availabilitys with duration factored in 
     instructor_availability_map = set_instructor_availability_map(
         instructor_teaching_schedule_dict, instructor_availabilities_dict, duration
     )
@@ -278,5 +280,4 @@ def get_instructor_tutoring_availablity(
         )
     
     return instructor_availability_map
-
 
