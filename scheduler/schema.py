@@ -354,7 +354,7 @@ class Query(object):
         user = Parent.objects.get(user=info.context.user)
         business_id = user.business.id
         queryset = Instructor.objects.all()
-        
+
         if topic is not None:
             queryset = queryset.filter(subjects=topic)
 
@@ -374,10 +374,9 @@ class Query(object):
                         business_id,
                         new_start_date,
                         new_end_date,
-                        duration
+                        duration,
                     ),
                 }
             )
 
         return tutoring_availabilities
-

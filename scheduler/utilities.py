@@ -1,12 +1,7 @@
 from datetime import datetime, time, timedelta
-from account.models import (
-    Instructor,
-    InstructorAvailability,
-    InstructorOutOfOffice
-)
+from account.models import Instructor, InstructorAvailability, InstructorOutOfOffice
 from onboarding.models import Business
 from scheduler.models import Session
-
 
 
 # Converts a python datetime.time() object to an index depending on the business
@@ -94,7 +89,7 @@ def get_instructor_availabilities(instructor_id: int, business_id: int) -> dict:
 
 # create an object of keys as the day of week and array of unique start times
 def find_instructor_teaching_schedule(
-    day_of_week:str, instructor_sessions:list, business_id: int, weekdays: dict
+    day_of_week: str, instructor_sessions: list, business_id: int, weekdays: dict
 ) -> list:
 
     # filter all sessions by day of week
@@ -132,8 +127,9 @@ def find_instructor_teaching_schedule(
     else:
         return []
 
-# helper function to find start time indicies from list of availablities 
-def find_all_start_time_indices(inst_avail_list:list)-> list:
+
+# helper function to find start time indicies from list of availablities
+def find_all_start_time_indices(inst_avail_list: list) -> list:
     counter = 0
     consecutive_index = []
     pos = -1
@@ -153,10 +149,9 @@ def find_all_start_time_indices(inst_avail_list:list)-> list:
     return consecutive_index
 
 
-
 # helper function to set instructor hours
 def set_instructor_availability_map(
-    instructor_teaching_schedule:dict, inst_avail_dict:dict, duration:float
+    instructor_teaching_schedule: dict, inst_avail_dict: dict, duration: float
 ) -> dict:
     duration_map = {
         0.5: 1,
@@ -177,50 +172,63 @@ def set_instructor_availability_map(
             ):
                 inst_avail_dict[day][time_index] = False
 
-    
     for day in inst_avail_dict:
-        
+
         # Find all available start time indices
         requested_start_index_list = find_all_start_time_indices(inst_avail_dict[day])
         # For each start time indices
-        
+
         for requested_start_time_index in requested_start_index_list:
-                
+
             shortest_index_distance = None
-            closest_teaching_range = None    
+            closest_teaching_range = None
             # Find requested end time index
-            requested_end_time_index = requested_start_time_index + duration_map[duration]
-            # loops through tuple of instructor session start time & end time indices 
+            requested_end_time_index = (
+                requested_start_time_index + duration_map[duration]
+            )
+            # loops through tuple of instructor session start time & end time indices
             for instructor_teaching_hours_range in instructor_teaching_schedule[day]:
                 # finds the shortest distances by subtracting the requested end time index with the start time of session
 
-                current_index_distance = abs(requested_end_time_index - instructor_teaching_hours_range[0])
+                current_index_distance = abs(
+                    requested_end_time_index - instructor_teaching_hours_range[0]
+                )
 
                 if shortest_index_distance is None or closest_teaching_range is None:
                     closest_teaching_range = instructor_teaching_hours_range
                     shortest_index_distance = current_index_distance
 
-                if current_index_distance < shortest_index_distance and shortest_index_distance is not None and closest_teaching_range is not None:
+                if (
+                    current_index_distance < shortest_index_distance
+                    and shortest_index_distance is not None
+                    and closest_teaching_range is not None
+                ):
                     closest_teaching_range = instructor_teaching_hours_range
                     shortest_index_distance = current_index_distance
-                    
-                    
-            # helper function to set the instructors availability dict output     
-            def set_instructor_availability_dict(start_time_index:int,end_time_index:int):
+
+            # helper function to set the instructors availability dict output
+            def set_instructor_availability_dict(
+                start_time_index: int, end_time_index: int
+            ):
                 for time_index in range(start_time_index, end_time_index):
                     inst_avail_dict[day][time_index] = False
 
-
             if closest_teaching_range is not None:
-                
-                # checks if the next 30 min session goes over the duration 
-                if abs(requested_start_time_index + 1 - closest_teaching_range[0]) < duration_map[duration]:
-                    set_instructor_availability_dict(requested_start_time_index + 1, closest_teaching_range[0])
-                    
-                
+
+                # checks if the next 30 min session goes over the duration
+                if (
+                    abs(requested_start_time_index + 1 - closest_teaching_range[0])
+                    < duration_map[duration]
+                ):
+                    set_instructor_availability_dict(
+                        requested_start_time_index + 1, closest_teaching_range[0]
+                    )
+
                 if requested_end_time_index > closest_teaching_range[0]:
-                    set_instructor_availability_dict(requested_start_time_index, closest_teaching_range[0])
-                
+                    set_instructor_availability_dict(
+                        requested_start_time_index, closest_teaching_range[0]
+                    )
+
     return inst_avail_dict
 
 
@@ -262,22 +270,21 @@ def get_instructor_tutoring_availablity(
             ] = find_instructor_teaching_schedule(
                 day, instructor_sessions, business_id, weekdays
             )
-    
-    # sets dict of instructors availabilitys with duration factored in 
+
+    # sets dict of instructors availabilitys with duration factored in
     instructor_availability_map = set_instructor_availability_map(
         instructor_teaching_schedule_dict, instructor_availabilities_dict, duration
     )
 
-    # convert datetime.timedelta to date.time - military time 
+    # convert datetime.timedelta to date.time - military time
     for day in instructor_availability_map:
         for i, hour in enumerate(instructor_availability_map[day]):
             if hour == True:
                 instructor_availability_map[day][i] = index_to_time(i, day, business_id)
-    # remove False from list 
+    # remove False from list
     for day in instructor_availability_map:
         instructor_availability_map[day] = list(
             filter(lambda a: a != False, instructor_availability_map[day])
         )
-    
-    return instructor_availability_map
 
+    return instructor_availability_map
