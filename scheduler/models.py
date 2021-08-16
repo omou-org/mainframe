@@ -1,8 +1,8 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 
-from account.models import Instructor
-from course.models import Course, CourseAvailability, Enrollment
+from account.models import Instructor, Student
+from course.models import Course, CourseAvailability, CourseCategory, Enrollment
 from scheduler.managers import SessionManager
 
 
@@ -96,3 +96,42 @@ class Attendance(models.Model):
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class TutoringRequest(models.Model):
+    DAYS_OF_WEEK = (
+        ("monday", "Monday"),
+        ("tuesday", "Tuesday"),
+        ("wednesday", "Wednesday"),
+        ("thursday", "Thursday"),
+        ("friday", "Friday"),
+        ("saturday", "Saturday"),
+        ("sunday", "Sunday"),
+    )
+
+    SUBMITTED = "submitted"
+    PENDING_INSTRUCTOR_APPROVAL = "pending_instructor_approval"
+    PENDING_ADMIN_APPROVAL = "pending_admin_approval"
+    REQUEST_STATUS = (
+        (SUBMITTED, "Submitted"),
+        (PENDING_INSTRUCTOR_APPROVAL, "Pending Instructor Approval"),
+        (PENDING_ADMIN_APPROVAL, "Pending Admin Approval"),
+    )
+
+    MANUAL = "manual"
+    SUBSCRIPTION = "subscription"
+    INVOICE_SETTING = (
+        (MANUAL, "Manual"),
+        (SUBSCRIPTION, "Subscription"),
+    )
+
+    student = models.ForeignKey(Student, on_delete=models.PROTECT)
+    instructor = models.ForeignKey(Instructor, null=True, on_delete=models.PROTECT)
+    course_topic = models.ForeignKey(CourseCategory, on_delete=models.PROTECT)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    day_of_week = models.CharField(max_length=20, choices=DAYS_OF_WEEK)
+    start_time = models.TimeField()
+    duration = models.IntegerField()  # duration in minutes
+    request_status = models.CharField(max_length=50, choices=REQUEST_STATUS)
+    invoice_setting = models.CharField(max_length=20, choices=INVOICE_SETTING)

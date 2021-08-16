@@ -18,7 +18,7 @@ from account.models import (
 )
 
 from course.models import Course, Enrollment
-from scheduler.models import Session, SessionNote, Attendance
+from scheduler.models import Session, SessionNote, Attendance, TutoringRequest
 
 
 class SessionType(DjangoObjectType):
@@ -41,6 +41,11 @@ class AttendanceType(DjangoObjectType):
         model = Attendance
 
 
+class TutoringRequestType(DjangoObjectType):
+    class Meta:
+        model = TutoringRequest
+
+
 class Query(object):
     session = Field(SessionType, session_id=ID(required=True))
     sessions = List(
@@ -57,6 +62,8 @@ class Query(object):
     session_notes = List(SessionNoteType, session_id=ID(required=True))
     attendance = Field(AttendanceType, attendance_id=ID(required=True))
     attendances = List(AttendanceType, course_id=ID())
+    tutoring_request = Field(TutoringRequestType, tutoring_request_id=ID(required=True))
+    tutoring_requests = List(TutoringRequestType, student_id=ID(), instructor_id=ID())
 
     # Schedule validators
     validate_session_schedule = Field(
@@ -310,5 +317,19 @@ class Query(object):
         queryset = Attendance.objects.all()
         if course_id is not None:
             queryset = queryset.filter(session__course=course_id)
+
+        return queryset
+
+    @login_required
+    def resolve_tutoring_request(self, info, tutoring_request_id):
+        return TutoringRequest.objects.get(id=tutoring_request_id)
+
+    @login_required
+    def resolve_tutoring_requests(self, info, student_id=None, instructor_id=None):
+        queryset = TutoringRequest.objects.all()
+        if student_id is not None:
+            queryset = queryset.filter(student=student_id)
+        if instructor_id is not None:
+            queryset = queryset.filter(instructor=instructor_id)
 
         return queryset
